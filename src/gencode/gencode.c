@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "extra_codes.inc"
 #include "struct/struct_parse.h"
 #include "utils/hash_map.h"
 #include "utils/sstr.h"
@@ -493,6 +494,8 @@ int gencode_head_guard_begin(sstr_t name, sstr_t head) {
 }
 
 int gencode_head_guard_end(sstr_t head) {
+    sstr_append_of(head, codes_json_parse_h, (size_t)codes_json_parse_h_len);
+
     sstr_printf_append(head, "\n#ifdef __cplusplus\n}\n#endif\n\n#endif\n\n");
 
     return 0;
@@ -504,6 +507,11 @@ int gencode_source_begin(sstr_t name, sstr_t source) {
                        "#include <malloc.h>\n\n",
                        name);
     gen_code_scalar_marshal_array(source);
+    return 0;
+}
+
+int gencode_source_end(sstr_t source) {
+    sstr_append_of(source, codes_json_parse_c, (size_t)codes_json_parse_c_len);
     return 0;
 }
 
@@ -538,6 +546,7 @@ int gencode_source(struct hash_map* struct_map, sstr_t source, sstr_t header) {
 
     gen_code_offset_map(struct_map, source, header);
     gencode_head_guard_end(header);
+    gencode_source_end(source);
 
     hash_map_free(dependency_map);
     return 0;

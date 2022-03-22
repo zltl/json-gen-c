@@ -1,12 +1,10 @@
-#include "json_parse.h"
 
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "example.h"
-#include "utils/sstr.h"
+#include "sstr.h"
 
 extern struct field_offset_item field_offset_item[];
 extern int entry_hash_size;
@@ -698,7 +696,6 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                                         txt);
                     break;
                 case FIELD_TYPE_LONG:
-                    printf("parsing long array..........\n");
                     unmarshal_array_long(content, pos,
                                          fi->offset + param->instance_ptr, &len,
                                          txt);

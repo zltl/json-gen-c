@@ -24,7 +24,7 @@ $(TARGET_DIR)/struct.a: $(wildcard src/struct/*.c) $(wildcard src/struct/*.h)
 	make -C src/struct
 #$(TARGET_DIR)/json.a: $(wildcard src/json/*.c) $(wildcard src/json/*.h)$
 #	make -C src/json
-$(TARGET_DIR)/gencode.a: $(wildcard src/gencode/*.c) $(wildcard src/gencode/*.h)
+$(TARGET_DIR)/gencode.a: $(wildcard src/gencode/*.c) $(wildcard src/gencode/*.h) $(wildcard src/gencode/codes/*)
 	make -C src/gencode
 
 libs_mmm = $(TARGET_DIR)/gencode.a $(TARGET_DIR)/struct.a $(TARGET_DIR)/utils.a
@@ -47,6 +47,6 @@ doxygen:
 	fi
 	doxygen doc/Doxyfile
 
-xxx:
-	gcc $(CFLAGS) example.c json_parse.c example_main.c -I. -I./src/utils src/utils/sstr.c -I./src -o example
+example:
+	gcc $(CFLAGS) example.c example_main.c -I. -I./src/utils src/utils/sstr.c -o example
 	
