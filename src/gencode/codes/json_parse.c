@@ -134,7 +134,9 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt);
 
 static int json_next_token(sstr_t content, struct json_pos* pos, sstr_t txt) {
     int tk = json_next_token_(content, pos, txt);
+#ifdef JSON_DEBUG
     printf("TOKEN>%s /line %d col %d\n", ptoken(tk, txt), pos->line, pos->col);
+#endif
     return tk;
 }
 
@@ -398,7 +400,7 @@ static int unmarshal_ignore_value(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
-#define DEF_UNMARSHAL_ARRAY_INTERNAL_TYPE(type)                                         \
+#define DEF_UNMARSHAL_ARRAY_INTERNAL_TYPE(type)                                \
     int unmarshal_array_internal_##type(sstr_t content, struct json_pos* pos,  \
                                         type** ptr, int* ptrlen, sstr_t txt) { \
         int tk = json_next_token(content, pos, txt);                           \
@@ -485,6 +487,7 @@ int unmarshal_array_internal_sstr_t(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
+#ifdef JSON_DEBUG
 #define DEF_UNMARSHAL_ARRAY_TYPE(type)                                         \
     int unmarshal_array_##type(sstr_t content, type** ptr, int* len) {         \
         struct json_pos pos;                                                   \
@@ -499,6 +502,19 @@ int unmarshal_array_internal_sstr_t(sstr_t content, struct json_pos* pos,
         sstr_free(txt);                                                        \
         return r;                                                              \
     }
+#else
+#define DEF_UNMARSHAL_ARRAY_TYPE(type)                                         \
+    int unmarshal_array_##type(sstr_t content, type** ptr, int* len) {         \
+        struct json_pos pos;                                                   \
+        pos.line = 0;                                                          \
+        pos.col = 0;                                                           \
+        pos.offset = 0;                                                        \
+        sstr_t txt = sstr_new();                                               \
+        int r = unmarshal_array_internal_##type(content, &pos, ptr, len, txt); \
+        sstr_free(txt);                                                        \
+        return r;                                                              \
+    }
+#endif
 DEF_UNMARSHAL_ARRAY_TYPE(int)
 DEF_UNMARSHAL_ARRAY_TYPE(long)
 DEF_UNMARSHAL_ARRAY_TYPE(float)
@@ -509,8 +525,8 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                               struct json_parse_param* param, sstr_t txt);
 
 int unmarshal_array_internal(sstr_t content, struct json_pos* pos,
-                                    struct json_parse_param* param, int* len,
-                                    sstr_t txt) {
+                             struct json_parse_param* param, int* len,
+                             sstr_t txt) {
     *len = 0;
     struct field_offset_item* field =
         field_offset_item_find(param->struct_name, "");
@@ -520,8 +536,10 @@ int unmarshal_array_internal(sstr_t content, struct json_pos* pos,
         sstr_free(e);
         return -1;
     }
+#ifdef JSON_DEBUG
     printf("array find field struct %s, size %d\n", field->struct_name,
            field->type_size);
+#endif
 
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_LEFT_BRACKET) {
@@ -629,14 +647,16 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
         struct field_offset_item* fi =
             field_offset_item_find(param->struct_name, sstr_cstr(txt));
         if (fi == NULL) {
+#if JSON_DEBUG
             printf("field_offset_item_find NULL, ignoring...\n");
+#endif
             unmarshal_ignore_value(content, pos, txt);
             continue;
         }
-
+#if JSON_DEBUG
         printf("field found: %s->%s %s is_array: %d\n", (fi->struct_name),
                (fi->field_name), fi->field_type_name, fi->is_array);
-
+#endif
         tk = json_next_token(content, pos, txt);
         if (tk != JSON_TOKEN_COLON) {
             sstr_t e =
@@ -670,8 +690,8 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                     ar_param.in_struct = 0;
                     ar_param.struct_name = fi->field_type_name;
                     ar_param.field_name = fi->field_name;
-                    int r = unmarshal_array_internal(
-                        content, pos, &ar_param, &len, txt);
+                    int r = unmarshal_array_internal(content, pos, &ar_param,
+                                                     &len, txt);
                     if (r < 0) {
                         return r;
                     }

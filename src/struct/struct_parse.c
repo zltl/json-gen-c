@@ -136,6 +136,7 @@ void ptoken(struct struct_parser* parser, struct struct_token* token) {
                 parser->pos.line, parser->pos.col);
         return;
     }
+#ifdef JSON_DEBUG
     if (tk == TOKEN_EOF) {
         printf("TOKEN>EOF\n");
         return;
@@ -148,6 +149,7 @@ void ptoken(struct struct_parser* parser, struct struct_token* token) {
         printf("TOKEN>\'%c\', line=%d, col=%d\n", tk, parser->pos.line,
                parser->pos.col);
     }
+#endif  // JSON_DEUBG
 }
 
 int next_token_(struct struct_parser* parser, sstr_t content,

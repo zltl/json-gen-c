@@ -30,7 +30,8 @@ $(TARGET_DIR)/gencode.a: $(wildcard src/gencode/*.c) $(wildcard src/gencode/*.h)
 libs_mmm = $(TARGET_DIR)/gencode.a $(TARGET_DIR)/struct.a $(TARGET_DIR)/utils.a
 
 $(TARGET_DIR)/main.o: src/main/main.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	make -C src/main
+	$(CC) $(CFLAGS) -I$(TARGET_DIR) -c $< -o $@
 
 json-gen-c: $(TARGET_DIR)/json-gen-c
 
@@ -48,5 +49,4 @@ doxygen:
 	doxygen doc/Doxyfile
 
 example:
-	gcc $(CFLAGS) example.c example_main.c -I. -I./src/utils src/utils/sstr.c -o example
-	
+	make -C example

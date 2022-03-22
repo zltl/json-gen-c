@@ -1,0 +1,13 @@
+
+
+struct ABCde_123 {
+	int xxxa;
+	sstr_t b;
+	long c[];
+	float d;
+	XYzC xyz[];
+};
+
+struct XYzC {
+	double cdz;
+};

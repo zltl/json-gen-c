@@ -78,7 +78,9 @@ static void gen_code_struct_unmarshal_struct(struct struct_container* st,
         "    sstr_t txt = sstr_new();\n"
         "    int r = unmarshal_struct_internal(in, &pos, &param, txt);\n"
         "    if (r < 0) {\n"
+        "#ifdef JSON_DEBUG\n"
         "        printf(\"ERROR: %s\", sstr_cstr(txt));\n"
+        "#endif\n"
         "    }\n"
         "    sstr_free(txt);\n"
         "    return r;\n"
@@ -113,8 +115,7 @@ static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
 
 static void gen_code_struct_marshal_struct(struct struct_container* st,
                                            sstr_t source) {
-    sstr_printf_append(source,
-                       "int marshal_%S(struct %S* obj, sstr_t out) {\n",
+    sstr_printf_append(source, "int marshal_%S(struct %S* obj, sstr_t out) {\n",
                        st->name, st->name);
     sstr_append_cstr(source, "    char tmp_cstr[64];\n");
 
@@ -529,10 +530,9 @@ static void do_each_struct_gen_code(void* key, void* value, void* ptr) {
     hash_map_insert(dep_map, sstr_dup(k), NULL);
 }
 
-int gencode_head_guard_begin(sstr_t name, sstr_t head) {
-    sstr_t tmp = sstr_printf("#ifndef %S\n#define %S\n\n", name, name);
-    sstr_append(head, tmp);
-    sstr_free(tmp);
+int gencode_head_guard_begin(sstr_t head) {
+    sstr_append_cstr(head,
+                     "#ifndef JSON_GEN_C_H__\n#define JSON_GEN_C_H__\n\n");
     sstr_append_cstr(head, "#include \"sstr.h\"\n");
     sstr_append_cstr(head, "#ifdef __cplusplus\n");
     sstr_append_cstr(head, "extern \"C\" {\n");
@@ -559,11 +559,11 @@ int gencode_head_guard_end(sstr_t head) {
     return 0;
 }
 
-int gencode_source_begin(sstr_t name, sstr_t source) {
+int gencode_source_begin(sstr_t source) {
     sstr_printf_append(source,
-                       "#include \"%S.h\"\n\n#include <stdio.h>\n"
+                       "#include \"%s\"\n\n#include <stdio.h>\n"
                        "#include <malloc.h>\n\n",
-                       name);
+                       OUTPUT_H_FILENAME);
     gen_code_scalar_marshal_array(source);
     return 0;
 }
@@ -585,10 +585,8 @@ int gencode_source(struct hash_map* struct_map, sstr_t source, sstr_t header) {
     param.dependency_map = dependency_map;
     param.source = source;
     param.header = header;
-    sstr_t tnamex = sstr("example");
-    gencode_head_guard_begin(tnamex, header);
-    gencode_source_begin(tnamex, source);
-    sstr_free(tnamex);
+    gencode_head_guard_begin(header);
+    gencode_source_begin(source);
 
     for (i = 0; i < struct_map->size; ++i) {
         hash_map_for_each(struct_map, do_each_struct_gen_code, &param);

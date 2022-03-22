@@ -14,6 +14,9 @@
 extern "C" {
 #endif
 
+#define OUTPUT_C_FILENAME "json.gen.c"
+#define OUTPUT_H_FILENAME "json.gen.h"
+
 int gencode_source(struct hash_map* struct_map, sstr_t source, sstr_t header);
 
 static unsigned int hash_s(const char* data, size_t n, unsigned int seed) {
