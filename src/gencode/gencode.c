@@ -1,0 +1,544 @@
+#include "gencode/gencode.h"
+
+#include <malloc.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "struct/struct_parse.h"
+#include "utils/hash_map.h"
+#include "utils/sstr.h"
+
+#define DEPENDENCY_HASH_MAP_BUCKET_SIZE 1280
+
+static void gen_code_struct_marshal_array(struct struct_container* st,
+                                          sstr_t source);
+
+static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
+    (void)header;
+    sstr_append_cstr(header, "struct ");
+    sstr_append(header, st->name);
+    sstr_append_cstr(header, " {\n");
+    struct struct_field* field = st->fields;
+    while (field) {
+        sstr_append_cstr(header, "    ");
+        if (field->type == FIELD_TYPE_STRUCT) {
+            sstr_append_cstr(header, "struct ");
+        }
+        sstr_append(header, field->type_name);
+        if (field->is_array) {
+            sstr_append_cstr(header, "*");
+        }
+        sstr_append_cstr(header, " ");
+        sstr_append(header, field->name);
+        sstr_append_cstr(header, ";\n");
+
+        if (field->is_array) {
+            sstr_printf_append(header, "    int %S_len;\n", field->name);
+        }
+
+        field = field->next;
+    }
+    sstr_append_cstr(header, "};\n\n");
+
+    sstr_printf_append(header, "int %S_init(struct %S*obj);\n", st->name,
+                       st->name);
+    sstr_printf_append(header, "int %S_clear(struct %S*obj);\n", st->name,
+                       st->name);
+    sstr_printf_append(header,
+                       "int marshal_struct_%S(struct %S* obj, sstr_t out);\n",
+                       st->name, st->name);
+    sstr_printf_append(
+        header, "int marshal_array_%S(struct %S* obj, int len, sstr_t out);\n",
+        st->name, st->name);
+}
+
+static void gen_code_struct_marshal_struct(struct struct_container* st,
+                                           sstr_t source) {
+    sstr_printf_append(source,
+                       "int marshal_struct_%S(struct %S* obj, sstr_t out) {\n",
+                       st->name, st->name);
+    sstr_append_cstr(source, "    char tmp_cstr[64];\n");
+
+    sstr_append_cstr(source, "    sstr_append_cstr(out, \"{\");\n");
+    struct struct_field* field = st->fields;
+    for (; field; field = field->next) {
+        sstr_printf_append(source,
+                           "    sstr_append_cstr(out, \"\\\"%S\\\":\");\n",
+                           field->name);
+
+        if (field->is_array) {
+            sstr_printf_append(
+                source, "    marshal_array_%S(obj->%S, obj->%S_len, out);\n",
+                field->type_name, field->name, field->name);
+            if (field->next != NULL) {
+                sstr_append_cstr(source, "    sstr_append_cstr(out, \",\");\n");
+            }
+            continue;
+        }
+        switch (field->type) {
+            case FIELD_TYPE_INT:
+                sstr_printf_append(source,
+                                   "    sprintf(tmp_cstr, \"%%d\", obj->%S);\n",
+                                   field->name);
+                sstr_append_cstr(source,
+                                 "    sstr_append_cstr(out, tmp_cstr);\n");
+                break;
+            case FIELD_TYPE_LONG:
+                sstr_printf_append(
+                    source, "    sprintf(tmp_cstr, \"%%ld\", obj->%S);\n",
+                    field->name);
+                sstr_append_cstr(source,
+                                 "    sstr_append_cstr(out, tmp_cstr);\n");
+                break;
+            case FIELD_TYPE_FLOAT:
+                sstr_printf_append(source,
+                                   "    sprintf(tmp_cstr, \"%%f\", obj->%S);\n",
+                                   field->name);
+                sstr_append_cstr(source,
+                                 "    sstr_append_cstr(out, tmp_cstr);\n");
+
+                break;
+            case FIELD_TYPE_DOUBLE:
+                sstr_printf_append(
+                    source, "    sprintf(tmp_cstr, \"%%lf\", obj->%S);\n",
+                    field->name);
+                sstr_append_cstr(source,
+                                 "    sstr_append_cstr(out, tmp_cstr);\n");
+                break;
+            case FIELD_TYPE_SSTR:
+                sstr_printf_append(source,
+                                   "    sstr_append_of(out, \"\\\"\", 1);\n"
+                                   "    sstr_append(out, obj->%S);\n"
+                                   "    sstr_append_of(out, \"\\\"\", 1);\n",
+                                   field->name);
+                break;
+            case FIELD_TYPE_STRUCT:
+                sstr_printf_append(source,
+                                   "    marshal_struct_%S(&obj->%S, out);\n",
+                                   field->type_name, field->name);
+                break;
+        }
+
+        if (field->next == NULL) {
+        } else {
+            sstr_append_cstr(source, "    sstr_append_cstr(out, \",\");\n");
+        }
+    }
+    sstr_append_cstr(source, "    sstr_append_of(out, \"}\", 1);\n");
+    sstr_append_cstr(source, "    return 0;\n}\n\n");
+}
+
+static void gen_code_struct_marshal_array(struct struct_container* st,
+                                          sstr_t source) {
+    sstr_printf_append(
+        source, "int marshal_array_%S(struct %S* obj, int len, sstr_t out) {\n",
+        st->name, st->name);
+    //
+    sstr_append_cstr(source, "    int i;\n");
+    sstr_append_cstr(source, "    sstr_append_of(out, \"[\", 1);\n");
+    sstr_append_cstr(source, "    for (i = 0; i < len; i++) {\n");
+    sstr_append_cstr(source, "        if (i != 0) {\n");
+    sstr_append_cstr(source, "            sstr_append_of(out, \",\", 1);\n");
+    sstr_append_cstr(source, "        }\n");
+    sstr_printf_append(source, "        marshal_struct_%S(&obj[i], out);\n",
+                       st->name);
+    sstr_append_cstr(source, "    }\n");
+    sstr_append_cstr(source, "    sstr_append_of(out, \"]\", 1);\n");
+    sstr_append_cstr(source, "\n    return 0;\n}\n\n");
+}
+
+static void gen_code_scalar_marshal_array(sstr_t source) {
+    // int
+    sstr_append_cstr(source,
+                     "int marshal_array_int(int*obj, int len, sstr_t out) {\n"
+                     "    int i;\n"
+                     "    sstr_append_of(out, \"[\", 1);\n"
+                     "    for (i = 0; i < len; i++) {\n"
+                     "        if (i != 0) {\n"
+                     "            sstr_append_of(out, \",\", 1);\n"
+                     "        }\n"
+                     "        sstr_printf_append(out, \"%d\", obj[i]);\n"
+                     "    }\n"
+                     "    sstr_append_of(out, \"]\", 1);\n"
+                     "    return 0;\n"
+                     "}\n\n");
+    sstr_append_cstr(source,
+                     "int marshal_array_long(long*obj, int len, sstr_t out) {\n"
+                     "    int i;\n"
+                     "    sstr_append_of(out, \"[\", 1);\n"
+                     "    for (i = 0; i < len; i++) {\n"
+                     "        if (i != 0) {\n"
+                     "            sstr_append_of(out, \",\", 1);\n"
+                     "        }\n"
+                     "        sstr_printf_append(out, \"%l\", obj[i]);\n"
+                     "    }\n"
+                     "    sstr_append_of(out, \"]\", 1);\n"
+                     "    return 0;\n"
+                     "}\n\n");
+    sstr_append_cstr(
+        source,
+        "int marshal_array_float(float*obj, int len, sstr_t out) {\n"
+        "    int i;\n"
+        "    sstr_append_of(out, \"[\", 1);\n"
+        "    for (i = 0; i < len; i++) {\n"
+        "        if (i != 0) {\n"
+        "            sstr_append_of(out, \",\", 1);\n"
+        "        }\n"
+        "        sstr_printf_append(out, \"%f\", (double)obj[i]);\n"
+        "    }\n"
+        "    sstr_append_of(out, \"]\", 1);\n"
+        "    return 0;\n"
+        "}\n\n");
+    sstr_append_cstr(
+        source,
+        "int marshal_array_double(double*obj, int len, sstr_t out) {\n"
+        "    int i;\n"
+        "    sstr_append_of(out, \"[\", 1);\n"
+        "    for (i = 0; i < len; i++) {\n"
+        "        if (i != 0) {\n"
+        "            sstr_append_of(out, \",\", 1);\n"
+        "        }\n"
+        "        sstr_printf_append(out, \"%f\", obj[i]);\n"
+        "    }\n"
+        "    sstr_append_of(out, \"]\", 1);\n"
+        "    return 0;\n"
+        "}\n\n");
+    sstr_append_cstr(
+        source,
+        "int marshal_array_sstr_t(sstr_t*obj, int len, sstr_t out) {\n"
+        "    int i;\n"
+        "    sstr_append_of(out, \"[\", 1);\n"
+        "    for (i = 0; i < len; i++) {\n"
+        "        if (i != 0) {\n"
+        "            sstr_append_of(out, \",\", 1);\n"
+        "        }\n"
+        "        sstr_printf_append(out, \"\\\"%S\\\"\", obj[i]);\n"
+        "    }\n"
+        "    sstr_append_of(out, \"]\", 1);\n"
+        "    return 0;\n"
+        "}\n\n");
+}
+
+static void gen_code_struct_init(struct struct_container* st, sstr_t source) {
+    sstr_printf_append(source, "int %S_init(struct %S*obj) {\n", st->name,
+                       st->name);
+    struct struct_field* field = st->fields;
+    for (; field; field = field->next) {
+        if (field->is_array) {
+            sstr_printf_append(source, "    obj->%S = NULL;\n", field->name);
+            sstr_printf_append(source, "    obj->%S_len = 0;\n", field->name);
+            continue;
+        }
+        switch (field->type) {
+            case FIELD_TYPE_INT:
+                sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
+                break;
+            case FIELD_TYPE_LONG:
+                sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
+                break;
+            case FIELD_TYPE_FLOAT:
+                sstr_printf_append(source, "    obj->%S = 0.0;\n", field->name);
+                break;
+            case FIELD_TYPE_DOUBLE:
+                sstr_printf_append(source, "    obj->%S = 0.0;\n", field->name);
+                break;
+            case FIELD_TYPE_SSTR:
+                sstr_printf_append(source, "    obj->%S = NULL;\n",
+                                   field->name);
+                break;
+            case FIELD_TYPE_STRUCT:
+                sstr_printf_append(source, "    %S_init(&obj->%S);\n",
+                                   field->type_name, field->name);
+                break;
+        }
+    }
+    sstr_append_cstr(source, "    return 0;\n}\n\n");
+}
+
+static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
+    sstr_printf_append(source, "int %S_clear(struct %S*obj) {\n", st->name,
+                       st->name);
+    struct struct_field* field = st->fields;
+    for (; field; field = field->next) {
+        if (field->is_array) {
+            sstr_printf_append(source, "    free(obj->%S);\n", field->name);
+            sstr_printf_append(source, "    obj->%S = NULL;\n", field->name);
+            sstr_printf_append(source, "    obj->%S_len = 0;\n", field->name);
+            continue;
+        }
+        switch (field->type) {
+            case FIELD_TYPE_INT:
+                sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
+                break;
+            case FIELD_TYPE_LONG:
+                sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
+                break;
+            case FIELD_TYPE_FLOAT:
+                sstr_printf_append(source, "    obj->%S = 0.0;\n", field->name);
+                break;
+            case FIELD_TYPE_DOUBLE:
+                sstr_printf_append(source, "    obj->%S = 0.0;\n", field->name);
+                break;
+            case FIELD_TYPE_SSTR:
+                sstr_printf_append(source, "    sstr_free(obj->%S);\n",
+                                   field->name);
+                sstr_printf_append(source, "    obj->%S = NULL;\n",
+                                   field->name);
+                break;
+            case FIELD_TYPE_STRUCT:
+                sstr_printf_append(source, "    %S_clear(&obj->%S);\n",
+                                   field->type_name, field->name);
+                break;
+        }
+    }
+    sstr_append_cstr(source, "    return 0;\n}\n\n");
+}
+
+static void gen_code_struct(struct struct_container* st, sstr_t source,
+                            sstr_t header) {
+    gen_code_struct_header(st, header);
+    gen_code_struct_init(st, source);
+    gen_code_struct_clear(st, source);
+    gen_code_struct_marshal_struct(st, source);
+    gen_code_struct_marshal_array(st, source);
+}
+
+static void count_fields_fd(void* key, void* value, void* ptr) {
+    (void)key;
+    struct struct_container* st = (struct struct_container*)value;
+    int* count = (int*)ptr;
+    struct struct_field* field = st->fields;
+    while (field) {
+        if (field->is_array) {
+            (*count)++;
+        }
+        (*count)++;
+        field = field->next;
+    }
+}
+
+struct gen_fields_list_fn_param {
+    sstr_t source;
+    sstr_t header;
+    int hash_size;
+    int* hash_arr;
+    int f_cnt;
+};
+
+static void gen_hash_arr(sstr_t struct_name, sstr_t field_name,
+                         struct gen_fields_list_fn_param* param) {
+    // gen field hash
+    unsigned int hash_r = hash_2s(struct_name, field_name);
+    int hash_i = hash_r % param->hash_size;
+    while (param->hash_arr[hash_i] != -1) {
+        hash_i++;
+        if (hash_i >= param->hash_size) {
+            hash_i = 0;
+        }
+    }
+    param->hash_arr[hash_i] = param->f_cnt++;
+}
+
+static void gen_fields_list_fn(void* key, void* value, void* ptr) {
+    (void)key;
+    struct struct_container* st = (struct struct_container*)value;
+    struct gen_fields_list_fn_param* param =
+        (struct gen_fields_list_fn_param*)ptr;
+    struct struct_field* field = st->fields;
+
+    sstr_printf_append(
+        param->source,
+        "    {0, sizeof(struct %S), %d, \"\", \"\", \"%S\", 0},\n", st->name,
+        FIELD_TYPE_STRUCT, st->name, st->name);
+    sstr_t empty_s = sstr_new();
+    gen_hash_arr(st->name, empty_s, param);
+    sstr_free(empty_s);
+
+    while (field) {
+        // field list
+        if (field->type == FIELD_TYPE_STRUCT) {
+            sstr_printf_append(param->source,
+                               "    {offsetof(struct %S, %S), sizeof(struct "
+                               "%S), %d, \"%S\", \"%S\", "
+                               "\"%S\", %d},\n",
+                               st->name, field->name, field->type_name,
+                               field->type, field->type_name, field->name,
+                               st->name, field->is_array);
+            gen_hash_arr(st->name, field->name, param);
+        } else {
+            sstr_printf_append(
+                param->source,
+                "    {offsetof(struct %S, %S), sizeof(%S), %d, \"%S\", \"%S\", "
+                "\"%S\", %d},\n",
+                st->name, field->name, field->type_name, field->type,
+                field->type_name, field->name, st->name, field->is_array);
+            gen_hash_arr(st->name, field->name, param);
+        }
+        if (field->is_array) {
+            sstr_printf_append(param->source,
+                               "    {offsetof(struct %S, %S_len), sizeof(int), "
+                               "%d, \"int\", \"%S_len\", "
+                               "\"%S\", %d},\n",
+                               st->name, field->name, FIELD_TYPE_INT,
+                               field->name, st->name, 0);
+            sstr_t tmp = sstr_dup(field->name);
+            sstr_append_cstr(tmp, "_len");
+            gen_hash_arr(st->name, tmp, param);
+            sstr_free(tmp);
+        }
+
+        field = field->next;
+    }
+}
+
+static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
+                                sstr_t header) {
+    int total_fields = 0;
+    hash_map_for_each(struct_map, count_fields_fd, &total_fields);
+    sstr_printf_append(header, "#define FIELD_OFFSET_ITEM_SIZE %d\n",
+                       total_fields + struct_map->size + 1);
+    sstr_append_cstr(header,
+                     "struct field_offset_item {\n"
+                     "    int offset;\n"
+                     "    int type_size;\n"
+                     "    int field_type;\n"
+                     "    char* field_type_name;\n"
+                     "    char* field_name;\n"
+                     "    char* struct_name;\n"
+                     "    int is_array;\n"
+                     "};\n\n");
+    sstr_printf_append(source,
+                       "struct field_offset_item "
+                       "field_offset_item[FIELD_OFFSET_ITEM_SIZE] = {\n");
+
+    struct gen_fields_list_fn_param param;
+    param.header = header;
+    param.source = source;
+    param.hash_size = total_fields * 2 + 1;
+    param.f_cnt = 0;
+    param.hash_arr = (int*)malloc(sizeof(int) * param.hash_size);
+    memset(param.hash_arr, -1, sizeof(int) * param.hash_size);
+    hash_map_for_each(struct_map, gen_fields_list_fn, &param);
+    sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0}};\n");
+
+    sstr_printf_append(source,
+                       "int entry_hash_size = %d;\nint entry_hash[%d] = {",
+                       param.hash_size, param.hash_size);
+    for (int i = 0; i < param.hash_size; i++) {
+        char tmp_str[32];
+        sprintf(tmp_str, i == 0 ? "%d" : ", %d", param.hash_arr[i]);
+        sstr_append_cstr(source, tmp_str);
+    }
+    sstr_append_cstr(source, "};\n");
+    free(param.hash_arr);
+}
+
+static void dummy_free(void* ptr) { (void)ptr; }
+
+struct do_each_struct_gen_code_param {
+    struct hash_map* dependency_map;
+    sstr_t source;
+    sstr_t header;
+};
+
+static void do_each_struct_gen_code(void* key, void* value, void* ptr) {
+    sstr_t k = (sstr_t)key;
+    struct struct_container* v = (struct struct_container*)value;
+    struct do_each_struct_gen_code_param* param =
+        (struct do_each_struct_gen_code_param*)ptr;
+    struct hash_map* dep_map = param->dependency_map;
+
+    void* dv = NULL;
+
+    int r = hash_map_find(dep_map, k, &dv);
+    if (r == HASH_MAP_OK) {
+        return;
+    }
+
+    struct struct_field* iter = v->fields;
+    while (iter) {
+        if (iter->type == FIELD_TYPE_STRUCT) {
+            int r = hash_map_find(dep_map, iter->type_name, &dv);
+            if (r != HASH_MAP_OK) {
+                return;
+            }
+        }
+        iter = iter->next;
+    }
+    // all dependency is resolved
+    gen_code_struct(v, param->source, param->header);
+    hash_map_insert(dep_map, sstr_dup(k), NULL);
+}
+
+int gencode_head_guard_begin(sstr_t name, sstr_t head) {
+    sstr_t tmp = sstr_printf("#ifndef %S\n#define %S\n\n", name, name);
+    sstr_append(head, tmp);
+    sstr_free(tmp);
+    sstr_append_cstr(head, "#include \"sstr.h\"\n");
+    sstr_append_cstr(head, "#ifdef __cplusplus\n");
+    sstr_append_cstr(head, "extern \"C\" {\n");
+    sstr_append_cstr(head, "#endif\n\n");
+    sstr_append_cstr(head,
+                     "int marshal_array_int(int*obj, int len, sstr_t out);\n");
+    sstr_append_cstr(
+        head, "int marshal_array_long(long*obj, int len, sstr_t out);\n");
+    sstr_append_cstr(
+        head, "int marshal_array_float(float*obj, int len, sstr_t out);\n");
+    sstr_append_cstr(
+        head, "int marshal_array_double(double*obj, int len, sstr_t out);\n");
+    sstr_append_cstr(
+        head, "int marshal_array_sstr_t(sstr_t*obj, int len, sstr_t out);\n\n");
+
+    return 0;
+}
+
+int gencode_head_guard_end(sstr_t head) {
+    sstr_printf_append(head, "\n#ifdef __cplusplus\n}\n#endif\n\n#endif\n\n");
+
+    return 0;
+}
+
+int gencode_source_begin(sstr_t name, sstr_t source) {
+    sstr_printf_append(source,
+                       "#include \"%S.h\"\n\n#include <stdio.h>\n"
+                       "#include <malloc.h>\n\n",
+                       name);
+    gen_code_scalar_marshal_array(source);
+    return 0;
+}
+
+int gencode_source(struct hash_map* struct_map, sstr_t source, sstr_t header) {
+    struct hash_map* dependency_map =
+        hash_map_new(DEPENDENCY_HASH_MAP_BUCKET_SIZE, sstr_key_hash,
+                     sstr_key_cmp, sstr_key_free, dummy_free);
+    if (dependency_map == NULL) {
+        return -1;
+    }
+    int i;
+    struct do_each_struct_gen_code_param param;
+    param.dependency_map = dependency_map;
+    param.source = source;
+    param.header = header;
+    sstr_t tnamex = sstr("example");
+    gencode_head_guard_begin(tnamex, header);
+    gencode_source_begin(tnamex, source);
+    sstr_free(tnamex);
+
+    for (i = 0; i < struct_map->size; ++i) {
+        hash_map_for_each(struct_map, do_each_struct_gen_code, &param);
+        if (struct_map->size == dependency_map->size) {
+            break;
+        }
+    }
+    if (struct_map->size != dependency_map->size) {
+        fprintf(stderr, "struct dependency circle detected\n");
+        hash_map_free(dependency_map);
+        return -1;
+    }
+
+    gen_code_offset_map(struct_map, source, header);
+    gencode_head_guard_end(header);
+
+    hash_map_free(dependency_map);
+    return 0;
+}
