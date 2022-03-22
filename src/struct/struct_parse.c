@@ -143,9 +143,9 @@ void ptoken(struct struct_parser* parser, struct struct_token* token) {
 
     if (tk == TOKEN_IDENTIFY || tk == TOKEN_INTEGER || tk == TOKEN_FLOAT) {
         printf("TOKEN>\'%s\', line=%d, col=%d\n", sstr_cstr(token->txt),
-               parser->pos.line + 1, parser->pos.col);
+               parser->pos.line, parser->pos.col);
     } else {
-        printf("TOKEN>\'%c\', line=%d, col=%d\n", tk, parser->pos.line + 1,
+        printf("TOKEN>\'%c\', line=%d, col=%d\n", tk, parser->pos.line,
                parser->pos.col);
     }
 }
@@ -346,7 +346,8 @@ int struct_parse_field(struct struct_parser* parser, sstr_t content,
         return -1;
     }
     type_name = token->txt;
-    if (sstr_compare_c(type_name, TYPE_NAME_INT) == 0) {
+    if (sstr_compare_c(type_name, TYPE_NAME_INT) == 0 ||
+        sstr_compare_c(type_name, TYPE_NAME_BOOL) == 0) {
         type_id = FIELD_TYPE_INT;
     } else if (sstr_compare_c(type_name, TYPE_NAME_LONG) == 0) {
         type_id = FIELD_TYPE_LONG;

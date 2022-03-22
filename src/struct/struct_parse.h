@@ -24,6 +24,7 @@ extern "C" {
 #define FIELD_TYPE_STRUCT 6
 
 #define TYPE_NAME_INT "int"
+#define TYPE_NAME_BOOL "bool"
 #define TYPE_NAME_SSTR "sstr_t"
 #define TYPE_NAME_LONG "long"
 #define TYPE_NAME_FLOAT "float"

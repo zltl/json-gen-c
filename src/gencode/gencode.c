@@ -45,18 +45,76 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
                        st->name);
     sstr_printf_append(header, "int %S_clear(struct %S*obj);\n", st->name,
                        st->name);
-    sstr_printf_append(header,
-                       "int marshal_struct_%S(struct %S* obj, sstr_t out);\n",
+    sstr_printf_append(header, "int marshal_%S(struct %S* obj, sstr_t out);\n",
                        st->name, st->name);
     sstr_printf_append(
         header, "int marshal_array_%S(struct %S* obj, int len, sstr_t out);\n",
         st->name, st->name);
+
+    sstr_printf_append(header, "int unmarshal_%S(sstr_t in, struct %S* obj);\n",
+                       st->name, st->name);
+    sstr_printf_append(header,
+                       "int unmarshal_array_%S(sstr_t in, struct %S** "
+                       "obj, int* len);\n",
+                       st->name, st->name);
+}
+
+static void gen_code_struct_unmarshal_struct(struct struct_container* st,
+                                             sstr_t source) {
+    sstr_printf_append(source,
+                       "int unmarshal_%S(sstr_t in, struct %S* obj) {\n",
+                       st->name, st->name);
+    sstr_append_cstr(source,
+                     "    struct json_pos pos;\n"
+                     "    pos.col = 0; pos.line = 0; pos.offset = 0;\n"
+                     "    struct json_parse_param param;\n"
+                     "    param.instance_ptr = obj;\n"
+                     "    param.field_name = \"\";\n"
+                     "    param.in_array = 0;\n"
+                     "    param.in_struct = 1;\n");
+    sstr_printf_append(source, "    param.struct_name = \"%S\";\n", st->name);
+    sstr_append_cstr(
+        source,
+        "    sstr_t txt = sstr_new();\n"
+        "    int r = unmarshal_struct_internal(in, &pos, &param, txt);\n"
+        "    if (r < 0) {\n"
+        "        printf(\"ERROR: %s\", sstr_cstr(txt));\n"
+        "    }\n"
+        "    sstr_free(txt);\n"
+        "    return r;\n"
+        "}\n\n");
+}
+
+static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
+                                                   sstr_t source) {
+    sstr_printf_append(source,
+                       "int unmarshal_array_%S(sstr_t in, struct %S** "
+                       "obj, int *len) {\n",
+                       st->name, st->name);
+    sstr_append_cstr(source,
+                     "    *len = 0;\n"
+                     "    sstr_t txt = sstr_new();\n"
+                     "    struct json_pos pos;\n"
+                     "    pos.col = 0; pos.line = 0; pos.offset = 0;\n"
+                     "    struct json_parse_param ar_param;\n"
+                     "    ar_param.instance_ptr = obj;\n"
+                     "    ar_param.in_array = 1;\n"
+                     "    ar_param.in_struct = 0;\n");
+    sstr_printf_append(source, "    ar_param.struct_name = \"%S\";\n",
+                       st->name);
+    sstr_append_cstr(source,
+                     "    ar_param.field_name=\"\";\n"
+                     "    int r = unmarshal_array_internal(in, &pos, "
+                     "&ar_param, len, txt);\n");
+    sstr_append_cstr(source, "    sstr_free(txt);\n");
+    sstr_append_cstr(source, "    return r;\n");
+    sstr_append_cstr(source, "}\n\n");
 }
 
 static void gen_code_struct_marshal_struct(struct struct_container* st,
                                            sstr_t source) {
     sstr_printf_append(source,
-                       "int marshal_struct_%S(struct %S* obj, sstr_t out) {\n",
+                       "int marshal_%S(struct %S* obj, sstr_t out) {\n",
                        st->name, st->name);
     sstr_append_cstr(source, "    char tmp_cstr[64];\n");
 
@@ -114,8 +172,7 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                                    field->name);
                 break;
             case FIELD_TYPE_STRUCT:
-                sstr_printf_append(source,
-                                   "    marshal_struct_%S(&obj->%S, out);\n",
+                sstr_printf_append(source, "    marshal_%S(&obj->%S, out);\n",
                                    field->type_name, field->name);
                 break;
         }
@@ -141,8 +198,7 @@ static void gen_code_struct_marshal_array(struct struct_container* st,
     sstr_append_cstr(source, "        if (i != 0) {\n");
     sstr_append_cstr(source, "            sstr_append_of(out, \",\", 1);\n");
     sstr_append_cstr(source, "        }\n");
-    sstr_printf_append(source, "        marshal_struct_%S(&obj[i], out);\n",
-                       st->name);
+    sstr_printf_append(source, "        marshal_%S(&obj[i], out);\n", st->name);
     sstr_append_cstr(source, "    }\n");
     sstr_append_cstr(source, "    sstr_append_of(out, \"]\", 1);\n");
     sstr_append_cstr(source, "\n    return 0;\n}\n\n");
@@ -301,6 +357,8 @@ static void gen_code_struct(struct struct_container* st, sstr_t source,
     gen_code_struct_init(st, source);
     gen_code_struct_clear(st, source);
     gen_code_struct_marshal_struct(st, source);
+    gen_code_struct_unmarshal_struct(st, source);
+    gen_code_struct_unmarshal_array_struct(st, source);
     gen_code_struct_marshal_array(st, source);
 }
 

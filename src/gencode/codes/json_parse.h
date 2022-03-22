@@ -1,16 +1,3 @@
-/**
- * @file json_parse.h
- * @brief parse json string.
- */
-
-#ifndef JSON_PARSE_H
-#define JSON_PARSE_H
-
-#include "sstr.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define JSON_TOKEN_QUOTE '\"'
 #define JSON_TOKEN_LEFT_BRACKET '['
@@ -52,9 +39,16 @@ struct json_pos {
 
 int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                               struct json_parse_param* param, sstr_t txt);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif  // JSON_PARSE_H
+int unmarshal_array_internal(sstr_t content, struct json_pos* pos,
+                             struct json_parse_param* param, int* len,
+                             sstr_t txt);
+int unmarshal_array_internal_sstr_t(sstr_t content, struct json_pos* pos,
+                                    sstr_t** ptr, int* ptrlen, sstr_t txt);
+int unmarshal_array_internal_int(sstr_t content, struct json_pos* pos,
+                                 int** ptr, int* ptrlen, sstr_t txt);
+int unmarshal_array_internal_long(sstr_t content, struct json_pos* pos,
+                                  long** ptr, int* ptrlen, sstr_t txt);
+int unmarshal_array_internal_float(sstr_t content, struct json_pos* pos,
+                                   float** ptr, int* ptrlen, sstr_t txt);
+int unmarshal_array_internal_double(sstr_t content, struct json_pos* pos,
+                                    double** ptr, int* ptrlen, sstr_t txt);
