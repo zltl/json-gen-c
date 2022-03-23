@@ -118,4 +118,4 @@ for (i = 0; i < 3; ++i) {
 
 # 授权许可
 
-组成 `json-gen-c` 程序的代码遵从 GPL-3.0 许可协议，由 `json-gen-c` 程序创建的代码和内容除外。理论上说，`json-gen-c` 程序创建的文件和内容的版权，属于 `json-gen-c` 的用户所有，就像是使用 Latex 程序创建 PDF 文件一样。
+组成 `json-gen-c` 程序的代码遵从 GPL-3.0 许可协议，由 `json-gen-c` 程序创建的代码和内容除外。理论上说，`json-gen-c` 程序创建的文件和内容的版权，归 `json-gen-c` 的用户所有，就像是使用 Latex 程序创建 PDF 文件一样。
