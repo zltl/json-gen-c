@@ -448,6 +448,11 @@ int struct_parse_struct(struct struct_parser* parser, sstr_t content,
             break;
         }
         struct_field_add(&sct->fields, field);
+#ifdef JSON_DEBUG
+        printf("%s: inserting field: field name=%s typename=%s\n",
+               sstr_cstr(struct_name), sstr_cstr(field->name),
+               sstr_cstr(field->type_name));
+#endif
     }
     // fields until '}'
 

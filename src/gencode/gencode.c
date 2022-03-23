@@ -117,7 +117,7 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                                            sstr_t source) {
     sstr_printf_append(source, "int marshal_%S(struct %S* obj, sstr_t out) {\n",
                        st->name, st->name);
-    sstr_append_cstr(source, "    char tmp_cstr[64];\n");
+    sstr_append_cstr(source, "    char tmp_cstr[64];\n(void)tmp_cstr;\n");
 
     sstr_append_cstr(source, "    sstr_append_cstr(out, \"{\");\n");
     struct struct_field* field = st->fields;
@@ -316,9 +316,30 @@ static void gen_code_struct_init(struct struct_container* st, sstr_t source) {
 static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
     sstr_printf_append(source, "int %S_clear(struct %S*obj) {\n", st->name,
                        st->name);
+    int have_i = 0;
     struct struct_field* field = st->fields;
     for (; field; field = field->next) {
         if (field->is_array) {
+            if (field->type == FIELD_TYPE_STRUCT ||
+                field->type == FIELD_TYPE_SSTR) {
+                if (!have_i) {
+                    have_i = 1;
+                    sstr_append_cstr(source, "    int i;\n");
+                }
+                sstr_printf_append(source,
+                                   "    for (i = 0; i < obj->%S_len; i++) {\n",
+                                   field->name);
+                if (field->type == FIELD_TYPE_STRUCT) {
+                    sstr_printf_append(source,
+                                       "       %S_clear(&obj->%S[i]);\n",
+                                       field->type_name, field->name);
+                } else {
+                    sstr_printf_append(source,
+                                       "       sstr_free(obj->%S[i]);\n",
+                                       field->name);
+                }
+                sstr_append_cstr(source, "    }\n");
+            }
             sstr_printf_append(source, "    free(obj->%S);\n", field->name);
             sstr_printf_append(source, "    obj->%S = NULL;\n", field->name);
             sstr_printf_append(source, "    obj->%S_len = 0;\n", field->name);
@@ -595,6 +616,8 @@ int gencode_source(struct hash_map* struct_map, sstr_t source, sstr_t header) {
         }
     }
     if (struct_map->size != dependency_map->size) {
+        printf("msize = %d, d size=%d\n", struct_map->size,
+               dependency_map->size);
         fprintf(stderr, "struct dependency circle detected\n");
         hash_map_free(dependency_map);
         return -1;

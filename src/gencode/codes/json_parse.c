@@ -356,7 +356,7 @@ int unmarshal_scalar_double(sstr_t content, struct json_pos* pos, double* val,
     return 0;
 }
 
-int unmarshal_scalar_sstr_t(sstr_t content, struct json_pos* pos, sstr_t val,
+int unmarshal_scalar_sstr_t(sstr_t content, struct json_pos* pos, sstr_t* val,
                             sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk == JSON_TOKEN_NULL) {
@@ -367,7 +367,7 @@ int unmarshal_scalar_sstr_t(sstr_t content, struct json_pos* pos, sstr_t val,
         sstr_free(e);
         return tk;
     } else {
-        sstr_append(val, txt);
+        *val = sstr_dup(txt);
     }
     return 0;
 }
@@ -441,10 +441,162 @@ static int unmarshal_ignore_value(sstr_t content, struct json_pos* pos,
         }                                                                      \
     }
 
-DEF_UNMARSHAL_ARRAY_INTERNAL_TYPE(int)
-DEF_UNMARSHAL_ARRAY_INTERNAL_TYPE(long)
-DEF_UNMARSHAL_ARRAY_INTERNAL_TYPE(float)
-DEF_UNMARSHAL_ARRAY_INTERNAL_TYPE(double)
+int unmarshal_array_internal_int(sstr_t content, struct json_pos* pos,
+                                 int** ptr, int* ptrlen, sstr_t txt) {
+    int tk = json_next_token(content, pos, txt);
+    if (tk != JSON_TOKEN_LEFT_BRACKET) {
+        sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
+        sstr_append(txt, e);
+        sstr_free(e);
+    }
+    while (1) {
+        int res = 0;
+        int r = unmarshal_scalar_int(content, pos, &res, txt);
+        if (r == JSON_TOKEN_RIGHT_BRACKET) {
+            return 0;
+        }
+        if (r < 0) {
+            return r;
+        }
+        *ptr = (int*)realloc(*ptr, (*ptrlen + 1) * sizeof(int));
+        (*ptr)[*ptrlen] = res;
+        *ptrlen = *ptrlen + 1;
+        int tk = json_next_token(content, pos, txt);
+        if (tk == JSON_TOKEN_RIGHT_BRACKET) {
+            return 0;
+        }
+        if (tk == JSON_TOKEN_COMMA) {
+            continue;
+        }
+        if (tk == JSON_ERROR) {
+            return -1;
+        }
+        if (tk == JSON_TOKEN_EOF) {
+            sstr_t e = PERROR(pos, "parsing array, each EOF");
+            sstr_append(txt, e);
+            sstr_free(e);
+            return -1;
+        }
+    }
+}
+
+int unmarshal_array_internal_long(sstr_t content, struct json_pos* pos,
+                                  long** ptr, int* ptrlen, sstr_t txt) {
+    int tk = json_next_token(content, pos, txt);
+    if (tk != JSON_TOKEN_LEFT_BRACKET) {
+        sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
+        sstr_append(txt, e);
+        sstr_free(e);
+    }
+    while (1) {
+        long res = 0;
+        int r = unmarshal_scalar_long(content, pos, &res, txt);
+        if (r == JSON_TOKEN_RIGHT_BRACKET) {
+            return 0;
+        }
+        if (r < 0) {
+            return r;
+        }
+        *ptr = (long*)realloc(*ptr, (*ptrlen + 1) * sizeof(long));
+        (*ptr)[*ptrlen] = res;
+        *ptrlen = *ptrlen + 1;
+        int tk = json_next_token(content, pos, txt);
+        if (tk == JSON_TOKEN_RIGHT_BRACKET) {
+            return 0;
+        }
+        if (tk == JSON_TOKEN_COMMA) {
+            continue;
+        }
+        if (tk == JSON_ERROR) {
+            return -1;
+        }
+        if (tk == JSON_TOKEN_EOF) {
+            sstr_t e = PERROR(pos, "parsing array, each EOF");
+            sstr_append(txt, e);
+            sstr_free(e);
+            return -1;
+        }
+    }
+}
+
+int unmarshal_array_internal_float(sstr_t content, struct json_pos* pos,
+                                   float** ptr, int* ptrlen, sstr_t txt) {
+    int tk = json_next_token(content, pos, txt);
+    if (tk != JSON_TOKEN_LEFT_BRACKET) {
+        sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
+        sstr_append(txt, e);
+        sstr_free(e);
+    }
+    while (1) {
+        float res = 0;
+        int r = unmarshal_scalar_float(content, pos, &res, txt);
+        if (r == JSON_TOKEN_RIGHT_BRACKET) {
+            return 0;
+        }
+        if (r < 0) {
+            return r;
+        }
+        *ptr = (float*)realloc(*ptr, (*ptrlen + 1) * sizeof(float));
+        (*ptr)[*ptrlen] = res;
+        *ptrlen = *ptrlen + 1;
+        int tk = json_next_token(content, pos, txt);
+        if (tk == JSON_TOKEN_RIGHT_BRACKET) {
+            return 0;
+        }
+        if (tk == JSON_TOKEN_COMMA) {
+            continue;
+        }
+        if (tk == JSON_ERROR) {
+            return -1;
+        }
+        if (tk == JSON_TOKEN_EOF) {
+            sstr_t e = PERROR(pos, "parsing array, each EOF");
+            sstr_append(txt, e);
+            sstr_free(e);
+            return -1;
+        }
+    }
+}
+
+int unmarshal_array_internal_double(sstr_t content, struct json_pos* pos,
+                                    double** ptr, int* ptrlen, sstr_t txt) {
+    int tk = json_next_token(content, pos, txt);
+    if (tk != JSON_TOKEN_LEFT_BRACKET) {
+        sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
+        sstr_append(txt, e);
+        sstr_free(e);
+    }
+    while (1) {
+        double res = 0;
+        int r = unmarshal_scalar_double(content, pos, &res, txt);
+        if (r == JSON_TOKEN_RIGHT_BRACKET) {
+            return 0;
+        }
+        if (r < 0) {
+            return r;
+        }
+        *ptr = (double*)realloc(*ptr, (*ptrlen + 1) * sizeof(double));
+        (*ptr)[*ptrlen] = res;
+        *ptrlen = *ptrlen + 1;
+        int tk = json_next_token(content, pos, txt);
+        if (tk == JSON_TOKEN_RIGHT_BRACKET) {
+            return 0;
+        }
+        if (tk == JSON_TOKEN_COMMA) {
+            continue;
+        }
+        if (tk == JSON_ERROR) {
+            return -1;
+        }
+        if (tk == JSON_TOKEN_EOF) {
+            sstr_t e = PERROR(pos, "parsing array, each EOF");
+            sstr_append(txt, e);
+            sstr_free(e);
+            return -1;
+        }
+    }
+}
+
 int unmarshal_array_internal_sstr_t(sstr_t content, struct json_pos* pos,
                                     sstr_t** ptr, int* ptrlen, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
@@ -456,7 +608,7 @@ int unmarshal_array_internal_sstr_t(sstr_t content, struct json_pos* pos,
     }
 
     while (1) {
-        sstr_t res = sstr_new();
+        sstr_t res = NULL;
         int r = unmarshal_scalar_sstr_t(content, pos, &res, txt);
         if (r == JSON_TOKEN_RIGHT_BRACKET) {
             return 0;
@@ -487,39 +639,85 @@ int unmarshal_array_internal_sstr_t(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
+int unmarshal_array_int(sstr_t content, int** ptr, int* len) {
+    struct json_pos pos;
+    pos.line = 0;
+    pos.col = 0;
+    pos.offset = 0;
+    sstr_t txt = sstr_new();
+    int r = unmarshal_array_internal_int(content, &pos, ptr, len, txt);
 #ifdef JSON_DEBUG
-#define DEF_UNMARSHAL_ARRAY_TYPE(type)                                         \
-    int unmarshal_array_##type(sstr_t content, type** ptr, int* len) {         \
-        struct json_pos pos;                                                   \
-        pos.line = 0;                                                          \
-        pos.col = 0;                                                           \
-        pos.offset = 0;                                                        \
-        sstr_t txt = sstr_new();                                               \
-        int r = unmarshal_array_internal_##type(content, &pos, ptr, len, txt); \
-        if (r != 0) {                                                          \
-            printf("ERROR: %s\n", sstr_cstr(txt));                             \
-        }                                                                      \
-        sstr_free(txt);                                                        \
-        return r;                                                              \
-    }
-#else
-#define DEF_UNMARSHAL_ARRAY_TYPE(type)                                         \
-    int unmarshal_array_##type(sstr_t content, type** ptr, int* len) {         \
-        struct json_pos pos;                                                   \
-        pos.line = 0;                                                          \
-        pos.col = 0;                                                           \
-        pos.offset = 0;                                                        \
-        sstr_t txt = sstr_new();                                               \
-        int r = unmarshal_array_internal_##type(content, &pos, ptr, len, txt); \
-        sstr_free(txt);                                                        \
-        return r;                                                              \
+    if (r != 0) {
+        printf("ERROR: %s\n", sstr_cstr(txt));
     }
 #endif
-DEF_UNMARSHAL_ARRAY_TYPE(int)
-DEF_UNMARSHAL_ARRAY_TYPE(long)
-DEF_UNMARSHAL_ARRAY_TYPE(float)
-DEF_UNMARSHAL_ARRAY_TYPE(double)
-DEF_UNMARSHAL_ARRAY_TYPE(sstr_t)
+    sstr_free(txt);
+    return r;
+}
+
+int unmarshal_array_long(sstr_t content, long** ptr, int* len) {
+    struct json_pos pos;
+    pos.line = 0;
+    pos.col = 0;
+    pos.offset = 0;
+    sstr_t txt = sstr_new();
+    int r = unmarshal_array_internal_long(content, &pos, ptr, len, txt);
+#ifdef JSON_DEBUG
+    if (r != 0) {
+        printf("ERROR: %s\n", sstr_cstr(txt));
+    }
+#endif
+    sstr_free(txt);
+    return r;
+}
+
+int unmarshal_array_float(sstr_t content, float** ptr, int* len) {
+    struct json_pos pos;
+    pos.line = 0;
+    pos.col = 0;
+    pos.offset = 0;
+    sstr_t txt = sstr_new();
+    int r = unmarshal_array_internal_float(content, &pos, ptr, len, txt);
+#ifdef JSON_DEBUG
+    if (r != 0) {
+        printf("ERROR: %s\n", sstr_cstr(txt));
+    }
+#endif
+    sstr_free(txt);
+    return r;
+}
+
+int unmarshal_array_double(sstr_t content, double** ptr, int* len) {
+    struct json_pos pos;
+    pos.line = 0;
+    pos.col = 0;
+    pos.offset = 0;
+    sstr_t txt = sstr_new();
+    int r = unmarshal_array_internal_double(content, &pos, ptr, len, txt);
+#ifdef JSON_DEBUG
+    if (r != 0) {
+        printf("ERROR: %s\n", sstr_cstr(txt));
+    }
+#endif
+    sstr_free(txt);
+    return r;
+}
+
+int unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, int* len) {
+    struct json_pos pos;
+    pos.line = 0;
+    pos.col = 0;
+    pos.offset = 0;
+    sstr_t txt = sstr_new();
+    int r = unmarshal_array_internal_sstr_t(content, &pos, ptr, len, txt);
+#ifdef JSON_DEBUG
+    if (r != 0) {
+        printf("ERROR: %s\n", sstr_cstr(txt));
+    }
+#endif
+    sstr_free(txt);
+    return r;
+}
 
 int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                               struct json_parse_param* param, sstr_t txt);
@@ -551,6 +749,7 @@ int unmarshal_array_internal(sstr_t content, struct json_pos* pos,
 
     while (1) {
         void* ptr = malloc(field->type_size);
+        memset(ptr, 0, field->type_size);
         struct json_parse_param sub_param;
         sub_param.instance_ptr = ptr;
         sub_param.in_array = 1;
@@ -773,8 +972,8 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                 }
                 break;
             case FIELD_TYPE_SSTR: {
-                sstr_t s = sstr_new();
-                r = unmarshal_scalar_sstr_t(content, pos, s, txt);
+                sstr_t s = NULL;
+                r = unmarshal_scalar_sstr_t(content, pos, &s, txt);
                 *(sstr_t*)((char*)param->instance_ptr + fi->offset) = (void*)s;
                 if (r != 0) {
                     return r;

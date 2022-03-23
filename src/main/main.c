@@ -38,11 +38,6 @@ int main(int argc, const char **argv) {
         return -1;
     }
 
-    struct struct_parser *parser = struct_parser_new();
-    if (parser == NULL) {
-        return -1;
-    }
-
     sstr_t content = sstr_new();
     int r = read_file(options.input_file, content);
     if (r != 0) {
@@ -51,10 +46,16 @@ int main(int argc, const char **argv) {
         return -1;
     }
 
+    struct struct_parser *parser = struct_parser_new();
+    if (parser == NULL) {
+        return -1;
+    }
+
     r = struct_parser_parse(parser, content);
     if (r < 0) {
         fprintf(stderr, "struct parse failed\n");
         sstr_free(content);
+        struct_parser_free(parser);
         return -1;
     }
 
@@ -63,7 +64,10 @@ int main(int argc, const char **argv) {
     r = gencode_source(parser->struct_map, source, head);
     if (r < 0) {
         fprintf(stderr, "gencode source failed\n");
+        sstr_free(source);
+        sstr_free(head);
         sstr_free(content);
+        struct_parser_free(parser);
         return -1;
     }
     sstr_t out_c_file = sstr(options.output_path);

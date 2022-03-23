@@ -1,13 +1,29 @@
 
 
-struct ABCde_123 {
-	int xxxa;
-	sstr_t b;
-	long c[];
-	float d;
-	XYzC xyz[];
+struct A {
+    D scalar;
+    int intval_a;
+    int int_array[];
+    long long_array[];
+    double double_array[];
+    float float_array[];
+    sstr_t sstr_array[];
 };
 
-struct XYzC {
-	double cdz;
+struct B {
+    int int_val_b;
+    A inner_a;
 };
+
+struct C {
+    B array_b[];
+}
+
+struct D {
+    int int_val1;
+    int int_val2;
+    long long_val;
+    double double_val;
+    float float_val;
+    sstr_t sstr_val;
+}

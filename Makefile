@@ -8,8 +8,13 @@ ifeq ($(TARGET_DIR),)
 	TARGET_DIR = $(ROOT_DIR)/target
 endif
 $(shell mkdir -p $(TARGET_DIR))
-SANITIZER_FLAGS = -fsanitize=address -lasan
-CFLAGS ?= -Wall -Wextra -Werror -std=c11 -ggdb -I$(ROOT_DIR)/src $(SANITIZER_FLAGS)
+
+ifneq ($(JSON_DEBUG),)
+	DEBUG_FLAGS = -DJSON_DEBUG
+	SANITIZER_FLAGS = -fsanitize=address -lasan
+endif
+
+CFLAGS ?= -Wall -Wextra -Werror -std=c11 -ggdb -I$(ROOT_DIR)/src $(SANITIZER_FLAGS) $(DEBUG_FLAGS)
 LDFLAGS ?=
 
 export
