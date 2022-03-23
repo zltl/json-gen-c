@@ -2,15 +2,17 @@ name: build run
 
 on:
   push:
-    branches: [ main ]
+    branches: [ ci ]
   pull_request:
-    branches: [ main ]
+    branches: [ ci ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+    - name: install google bench
+      run: sudo apt install libbenchmark-dev
     - name: Checkout code
       uses: actions/checkout@v2
     - name: make
