@@ -14,7 +14,7 @@ json-gen-c
 	make
 	sudo make install
 
-# 使用步骤示范
+# 使用示范
 
 1. 编辑 `struct.json-gen-c` 文件，内容如下
 
@@ -115,6 +115,3 @@ for (i = 0; i < 3; ++i) {
     A_clear(&a[i]);
 }
 ```
-
-
-
