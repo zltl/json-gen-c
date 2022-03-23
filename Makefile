@@ -1,4 +1,4 @@
-.PHONY: all libs clean example objs doxygen benchmark
+.PHONY: all libs clean example objs doxygen benchmark install
 .ONESHELL:
 
 TARGET_DIR ?=
@@ -43,6 +43,9 @@ json-gen-c: $(TARGET_DIR)/json-gen-c
 
 $(TARGET_DIR)/json-gen-c: libs $(TARGET_DIR)/main.o
 	$(CC) $(CFLAGS) $(TARGET_DIR)/main.o $(libs_mmm) -o $@
+
+install: $(TARGET_DIR)/json-gen-c
+	cp -f $(TARGET_DIR)/json-gen-c /usr/bin/
 
 clean:
 	rm -rf $(TARGET_DIR)

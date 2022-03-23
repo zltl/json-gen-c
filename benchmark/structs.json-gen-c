@@ -6,4 +6,6 @@ struct scalar {
     double double_val;
     float float_val;
     sstr_t sstr_val;
-}
+};
+
+
