@@ -3,7 +3,7 @@ json-gen-c
 
 一个可以生成 JSON 处理代码的程序。
 
-    ![cover](./doc/json-gen-c.png)
+![cover](./doc/json-gen-c.png)
 
 `json-gen-c` 通过读取结构体 (`struct`) 定义文件，生成对应的 JSON 处理代码。这些代码包括 `struct` 结构体定义，结构体初始化和清理函数，结构体 JSON 编码和解码函数。
 
