@@ -96,7 +96,7 @@ struct struct_parser* struct_parser_new() {
         return NULL;
     }
     parser->pos.col = 0;
-    parser->pos.line = 0;
+    parser->pos.line = 1;
     parser->pos.offset = 0;
 
     return parser;
@@ -162,7 +162,7 @@ int next_token_(struct struct_parser* parser, sstr_t content,
     }
     char* data = sstr_cstr(content);
     long length = (long)sstr_length(content);
-    for (i = parser->pos.offset; i <= length; ++i) {
+    for (i = parser->pos.offset; i < length; ++i) {
         parser->pos.offset = i;
 
         if (data[i] == '\n') {
@@ -171,7 +171,6 @@ int next_token_(struct struct_parser* parser, sstr_t content,
         } else {
             parser->pos.col++;
         }
-
         switch (data[i]) {
             case '{':
                 token->type = TOKEN_LEFT_BRACE;
@@ -208,8 +207,8 @@ int next_token_(struct struct_parser* parser, sstr_t content,
                     i += 2;  // skip /*
                     // comment
                     parser->pos.col += 1;
-                    while (i + 1 < length && data[i] != '*' &&
-                           data[i + 1] != '/') {
+                    while (i + 1 < length &&
+                           (data[i] != '*' || data[i + 1] != '/')) {
                         if (data[i] == '\n') {
                             parser->pos.line++;
                             parser->pos.col = 0;

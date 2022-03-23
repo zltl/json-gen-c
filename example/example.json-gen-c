@@ -1,5 +1,7 @@
 
-
+/* example array
+ * and embed types
+ */
 struct A {
     D scalar;
     int intval_a;
@@ -10,15 +12,18 @@ struct A {
     sstr_t sstr_array[];
 };
 
+// example struct B
 struct B {
     int int_val_b;
     A inner_a;
 };
 
+// comments...
 struct C {
     B array_b[];
 }
 
+// scarlar type D
 struct D {
     int int_val1;
     int int_val2;

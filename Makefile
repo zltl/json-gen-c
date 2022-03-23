@@ -1,4 +1,4 @@
-.PHONY: clean example objs doxygen
+.PHONY: all libs clean example objs doxygen benchmark
 .ONESHELL:
 
 TARGET_DIR ?=
@@ -15,6 +15,7 @@ ifneq ($(JSON_DEBUG),)
 endif
 
 CFLAGS ?= -Wall -Wextra -Werror -std=c11 -ggdb -I$(ROOT_DIR)/src $(SANITIZER_FLAGS) $(DEBUG_FLAGS)
+CXXFLAGS ?= -Wall -Wextra -Werror -std=c++17 -ggdb -I$(ROOT_DIR)/src $(SANITIZER_FLAGS) $(DEBUG_FLAGS)
 LDFLAGS ?=
 
 export
@@ -53,5 +54,8 @@ doxygen:
 	fi
 	doxygen doc/Doxyfile
 
-example:
+example: json-gen-c
 	make -C example
+
+benchmark: json-gen-c
+	make -C benchmark
