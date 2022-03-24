@@ -434,7 +434,6 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
         switch (data[i]) {
             case '\"':  // string
                 pos->offset = i;
-                // TODO: function parse_string
                 return json_parse_string_token(content, pos, txt);
             case '[':
                 i++;
