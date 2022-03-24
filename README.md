@@ -100,7 +100,7 @@ for (i = 0; i < 3; ++i) {
 
 struct A a;
 A_init(&a);
-unmarshal_A(json_str, &a); // 注意 json_str 是 sstr_t 类型的
+json_unmarshal_A(json_str, &a); // 注意 json_str 是 sstr_t 类型的
 // ...
 A_clear(&a);
 ```
