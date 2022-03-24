@@ -1,6 +1,8 @@
 json-gen-c
 ---
 
+[![build run](https://github.com/zltl/json-gen-c/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/zltl/json-gen-c/actions/workflows/test.yml)
+
 # Overview
 
 json-gen-c is an easy mechanism for searializing C struct to JSON and
