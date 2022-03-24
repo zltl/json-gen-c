@@ -265,6 +265,8 @@ sstr_t sstr_printf_append(sstr_t buf, const char* fmt, ...);
  */
 const char* sstr_version();
 
+int sstr_json_escape_string_append(sstr_t out, sstr_t in);
+
 #ifdef __cplusplus
 }
 #endif

@@ -168,7 +168,7 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
             case FIELD_TYPE_SSTR:
                 sstr_printf_append(source,
                                    "    sstr_append_of(out, \"\\\"\", 1);\n"
-                                   "    sstr_append(out, obj->%S);\n"
+                                   "    sstr_json_escape_string_append(out, obj->%S);\n"
                                    "    sstr_append_of(out, \"\\\"\", 1);\n",
                                    field->name);
                 break;

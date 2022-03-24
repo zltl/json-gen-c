@@ -7,5 +7,3 @@ struct scalar {
     float float_val;
     sstr_t sstr_val;
 };
-
-

@@ -551,3 +551,50 @@ const char* sstr_version() {
     static const char* const version = "1.0.1";
     return version;
 }
+
+int sstr_json_escape_string_append(sstr_t out, sstr_t in) {
+    if (in == NULL) {
+        return 0;
+    }
+    size_t i = 0;
+    unsigned char* data = (unsigned char*)sstr_cstr(in);
+    for (i = 0; i < sstr_length(in); ++i) {
+        if ((data[i] > 31) && (data[i] != '\"') && data[i] != '\\') {
+            // normal character copy
+            sstr_append_of(out, data + i, 1);
+        } else {
+            // character needs to be escaped
+            sstr_append_of(out, "\\", 1);
+            switch (data[i]) {
+                case '\\':
+                    sstr_append_of(out, "\\", 1);
+                    break;
+                case '\"':
+                    sstr_append_of(out, "\"", 1);
+                    break;
+                case '\b':
+                    sstr_append_of(out, "b", 1);
+                    break;
+                case '\f':
+                    sstr_append_of(out, "f", 1);
+                    break;
+                case '\n':
+                    sstr_append_of(out, "n", 1);
+                    break;
+                case '\r':
+                    sstr_append_of(out, "r", 1);
+                    break;
+                case '\t':
+                    sstr_append_of(out, "t", 1);
+                    break;
+                default: {
+                    // escape and print as unicode codepoint
+                    char tmp[10] = {0};
+                    sprintf(tmp, "u%04x", *(data + i));
+                    sstr_append_cstr(out, tmp);
+                }
+            }
+        }
+    }
+    return 0;
+}

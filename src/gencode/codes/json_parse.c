@@ -64,7 +64,7 @@ inline static unsigned int hash_2s_c(const char* key1, const char* key2) {
 }
 
 struct json_field_offset_item* json_field_offset_item_find(const char* st,
-                                                 const char* field) {
+                                                           const char* field) {
     unsigned int h = hash_2s_c(st, field) % json_entry_hash_size;
     int id = json_entry_hash[h];
     if (id < 0) {
@@ -140,6 +140,245 @@ static int json_next_token(sstr_t content, struct json_pos* pos, sstr_t txt) {
     return tk;
 }
 
+/* parse 4 digit hexadecimal number */
+static unsigned int parse_hex4(const unsigned char* const input) {
+    unsigned int h = 0;
+    size_t i = 0;
+
+    for (i = 0; i < 4; i++) {
+        /* parse digit */
+        if ((input[i] >= '0') && (input[i] <= '9')) {
+            h += (unsigned int)input[i] - '0';
+        } else if ((input[i] >= 'A') && (input[i] <= 'F')) {
+            h += (unsigned int)10 + input[i] - 'A';
+        } else if ((input[i] >= 'a') && (input[i] <= 'f')) {
+            h += (unsigned int)10 + input[i] - 'a';
+        } else /* invalid */
+        {
+            return 0;
+        }
+
+        if (i < 3) {
+            /* shift left to make place for the next nibble */
+            h = h << 4;
+        }
+    }
+
+    return h;
+}
+
+// uXXXX [\uxxxx]
+static int utf16_literal_to_utf8(sstr_t content, struct json_pos* pos,
+                                 sstr_t txt) {
+    char* data = sstr_cstr(content);
+    long i = pos->offset;
+    long len = sstr_length(content);
+    if (i + 5 >= len) {
+        sstr_clear(txt);
+        sstr_append_cstr(txt,
+                         "expected escape UTF-16 sequence, "
+                         "but reached end of json string");
+        return JSON_ERROR;
+    }
+    i++;
+    unsigned int first_code = parse_hex4((const unsigned char*)&data[i + 1]);
+    unsigned int second_code = 0;
+    unsigned int codepoint = 0;
+    i += 4;
+    pos->col += 5;
+    pos->offset += 5;
+    /* check that the code is valid */
+    if (((first_code >= 0xDC00) && (first_code <= 0xDFFF))) {
+        sstr_clear(txt);
+        sstr_append_cstr(txt,
+                         "expected escape UTF-16 sequence, but found invalid");
+        return JSON_ERROR;
+    }
+    // UTF16 surrogate pair
+    if ((first_code >= 0xD800) && (first_code <= 0xDBFF)) {
+        if (i + 6 >= len) {
+            sstr_clear(txt);
+            sstr_append_cstr(txt, "UTF16 surrogate pair expected, but EOF");
+            return JSON_ERROR;
+        }
+        if ((data[i] != '\\') || (data[i + 1] != 'u')) {
+            sstr_clear(txt);
+            sstr_append_cstr(
+                txt, "UTF16 surrogate pair expected, but not found \\uXXXX");
+            return JSON_ERROR;
+        }
+        second_code = parse_hex4((const unsigned char*)&data[i + 2]);
+        /* check that the code is valid */
+        if ((second_code < 0xDC00) || (second_code > 0xDFFF)) {
+            sstr_clear(txt);
+            sstr_append_cstr(
+                txt, "expected escape UTF-16 second_code, but found invalid");
+            return JSON_ERROR;
+        }
+        /* calculate the unicode codepoint from the surrogate pair */
+        codepoint =
+            0x10000 + (((first_code & 0x3FF) << 10) | (second_code & 0x3FF));
+        i += 6;
+        pos->col += 6;
+        pos->offset += 6;
+    } else {
+        codepoint = first_code;
+    }
+
+    int utf8_length = 0;
+    unsigned char first_byte_mark = 0;
+    /* encode as UTF-8
+     * takes at maximum 4 bytes to encode:
+     * 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */
+    if (codepoint < 0x80) {
+        /* normal ascii, encoding 0xxxxxxx */
+        utf8_length = 1;
+    } else if (codepoint < 0x800) {
+        /* two bytes, encoding 110xxxxx 10xxxxxx */
+        utf8_length = 2;
+        first_byte_mark = 0xC0; /* 11000000 */
+    } else if (codepoint < 0x10000) {
+        /* three bytes, encoding 1110xxxx 10xxxxxx 10xxxxxx */
+        utf8_length = 3;
+        first_byte_mark = 0xE0; /* 11100000 */
+    } else if (codepoint <= 0x10FFFF) {
+        /* four bytes, encoding 1110xxxx 10xxxxxx 10xxxxxx 10xxxxxx */
+        utf8_length = 4;
+        first_byte_mark = 0xF0; /* 11110000 */
+    } else {
+        /* invalid unicode codepoint */
+        sstr_clear(txt);
+        sstr_append_cstr(txt,
+                         "invalid unicode codepoint, cannot convert to utf8");
+        return JSON_ERROR;
+    }
+    int utf8_position;
+    unsigned char output_pointer[4];
+    for (utf8_position = (unsigned char)(utf8_length - 1); utf8_position > 0;
+         utf8_position--) {
+        /* 10xxxxxx */
+        output_pointer[utf8_position] =
+            (unsigned char)((codepoint | 0x80) & 0xBF);
+        codepoint >>= 6;
+    }
+    /* encode first byte */
+    if (utf8_length > 1) {
+        (output_pointer)[0] =
+            (unsigned char)((codepoint | first_byte_mark) & 0xFF);
+    } else {
+        (output_pointer)[0] = (unsigned char)(codepoint & 0x7F);
+    }
+    sstr_append_of(txt, output_pointer, utf8_length);
+    return 0;
+}
+
+static int json_parse_string_token(sstr_t content, struct json_pos* pos,
+                                   sstr_t txt) {
+    long len = sstr_length(content);
+    long i = pos->offset;
+    char* data = sstr_cstr(content);
+    if (i >= len) {
+        return JSON_TOKEN_EOF;
+    }
+    if (data[i] != '\"') {
+        sstr_t e = PERROR(pos, "expected '\"', but got '%s'", data[i]);
+        sstr_append(txt, e);
+        sstr_free(e);
+        return JSON_ERROR;
+    }
+    i++;
+    pos->col++;
+    sstr_clear(txt);
+    while (i < len && data[i] != '\"') {
+        if (data[i] == '\\') {
+            // is escape sequence
+            if (i + 1 >= len) {
+                sstr_clear(txt);
+                sstr_t e = PERROR(pos,
+                                  "expected escape sequence, but reached "
+                                  "end of json string");
+                sstr_append(txt, e);
+                sstr_free(e);
+                return JSON_ERROR;
+            }
+            i++;
+            pos->col++;
+
+            switch (data[i]) {
+                case 'b':
+                    sstr_append_of(txt, "\b", 1);
+                    i++;
+                    break;
+                case 'f':
+                    sstr_append_of(txt, "\f", 1);
+                    i++;
+                    break;
+                case 'n':
+                    sstr_append_of(txt, "\n", 1);
+                    i++;
+                    break;
+                case 'r':
+                    sstr_append_of(txt, "\r", 1);
+                    i++;
+                    break;
+                case 't':
+                    sstr_append_of(txt, "\t", 1);
+                    i++;
+                    break;
+                case '\"':
+                    sstr_append_of(txt, "\"", 1);
+                    i++;
+                    break;
+                case '\\':
+                    sstr_append_of(txt, "\\", 1);
+                    i++;
+                    break;
+                case '/':
+                    sstr_append_of(txt, "/", 1);
+                    i++;
+                    break;
+                /* UTF-16 literal */
+                case 'u': {
+                    pos->offset = i;
+                    sstr_t tmp = sstr_new();
+                    int r = utf16_literal_to_utf8(content, pos, tmp);
+                    if (r != 0) {
+                        sstr_clear(txt);
+                        sstr_append(txt, tmp);
+                        sstr_free(tmp);
+                        return JSON_ERROR;
+                    }
+                    sstr_append(txt, tmp);
+                    i = pos->offset;
+                    break;
+                }
+                default: {
+                    sstr_clear(txt);
+                    sstr_t e =
+                        PERROR(pos, "unknown escape sequence '\\%s'", data[i]);
+                    sstr_append(txt, e);
+                    sstr_free(e);
+                    return JSON_ERROR;
+                }
+            }
+        } else {
+            sstr_append_of(txt, data + i, 1);
+            pos->col++;
+            i++;
+        }
+    }
+    if (data[i] != '\"') {
+        sstr_clear(txt);
+        sstr_t e = PERROR(pos, "expected '\"', but got '%s'", data[i]);
+        sstr_append(txt, e);
+        sstr_free(e);
+        return JSON_ERROR;
+    }
+    pos->offset = i + 1;
+
+    return JSON_TOKEN_STRING;
+}
+
 static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
     long len = sstr_length(content);
     long i = pos->offset;
@@ -194,30 +433,9 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
         // parse tokens
         switch (data[i]) {
             case '\"':  // string
-                i++;
-                pos->col++;
-                long start_pos = i;
-                while (i < len && data[i] != '\"') {
-                    if (data[i] == '\\' && i + 1 < len && data[i + 1] == '\"') {
-                        i++;
-                        pos->col++;
-                    }
-                    i++;
-                    pos->col++;
-                }
-                if (data[i] != '\"') {
-                    sstr_t e =
-                        PERROR(pos, "expected \" but reach end of string");
-                    sstr_append(txt, e);
-                    sstr_free(e);
-                    pos->offset = i;
-                    return JSON_ERROR;
-                }
-                i++;
-                pos->col++;
-                sstr_append_of(txt, data + start_pos, i - start_pos - 1);
                 pos->offset = i;
-                return JSON_TOKEN_STRING;
+                // TODO: function parse_string
+                return json_parse_string_token(content, pos, txt);
             case '[':
                 i++;
                 pos->col++;

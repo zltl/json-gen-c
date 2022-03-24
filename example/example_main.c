@@ -13,7 +13,7 @@ void example_scalar(void) {
     a.int_val1 = 65536;
     a.long_val = 123456789;
     a.int_val2 = 1;
-    a.sstr_val = sstr("hello world");
+    a.sstr_val = sstr("hello\n\r\\ \" ''' world 你好世界");
 
     sstr_t json_out = sstr_new();
     json_marshal_D(&a, json_out);
