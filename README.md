@@ -103,7 +103,7 @@ unmarshal_A(json_str, &a); // 注意 json_str 是 sstr_t 类型的
 A_clear(&a);
 ```
 
-# To Deserialize JSON to Array of Structs
+## To Deserialize JSON to Array of Structs
 
 ```C
 // const char *p_str = "[this is a json string]";
