@@ -45,16 +45,16 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
                        st->name);
     sstr_printf_append(header, "int %S_clear(struct %S*obj);\n", st->name,
                        st->name);
-    sstr_printf_append(header, "int marshal_%S(struct %S* obj, sstr_t out);\n",
+    sstr_printf_append(header, "int json_marshal_%S(struct %S* obj, sstr_t out);\n",
                        st->name, st->name);
     sstr_printf_append(
-        header, "int marshal_array_%S(struct %S* obj, int len, sstr_t out);\n",
+        header, "int json_marshal_array_%S(struct %S* obj, int len, sstr_t out);\n",
         st->name, st->name);
 
-    sstr_printf_append(header, "int unmarshal_%S(sstr_t in, struct %S* obj);\n",
+    sstr_printf_append(header, "int json_unmarshal_%S(sstr_t in, struct %S* obj);\n",
                        st->name, st->name);
     sstr_printf_append(header,
-                       "int unmarshal_array_%S(sstr_t in, struct %S** "
+                       "int json_unmarshal_array_%S(sstr_t in, struct %S** "
                        "obj, int* len);\n",
                        st->name, st->name);
 }
@@ -62,7 +62,7 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
 static void gen_code_struct_unmarshal_struct(struct struct_container* st,
                                              sstr_t source) {
     sstr_printf_append(source,
-                       "int unmarshal_%S(sstr_t in, struct %S* obj) {\n",
+                       "int json_unmarshal_%S(sstr_t in, struct %S* obj) {\n",
                        st->name, st->name);
     sstr_append_cstr(source,
                      "    struct json_pos pos;\n"
@@ -76,7 +76,7 @@ static void gen_code_struct_unmarshal_struct(struct struct_container* st,
     sstr_append_cstr(
         source,
         "    sstr_t txt = sstr_new();\n"
-        "    int r = unmarshal_struct_internal(in, &pos, &param, txt);\n"
+        "    int r = json_unmarshal_struct_internal(in, &pos, &param, txt);\n"
         "    if (r < 0) {\n"
         "#ifdef JSON_DEBUG\n"
         "        printf(\"ERROR: %s\", sstr_cstr(txt));\n"
@@ -90,7 +90,7 @@ static void gen_code_struct_unmarshal_struct(struct struct_container* st,
 static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
                                                    sstr_t source) {
     sstr_printf_append(source,
-                       "int unmarshal_array_%S(sstr_t in, struct %S** "
+                       "int json_unmarshal_array_%S(sstr_t in, struct %S** "
                        "obj, int *len) {\n",
                        st->name, st->name);
     sstr_append_cstr(source,
@@ -106,7 +106,7 @@ static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
                        st->name);
     sstr_append_cstr(source,
                      "    ar_param.field_name=\"\";\n"
-                     "    int r = unmarshal_array_internal(in, &pos, "
+                     "    int r = json_unmarshal_array_internal(in, &pos, "
                      "&ar_param, len, txt);\n");
     sstr_append_cstr(source, "    sstr_free(txt);\n");
     sstr_append_cstr(source, "    return r;\n");
@@ -115,7 +115,7 @@ static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
 
 static void gen_code_struct_marshal_struct(struct struct_container* st,
                                            sstr_t source) {
-    sstr_printf_append(source, "int marshal_%S(struct %S* obj, sstr_t out) {\n",
+    sstr_printf_append(source, "int json_marshal_%S(struct %S* obj, sstr_t out) {\n",
                        st->name, st->name);
     sstr_append_cstr(source, "    char tmp_cstr[64];\n(void)tmp_cstr;\n");
 
@@ -128,7 +128,7 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
 
         if (field->is_array) {
             sstr_printf_append(
-                source, "    marshal_array_%S(obj->%S, obj->%S_len, out);\n",
+                source, "    json_marshal_array_%S(obj->%S, obj->%S_len, out);\n",
                 field->type_name, field->name, field->name);
             if (field->next != NULL) {
                 sstr_append_cstr(source, "    sstr_append_cstr(out, \",\");\n");
@@ -173,7 +173,7 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                                    field->name);
                 break;
             case FIELD_TYPE_STRUCT:
-                sstr_printf_append(source, "    marshal_%S(&obj->%S, out);\n",
+                sstr_printf_append(source, "    json_marshal_%S(&obj->%S, out);\n",
                                    field->type_name, field->name);
                 break;
         }
@@ -190,7 +190,7 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
 static void gen_code_struct_marshal_array(struct struct_container* st,
                                           sstr_t source) {
     sstr_printf_append(
-        source, "int marshal_array_%S(struct %S* obj, int len, sstr_t out) {\n",
+        source, "int json_marshal_array_%S(struct %S* obj, int len, sstr_t out) {\n",
         st->name, st->name);
     //
     sstr_append_cstr(source, "    int i;\n");
@@ -199,7 +199,7 @@ static void gen_code_struct_marshal_array(struct struct_container* st,
     sstr_append_cstr(source, "        if (i != 0) {\n");
     sstr_append_cstr(source, "            sstr_append_of(out, \",\", 1);\n");
     sstr_append_cstr(source, "        }\n");
-    sstr_printf_append(source, "        marshal_%S(&obj[i], out);\n", st->name);
+    sstr_printf_append(source, "        json_marshal_%S(&obj[i], out);\n", st->name);
     sstr_append_cstr(source, "    }\n");
     sstr_append_cstr(source, "    sstr_append_of(out, \"]\", 1);\n");
     sstr_append_cstr(source, "\n    return 0;\n}\n\n");
@@ -208,7 +208,7 @@ static void gen_code_struct_marshal_array(struct struct_container* st,
 static void gen_code_scalar_marshal_array(sstr_t source) {
     // int
     sstr_append_cstr(source,
-                     "int marshal_array_int(int*obj, int len, sstr_t out) {\n"
+                     "int json_marshal_array_int(int*obj, int len, sstr_t out) {\n"
                      "    int i;\n"
                      "    sstr_append_of(out, \"[\", 1);\n"
                      "    for (i = 0; i < len; i++) {\n"
@@ -221,7 +221,7 @@ static void gen_code_scalar_marshal_array(sstr_t source) {
                      "    return 0;\n"
                      "}\n\n");
     sstr_append_cstr(source,
-                     "int marshal_array_long(long*obj, int len, sstr_t out) {\n"
+                     "int json_marshal_array_long(long*obj, int len, sstr_t out) {\n"
                      "    int i;\n"
                      "    sstr_append_of(out, \"[\", 1);\n"
                      "    for (i = 0; i < len; i++) {\n"
@@ -235,7 +235,7 @@ static void gen_code_scalar_marshal_array(sstr_t source) {
                      "}\n\n");
     sstr_append_cstr(
         source,
-        "int marshal_array_float(float*obj, int len, sstr_t out) {\n"
+        "int json_marshal_array_float(float*obj, int len, sstr_t out) {\n"
         "    int i;\n"
         "    sstr_append_of(out, \"[\", 1);\n"
         "    for (i = 0; i < len; i++) {\n"
@@ -249,7 +249,7 @@ static void gen_code_scalar_marshal_array(sstr_t source) {
         "}\n\n");
     sstr_append_cstr(
         source,
-        "int marshal_array_double(double*obj, int len, sstr_t out) {\n"
+        "int json_marshal_array_double(double*obj, int len, sstr_t out) {\n"
         "    int i;\n"
         "    sstr_append_of(out, \"[\", 1);\n"
         "    for (i = 0; i < len; i++) {\n"
@@ -263,7 +263,7 @@ static void gen_code_scalar_marshal_array(sstr_t source) {
         "}\n\n");
     sstr_append_cstr(
         source,
-        "int marshal_array_sstr_t(sstr_t*obj, int len, sstr_t out) {\n"
+        "int json_marshal_array_sstr_t(sstr_t*obj, int len, sstr_t out) {\n"
         "    int i;\n"
         "    sstr_append_of(out, \"[\", 1);\n"
         "    for (i = 0; i < len; i++) {\n"
@@ -476,10 +476,10 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
                                 sstr_t header) {
     int total_fields = 0;
     hash_map_for_each(struct_map, count_fields_fd, &total_fields);
-    sstr_printf_append(header, "#define FIELD_OFFSET_ITEM_SIZE %d\n",
+    sstr_printf_append(header, "#define JSON_FIELD_OFFSET_ITEM_SIZE %d\n",
                        total_fields + struct_map->size + 1);
     sstr_append_cstr(header,
-                     "struct field_offset_item {\n"
+                     "struct json_field_offset_item {\n"
                      "    int offset;\n"
                      "    int type_size;\n"
                      "    int field_type;\n"
@@ -489,8 +489,8 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
                      "    int is_array;\n"
                      "};\n\n");
     sstr_printf_append(source,
-                       "struct field_offset_item "
-                       "field_offset_item[FIELD_OFFSET_ITEM_SIZE] = {\n");
+                       "struct json_field_offset_item "
+                       "json_field_offset_item[JSON_FIELD_OFFSET_ITEM_SIZE] = {\n");
 
     struct gen_fields_list_fn_param param;
     param.header = header;
@@ -503,7 +503,7 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
     sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0}};\n");
 
     sstr_printf_append(source,
-                       "int entry_hash_size = %d;\nint entry_hash[%d] = {",
+                       "int json_entry_hash_size = %d;\nint json_entry_hash[%d] = {",
                        param.hash_size, param.hash_size);
     for (int i = 0; i < param.hash_size; i++) {
         char tmp_str[32];
@@ -559,15 +559,15 @@ int gencode_head_guard_begin(sstr_t head) {
     sstr_append_cstr(head, "extern \"C\" {\n");
     sstr_append_cstr(head, "#endif\n\n");
     sstr_append_cstr(head,
-                     "int marshal_array_int(int*obj, int len, sstr_t out);\n");
+                     "int json_marshal_array_int(int*obj, int len, sstr_t out);\n");
     sstr_append_cstr(
-        head, "int marshal_array_long(long*obj, int len, sstr_t out);\n");
+        head, "int json_marshal_array_long(long*obj, int len, sstr_t out);\n");
     sstr_append_cstr(
-        head, "int marshal_array_float(float*obj, int len, sstr_t out);\n");
+        head, "int json_marshal_array_float(float*obj, int len, sstr_t out);\n");
     sstr_append_cstr(
-        head, "int marshal_array_double(double*obj, int len, sstr_t out);\n");
+        head, "int json_marshal_array_double(double*obj, int len, sstr_t out);\n");
     sstr_append_cstr(
-        head, "int marshal_array_sstr_t(sstr_t*obj, int len, sstr_t out);\n\n");
+        head, "int json_marshal_array_sstr_t(sstr_t*obj, int len, sstr_t out);\n\n");
 
     return 0;
 }

@@ -6,9 +6,9 @@
 
 #include "sstr.h"
 
-extern struct field_offset_item field_offset_item[];
-extern int entry_hash_size;
-extern int entry_hash[];
+extern struct json_field_offset_item json_field_offset_item[];
+extern int json_entry_hash_size;
+extern int json_entry_hash[];
 
 static unsigned int hash_s(const char* data, size_t n, unsigned int seed) {
     // unsigned int seed = 0xbc9f1d34;
@@ -63,25 +63,25 @@ inline static unsigned int hash_2s_c(const char* key1, const char* key2) {
     return res;
 }
 
-struct field_offset_item* field_offset_item_find(const char* st,
+struct json_field_offset_item* json_field_offset_item_find(const char* st,
                                                  const char* field) {
-    unsigned int h = hash_2s_c(st, field) % entry_hash_size;
-    int id = entry_hash[h];
+    unsigned int h = hash_2s_c(st, field) % json_entry_hash_size;
+    int id = json_entry_hash[h];
     if (id < 0) {
         return NULL;
     }
 
     do {
-        struct field_offset_item* item = &field_offset_item[id];
+        struct json_field_offset_item* item = &json_field_offset_item[id];
         if (strcmp(st, item->struct_name) == 0 &&
             strcmp(field, item->field_name) == 0) {
             return item;
         }
         h++;
-        if ((int)h >= entry_hash_size) {
+        if ((int)h >= json_entry_hash_size) {
             h = 0;
         }
-        id = entry_hash[h];
+        id = json_entry_hash[h];
         if (id < 0) {
             return NULL;
         }
@@ -292,8 +292,8 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
     return JSON_TOKEN_EOF;
 }
 
-int unmarshal_scalar_int(sstr_t content, struct json_pos* pos, int* val,
-                         sstr_t txt) {
+int json_unmarshal_scalar_int(sstr_t content, struct json_pos* pos, int* val,
+                              sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk == JSON_TOKEN_BOOL_FALSE) {
         *val = 0;
@@ -311,8 +311,8 @@ int unmarshal_scalar_int(sstr_t content, struct json_pos* pos, int* val,
     return 0;
 }
 
-int unmarshal_scalar_long(sstr_t content, struct json_pos* pos, long* val,
-                          sstr_t txt) {
+int json_unmarshal_scalar_long(sstr_t content, struct json_pos* pos, long* val,
+                               sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_INTEGER) {
         sstr_t e =
@@ -326,8 +326,8 @@ int unmarshal_scalar_long(sstr_t content, struct json_pos* pos, long* val,
     return 0;
 }
 
-int unmarshal_scalar_float(sstr_t content, struct json_pos* pos, float* val,
-                           sstr_t txt) {
+int json_unmarshal_scalar_float(sstr_t content, struct json_pos* pos,
+                                float* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_FLOAT && tk != JSON_TOKEN_INTEGER) {
         sstr_t e = PERROR(pos, "expected floating number but got '%s'",
@@ -341,8 +341,8 @@ int unmarshal_scalar_float(sstr_t content, struct json_pos* pos, float* val,
     return 0;
 }
 
-int unmarshal_scalar_double(sstr_t content, struct json_pos* pos, double* val,
-                            sstr_t txt) {
+int json_unmarshal_scalar_double(sstr_t content, struct json_pos* pos,
+                                 double* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_FLOAT && tk != JSON_TOKEN_INTEGER) {
         sstr_t e = PERROR(pos, "expected floating number but got '%s'",
@@ -356,8 +356,8 @@ int unmarshal_scalar_double(sstr_t content, struct json_pos* pos, double* val,
     return 0;
 }
 
-int unmarshal_scalar_sstr_t(sstr_t content, struct json_pos* pos, sstr_t* val,
-                            sstr_t txt) {
+int json_unmarshal_scalar_sstr_t(sstr_t content, struct json_pos* pos,
+                                 sstr_t* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk == JSON_TOKEN_NULL) {
         return 0;
@@ -372,8 +372,8 @@ int unmarshal_scalar_sstr_t(sstr_t content, struct json_pos* pos, sstr_t* val,
     return 0;
 }
 
-static int unmarshal_ignore_value(sstr_t content, struct json_pos* pos,
-                                  sstr_t txt) {
+static int json_unmarshal_ignore_value(sstr_t content, struct json_pos* pos,
+                                       sstr_t txt) {
     int brace = 0;
     int bracket = 0;
     while (1) {
@@ -400,49 +400,8 @@ static int unmarshal_ignore_value(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
-#define DEF_UNMARSHAL_ARRAY_INTERNAL_TYPE(type)                                \
-    int unmarshal_array_internal_##type(sstr_t content, struct json_pos* pos,  \
-                                        type** ptr, int* ptrlen, sstr_t txt) { \
-        int tk = json_next_token(content, pos, txt);                           \
-        if (tk != JSON_TOKEN_LEFT_BRACKET) {                                   \
-            sstr_t e =                                                         \
-                PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));       \
-            sstr_append(txt, e);                                               \
-            sstr_free(e);                                                      \
-        }                                                                      \
-        while (1) {                                                            \
-            type res = 0;                                                      \
-            int r = unmarshal_scalar_##type(content, pos, &res, txt);          \
-            if (r == JSON_TOKEN_RIGHT_BRACKET) {                               \
-                return 0;                                                      \
-            }                                                                  \
-            if (r < 0) {                                                       \
-                return r;                                                      \
-            }                                                                  \
-            *ptr = (type*)realloc(*ptr, (*ptrlen + 1) * sizeof(type));         \
-            (*ptr)[*ptrlen] = res;                                             \
-            *ptrlen = *ptrlen + 1;                                             \
-            int tk = json_next_token(content, pos, txt);                       \
-            if (tk == JSON_TOKEN_RIGHT_BRACKET) {                              \
-                return 0;                                                      \
-            }                                                                  \
-            if (tk == JSON_TOKEN_COMMA) {                                      \
-                continue;                                                      \
-            }                                                                  \
-            if (tk == JSON_ERROR) {                                            \
-                return -1;                                                     \
-            }                                                                  \
-            if (tk == JSON_TOKEN_EOF) {                                        \
-                sstr_t e = PERROR(pos, "parsing array, each EOF");             \
-                sstr_append(txt, e);                                           \
-                sstr_free(e);                                                  \
-                return -1;                                                     \
-            }                                                                  \
-        }                                                                      \
-    }
-
-int unmarshal_array_internal_int(sstr_t content, struct json_pos* pos,
-                                 int** ptr, int* ptrlen, sstr_t txt) {
+int json_unmarshal_array_internal_int(sstr_t content, struct json_pos* pos,
+                                      int** ptr, int* ptrlen, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_LEFT_BRACKET) {
         sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
@@ -451,7 +410,7 @@ int unmarshal_array_internal_int(sstr_t content, struct json_pos* pos,
     }
     while (1) {
         int res = 0;
-        int r = unmarshal_scalar_int(content, pos, &res, txt);
+        int r = json_unmarshal_scalar_int(content, pos, &res, txt);
         if (r == JSON_TOKEN_RIGHT_BRACKET) {
             return 0;
         }
@@ -480,8 +439,8 @@ int unmarshal_array_internal_int(sstr_t content, struct json_pos* pos,
     }
 }
 
-int unmarshal_array_internal_long(sstr_t content, struct json_pos* pos,
-                                  long** ptr, int* ptrlen, sstr_t txt) {
+int json_unmarshal_array_internal_long(sstr_t content, struct json_pos* pos,
+                                       long** ptr, int* ptrlen, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_LEFT_BRACKET) {
         sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
@@ -490,7 +449,7 @@ int unmarshal_array_internal_long(sstr_t content, struct json_pos* pos,
     }
     while (1) {
         long res = 0;
-        int r = unmarshal_scalar_long(content, pos, &res, txt);
+        int r = json_unmarshal_scalar_long(content, pos, &res, txt);
         if (r == JSON_TOKEN_RIGHT_BRACKET) {
             return 0;
         }
@@ -519,8 +478,8 @@ int unmarshal_array_internal_long(sstr_t content, struct json_pos* pos,
     }
 }
 
-int unmarshal_array_internal_float(sstr_t content, struct json_pos* pos,
-                                   float** ptr, int* ptrlen, sstr_t txt) {
+int json_unmarshal_array_internal_float(sstr_t content, struct json_pos* pos,
+                                        float** ptr, int* ptrlen, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_LEFT_BRACKET) {
         sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
@@ -529,7 +488,7 @@ int unmarshal_array_internal_float(sstr_t content, struct json_pos* pos,
     }
     while (1) {
         float res = 0;
-        int r = unmarshal_scalar_float(content, pos, &res, txt);
+        int r = json_unmarshal_scalar_float(content, pos, &res, txt);
         if (r == JSON_TOKEN_RIGHT_BRACKET) {
             return 0;
         }
@@ -558,8 +517,9 @@ int unmarshal_array_internal_float(sstr_t content, struct json_pos* pos,
     }
 }
 
-int unmarshal_array_internal_double(sstr_t content, struct json_pos* pos,
-                                    double** ptr, int* ptrlen, sstr_t txt) {
+int json_unmarshal_array_internal_double(sstr_t content, struct json_pos* pos,
+                                         double** ptr, int* ptrlen,
+                                         sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_LEFT_BRACKET) {
         sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
@@ -568,7 +528,7 @@ int unmarshal_array_internal_double(sstr_t content, struct json_pos* pos,
     }
     while (1) {
         double res = 0;
-        int r = unmarshal_scalar_double(content, pos, &res, txt);
+        int r = json_unmarshal_scalar_double(content, pos, &res, txt);
         if (r == JSON_TOKEN_RIGHT_BRACKET) {
             return 0;
         }
@@ -597,8 +557,9 @@ int unmarshal_array_internal_double(sstr_t content, struct json_pos* pos,
     }
 }
 
-int unmarshal_array_internal_sstr_t(sstr_t content, struct json_pos* pos,
-                                    sstr_t** ptr, int* ptrlen, sstr_t txt) {
+int json_unmarshal_array_internal_sstr_t(sstr_t content, struct json_pos* pos,
+                                         sstr_t** ptr, int* ptrlen,
+                                         sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_LEFT_BRACKET) {
         sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
@@ -609,7 +570,7 @@ int unmarshal_array_internal_sstr_t(sstr_t content, struct json_pos* pos,
 
     while (1) {
         sstr_t res = NULL;
-        int r = unmarshal_scalar_sstr_t(content, pos, &res, txt);
+        int r = json_unmarshal_scalar_sstr_t(content, pos, &res, txt);
         if (r == JSON_TOKEN_RIGHT_BRACKET) {
             return 0;
         }
@@ -639,13 +600,13 @@ int unmarshal_array_internal_sstr_t(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
-int unmarshal_array_int(sstr_t content, int** ptr, int* len) {
+int json_unmarshal_array_int(sstr_t content, int** ptr, int* len) {
     struct json_pos pos;
     pos.line = 0;
     pos.col = 0;
     pos.offset = 0;
     sstr_t txt = sstr_new();
-    int r = unmarshal_array_internal_int(content, &pos, ptr, len, txt);
+    int r = json_unmarshal_array_internal_int(content, &pos, ptr, len, txt);
 #ifdef JSON_DEBUG
     if (r != 0) {
         printf("ERROR: %s\n", sstr_cstr(txt));
@@ -655,13 +616,13 @@ int unmarshal_array_int(sstr_t content, int** ptr, int* len) {
     return r;
 }
 
-int unmarshal_array_long(sstr_t content, long** ptr, int* len) {
+int json_unmarshal_array_long(sstr_t content, long** ptr, int* len) {
     struct json_pos pos;
     pos.line = 0;
     pos.col = 0;
     pos.offset = 0;
     sstr_t txt = sstr_new();
-    int r = unmarshal_array_internal_long(content, &pos, ptr, len, txt);
+    int r = json_unmarshal_array_internal_long(content, &pos, ptr, len, txt);
 #ifdef JSON_DEBUG
     if (r != 0) {
         printf("ERROR: %s\n", sstr_cstr(txt));
@@ -671,13 +632,13 @@ int unmarshal_array_long(sstr_t content, long** ptr, int* len) {
     return r;
 }
 
-int unmarshal_array_float(sstr_t content, float** ptr, int* len) {
+int json_unmarshal_array_float(sstr_t content, float** ptr, int* len) {
     struct json_pos pos;
     pos.line = 0;
     pos.col = 0;
     pos.offset = 0;
     sstr_t txt = sstr_new();
-    int r = unmarshal_array_internal_float(content, &pos, ptr, len, txt);
+    int r = json_unmarshal_array_internal_float(content, &pos, ptr, len, txt);
 #ifdef JSON_DEBUG
     if (r != 0) {
         printf("ERROR: %s\n", sstr_cstr(txt));
@@ -687,13 +648,13 @@ int unmarshal_array_float(sstr_t content, float** ptr, int* len) {
     return r;
 }
 
-int unmarshal_array_double(sstr_t content, double** ptr, int* len) {
+int json_unmarshal_array_double(sstr_t content, double** ptr, int* len) {
     struct json_pos pos;
     pos.line = 0;
     pos.col = 0;
     pos.offset = 0;
     sstr_t txt = sstr_new();
-    int r = unmarshal_array_internal_double(content, &pos, ptr, len, txt);
+    int r = json_unmarshal_array_internal_double(content, &pos, ptr, len, txt);
 #ifdef JSON_DEBUG
     if (r != 0) {
         printf("ERROR: %s\n", sstr_cstr(txt));
@@ -703,13 +664,13 @@ int unmarshal_array_double(sstr_t content, double** ptr, int* len) {
     return r;
 }
 
-int unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, int* len) {
+int json_unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, int* len) {
     struct json_pos pos;
     pos.line = 0;
     pos.col = 0;
     pos.offset = 0;
     sstr_t txt = sstr_new();
-    int r = unmarshal_array_internal_sstr_t(content, &pos, ptr, len, txt);
+    int r = json_unmarshal_array_internal_sstr_t(content, &pos, ptr, len, txt);
 #ifdef JSON_DEBUG
     if (r != 0) {
         printf("ERROR: %s\n", sstr_cstr(txt));
@@ -719,15 +680,15 @@ int unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, int* len) {
     return r;
 }
 
-int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
-                              struct json_parse_param* param, sstr_t txt);
+int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
+                                   struct json_parse_param* param, sstr_t txt);
 
-int unmarshal_array_internal(sstr_t content, struct json_pos* pos,
-                             struct json_parse_param* param, int* len,
-                             sstr_t txt) {
+int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
+                                  struct json_parse_param* param, int* len,
+                                  sstr_t txt) {
     *len = 0;
-    struct field_offset_item* field =
-        field_offset_item_find(param->struct_name, "");
+    struct json_field_offset_item* field =
+        json_field_offset_item_find(param->struct_name, "");
     if (field == NULL) {
         sstr_t e = PERROR(pos, "struct %s not found", param->struct_name);
         sstr_append(txt, e);
@@ -757,7 +718,7 @@ int unmarshal_array_internal(sstr_t content, struct json_pos* pos,
         sub_param.struct_name = param->struct_name;
         sub_param.field_name = param->field_name;
 
-        int r = unmarshal_struct_internal(content, pos, &sub_param, txt);
+        int r = json_unmarshal_struct_internal(content, pos, &sub_param, txt);
         if (r < 0) {
             free(ptr);
             return r;
@@ -794,8 +755,8 @@ int unmarshal_array_internal(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
-int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
-                              struct json_parse_param* param, sstr_t txt) {
+int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
+                                   struct json_parse_param* param, sstr_t txt) {
     // '{'
     int tk = json_next_token(content, pos, txt);
     if (tk == JSON_TOKEN_EOF) {
@@ -843,13 +804,13 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
             return -1;
         }
 
-        struct field_offset_item* fi =
-            field_offset_item_find(param->struct_name, sstr_cstr(txt));
+        struct json_field_offset_item* fi =
+            json_field_offset_item_find(param->struct_name, sstr_cstr(txt));
         if (fi == NULL) {
 #if JSON_DEBUG
-            printf("field_offset_item_find NULL, ignoring...\n");
+            printf("json_field_offset_item_find NULL, ignoring...\n");
 #endif
-            unmarshal_ignore_value(content, pos, txt);
+            json_unmarshal_ignore_value(content, pos, txt);
             continue;
         }
 #if JSON_DEBUG
@@ -869,7 +830,7 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
         if (fi->is_array) {
             sstr_t field_len_name = sstr(fi->field_name);
             sstr_append_cstr(field_len_name, "_len");
-            struct field_offset_item* len_fi = field_offset_item_find(
+            struct json_field_offset_item* len_fi = json_field_offset_item_find(
                 param->struct_name, sstr_cstr(field_len_name));
             sstr_free(field_len_name);
             if (len_fi == NULL) {
@@ -889,8 +850,8 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                     ar_param.in_struct = 0;
                     ar_param.struct_name = fi->field_type_name;
                     ar_param.field_name = fi->field_name;
-                    int r = unmarshal_array_internal(content, pos, &ar_param,
-                                                     &len, txt);
+                    int r = json_unmarshal_array_internal(content, pos,
+                                                          &ar_param, &len, txt);
                     if (r < 0) {
                         return r;
                     }
@@ -898,27 +859,27 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                     break;
                 }
                 case FIELD_TYPE_INT:
-                    unmarshal_array_internal_int(
+                    json_unmarshal_array_internal_int(
                         content, pos, fi->offset + param->instance_ptr, &len,
                         txt);
                     break;
                 case FIELD_TYPE_LONG:
-                    unmarshal_array_internal_long(
+                    json_unmarshal_array_internal_long(
                         content, pos, fi->offset + param->instance_ptr, &len,
                         txt);
                     break;
                 case FIELD_TYPE_FLOAT:
-                    unmarshal_array_internal_float(
+                    json_unmarshal_array_internal_float(
                         content, pos, fi->offset + param->instance_ptr, &len,
                         txt);
                     break;
                 case FIELD_TYPE_DOUBLE:
-                    unmarshal_array_internal_double(
+                    json_unmarshal_array_internal_double(
                         content, pos, fi->offset + param->instance_ptr, &len,
                         txt);
                     break;
                 case FIELD_TYPE_SSTR:
-                    unmarshal_array_internal_sstr_t(
+                    json_unmarshal_array_internal_sstr_t(
                         content, pos, fi->offset + param->instance_ptr, &len,
                         txt);
                     break;
@@ -939,7 +900,7 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
         // field value
         switch (fi->field_type) {
             case FIELD_TYPE_INT:
-                r = unmarshal_scalar_int(
+                r = json_unmarshal_scalar_int(
                     content, pos,
                     (int*)((char*)param->instance_ptr + fi->offset), txt);
                 if (r != 0) {
@@ -947,7 +908,7 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                 }
                 break;
             case FIELD_TYPE_LONG:
-                r = unmarshal_scalar_long(
+                r = json_unmarshal_scalar_long(
                     content, pos,
                     (long*)((char*)param->instance_ptr + fi->offset), txt);
                 if (r != 0) {
@@ -956,7 +917,7 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                 break;
 
             case FIELD_TYPE_FLOAT:
-                r = unmarshal_scalar_float(
+                r = json_unmarshal_scalar_float(
                     content, pos,
                     (float*)((char*)param->instance_ptr + fi->offset), txt);
                 if (r != 0) {
@@ -964,7 +925,7 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                 }
                 break;
             case FIELD_TYPE_DOUBLE:
-                r = unmarshal_scalar_double(
+                r = json_unmarshal_scalar_double(
                     content, pos,
                     (double*)((char*)param->instance_ptr + fi->offset), txt);
                 if (r != 0) {
@@ -973,7 +934,7 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                 break;
             case FIELD_TYPE_SSTR: {
                 sstr_t s = NULL;
-                r = unmarshal_scalar_sstr_t(content, pos, &s, txt);
+                r = json_unmarshal_scalar_sstr_t(content, pos, &s, txt);
                 *(sstr_t*)((char*)param->instance_ptr + fi->offset) = (void*)s;
                 if (r != 0) {
                     return r;
@@ -987,7 +948,8 @@ int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                 sub_param.in_array = 0;
                 sub_param.in_struct = 1;
                 sub_param.struct_name = fi->field_type_name;
-                tk = unmarshal_struct_internal(content, pos, &sub_param, txt);
+                tk = json_unmarshal_struct_internal(content, pos, &sub_param,
+                                                    txt);
                 if (tk == -1) {
                     return -1;
                 }

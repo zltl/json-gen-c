@@ -37,18 +37,18 @@ struct json_pos {
     long offset;
 };
 
-int unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
-                              struct json_parse_param* param, sstr_t txt);
-int unmarshal_array_internal(sstr_t content, struct json_pos* pos,
-                             struct json_parse_param* param, int* len,
-                             sstr_t txt);
-int unmarshal_array_internal_sstr_t(sstr_t content, struct json_pos* pos,
-                                    sstr_t** ptr, int* ptrlen, sstr_t txt);
-int unmarshal_array_internal_int(sstr_t content, struct json_pos* pos,
-                                 int** ptr, int* ptrlen, sstr_t txt);
-int unmarshal_array_internal_long(sstr_t content, struct json_pos* pos,
-                                  long** ptr, int* ptrlen, sstr_t txt);
-int unmarshal_array_internal_float(sstr_t content, struct json_pos* pos,
-                                   float** ptr, int* ptrlen, sstr_t txt);
-int unmarshal_array_internal_double(sstr_t content, struct json_pos* pos,
-                                    double** ptr, int* ptrlen, sstr_t txt);
+int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
+                                   struct json_parse_param* param, sstr_t txt);
+int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
+                                  struct json_parse_param* param, int* len,
+                                  sstr_t txt);
+int json_unmarshal_array_internal_sstr_t(sstr_t content, struct json_pos* pos,
+                                         sstr_t** ptr, int* ptrlen, sstr_t txt);
+int json_unmarshal_array_internal_int(sstr_t content, struct json_pos* pos,
+                                      int** ptr, int* ptrlen, sstr_t txt);
+int json_unmarshal_array_internal_long(sstr_t content, struct json_pos* pos,
+                                       long** ptr, int* ptrlen, sstr_t txt);
+int json_unmarshal_array_internal_float(sstr_t content, struct json_pos* pos,
+                                        float** ptr, int* ptrlen, sstr_t txt);
+int json_unmarshal_array_internal_double(sstr_t content, struct json_pos* pos,
+                                         double** ptr, int* ptrlen, sstr_t txt);

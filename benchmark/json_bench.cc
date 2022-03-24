@@ -15,7 +15,7 @@ static void BM_marshal_scalar(benchmark::State& state) {
     size_t total = 0;
     for (auto _ : state) {
         // This code gets timed
-        marshal_scalar(&obj, out);
+        json_marshal_scalar(&obj, out);
         total += sstr_length(out);
         sstr_clear(out);
     }
@@ -34,11 +34,11 @@ static void BM_unmarshal_scalar(benchmark::State& state) {
     obj.float_val = 4.0;
     obj.sstr_val = sstr("hello this is string");
     sstr_t content = sstr_new();
-    marshal_scalar(&obj, content);
+    json_marshal_scalar(&obj, content);
     size_t total = 0;
     for (auto _ : state) {
         scalar_clear(&obj);
-        unmarshal_scalar(content, &obj);
+        json_unmarshal_scalar(content, &obj);
         total += sstr_length(content);
     }
     state.SetBytesProcessed((int64_t)total);
@@ -62,7 +62,7 @@ static void BM_marshal_scalar_array(benchmark::State& state) {
     size_t total = 0;
     for (auto _ : state) {
         // This code gets timed
-        marshal_array_scalar(obj, len, out);
+        json_marshal_array_scalar(obj, len, out);
         total += sstr_length(out);
         sstr_clear(out);
     }
@@ -87,7 +87,7 @@ static void BM_unmarshal_scalar_array(benchmark::State& state) {
         obj[i].sstr_val = sstr("hello this is string");
     }
     sstr_t content = sstr_new();
-    marshal_array_scalar(obj, len, content);
+    json_marshal_array_scalar(obj, len, content);
     for (int i = 0; i < len; i++) {
         scalar_clear(&obj[i]);
     }
@@ -98,7 +98,7 @@ static void BM_unmarshal_scalar_array(benchmark::State& state) {
         // This code gets timed
         struct scalar* robj = NULL;
         int rlen = 0;
-        unmarshal_array_scalar(content, &robj, &rlen);
+        json_unmarshal_array_scalar(content, &robj, &rlen);
         total += sstr_length(content);
         for (int i = 0; i < rlen; i++) {
             scalar_clear(&robj[i]);
