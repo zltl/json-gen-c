@@ -1,95 +1,70 @@
 json-gen-c
 ---
 
-一个可以生成 JSON 处理代码的程序。
+# Overview
+
+json-gen-c is an easy mechanism for searializing C struct to JSON and
+deserializing JSON to C struct back. It parse structs' definition file
+then generate C code to serialize and deserialize the structs.
 
 ![cover](./doc/json-gen-c.png)
 
-`json-gen-c` 通过读取结构体 (`struct`) 定义文件，生成对应的 JSON 处理代码。这些代码包括 `struct` 结构体定义，结构体初始化和清理函数，结构体 JSON 编码和解码函数。
+# Build and install
 
-# 编译
+```bash
+make
+sudo make install
+```
 
-使用下列命令构建并安装：
+# Quick start
 
-	make
-	sudo make install
+[example](./example/example.json-gen-c)
 
-# 使用示范
+## Define Structs
 
-1. 编辑 `struct.json-gen-c` 文件，内容如下
+For example, create a file name `struct.json-gen-c` as contents below:
 
 ```C
-// 结构体定义文件
-
-// 定义结构体 A
 struct A {
-    // 定义成员变量
     int int_val1;
     int int_val2;
     long long_val;
     double double_val;
     float float_val;
     sstr_t sstr_val;
-    // 还可以定义数组
     int int_val_array[];
-    // 定义别的结构体类型的变量
     B b_val;
 };
 
-// 定义结构体 B
 struct B {
     int id;
 };
 ```
 
-2. 构建 `json.gen.c` 和 `json.gen.h`
+## Compiling Your json-gen-c File
 
-使用下列命令创建 `json` 处理代码：
-
-	json-gen-c -in struct.json-gen-c -out .
-
-命令创建了 `json.gen.c` 和 `json.gen.h` 文件，其中包含了 `json` 处理代码。同时创建了他们依赖的 `sstr.h` 和 `sstr.c`，这是用于字符串处理的代码，程序中大量地方使用了他们。
-
-3. 使用 `json` 处理代码
-例如要解析 JSON 字符串到结构体 `A`：
-
-```C
-// const char *p_str = "this is a json string";
-// sstr_t json_str = sstr(pstr);
-
-struct A a;
-A_init(&a);
-unmarshal_A(json_str, &a); // 注意 json_str 是 sstr_t 类型的
-// ...
-A_clear(&a);
+```bash
+json-gen-c -in struct.json-gen-c -out .
 ```
 
-要解析 JSON 字符串到结构体 `A` 的数组 `A a[]`:
+This generates the following files in your specified destination directory:
 
-```C
-// const char *p_str = "this is a json string";
-// sstr_t json_str = sstr(pstr);
+- `json.gen.h`, the header which declares your generated structures
+  and functions.
+- `json.gen.c`, which contains the implementation of your functions.
+- `sstr.h`, `sstr.c`, the string manipulation helper functions that 
+  generated code depends on.
 
-struct A *a = NULL;
-int len = 0;
-unmarshal_array_A(&a, &len, json_str); // 注意 json_str 是 sstr_t 类型的
-// ...
-int i;
-for (i = 0; i < len; ++i) {
-    A_clear(&a[i]);
-}
-free(a);
-```
+## Use Your Generated Codes
 
-要将结构体 `A` 序列化成 JSON 字符串:
-
+### To Serialize Structs to JSON
 ```C
 struct A a;
 A_init(&a);
 // set values to a ...
 // ...
 sstr_t json_str = sstr_new();
-marshal_A(&a, json_str);
+json_marshal_A(&a, json_str);
 
 printf("marshal a to json> %s\n", sstr_cstr(json_str));
 
@@ -97,7 +72,7 @@ sstr_free(json_str);
 A_clear(&a);
 ```
 
-要将结构体数组 `A a[]` 序列化成 JSON 字符串：
+### To Serialize Array of Structs to JSON
 
 ```C
 struct A a[3];
@@ -107,7 +82,7 @@ for (i = 0; i < 3; ++i) {
 }
 
 sstr_t json_str = sstr_new();
-marshal_array_A(a, 3, json_str);
+json_marshal_array_A(a, 3, json_str);
 
 printf("marshal a[] to json> %s\n", sstr_cstr(json_str));
 
@@ -116,6 +91,90 @@ for (i = 0; i < 3; ++i) {
 }
 ```
 
-# 授权许可
+### To Deserialize JSON to Structs
+```C
+// const char *p_str = "{this is a json string}";
+// sstr_t json_str = sstr(pstr);
 
-组成 `json-gen-c` 程序的代码遵从 GPL-3.0 许可协议，由 `json-gen-c` 程序创建的代码和内容除外。理论上说，`json-gen-c` 程序创建的文件和内容的版权，归 `json-gen-c` 的用户所有，就像使用 Latex 程序创建 PDF 文件那样。
+struct A a;
+A_init(&a);
+unmarshal_A(json_str, &a); // 注意 json_str 是 sstr_t 类型的
+// ...
+A_clear(&a);
+```
+
+# To Deserialize JSON to Array of Structs
+
+```C
+// const char *p_str = "[this is a json string]";
+// sstr_t json_str = sstr(pstr);
+
+struct A *a = NULL;
+int len = 0;
+json_unmarshal_array_A(&a, &len, json_str);
+// ...
+int i;
+for (i = 0; i < len; ++i) {
+    A_clear(&a[i]);
+}
+free(a);
+```
+
+# The Format of Structs Definition File
+
+Define a struct like:
+
+```
+struct <struct_name> {
+    <field_type> <field_name> []?;
+    <field_type> <field_name> []?;
+    ...
+};
+```
+
+The field type can be one of the following:
+
+- `int`
+- `long`
+- `float`
+- `double`
+- `sstr_t`
+- a struct name
+
+If a field is an array, just append `[]` after the field name.
+
+# The JSON API
+
+```C
+// initialize a struct
+// always return 0
+int <struct_name>_init(struct <struct_name> *obj);
+
+// uninitialize a struct
+// always return 0
+int <struct_name>_clear(struct <struct_name> *obj);
+
+// marshal a struct to json string.
+// return 0 if success.
+int json_marshal_<struct_name>(struct <struct_name>*obj, sstr_t out);
+
+// marshal an array of struct to json string.
+// return 0 if success.
+int json_marshal_array<struct_name>(struct <struct_name>*obj, int len, sstr_t out);
+
+// unmarshal a json string to a struct.
+// return 0 if success.
+int json_unmarshal_<struct_name>(sstr_t in, struct <struct_name>*obj);
+
+// unmarshal a json string to array of struct
+// return 0 if success.
+int json_unmarshal_<struct_name>(sstr_t in, struct <struct_name>**obj, int *len);
+```
+
+# License
+
+Codes of `json-gen-c` are licensed under GPL-3.0, except for the codes it
+generated. The copy right of the codes generated by `json-gen-c` is owned
+by the user who wrote the struct definition file, same as the copy right of
+a PDF file generated by Latex is owned by the user who wrote the tex file.
+
