@@ -117,7 +117,7 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                                            sstr_t source) {
     sstr_printf_append(source, "int json_marshal_%S(struct %S* obj, sstr_t out) {\n",
                        st->name, st->name);
-    sstr_append_cstr(source, "    char tmp_cstr[64];\n(void)tmp_cstr;\n");
+    sstr_append_cstr(source, "    char tmp_cstr[64];\n    (void)tmp_cstr;\n");
 
     sstr_append_cstr(source, "    sstr_append_cstr(out, \"{\");\n");
     struct struct_field* field = st->fields;
