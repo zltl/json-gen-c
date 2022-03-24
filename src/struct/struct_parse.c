@@ -347,6 +347,13 @@ int struct_parse_field(struct struct_parser* parser, sstr_t content,
         return -1;
     }
     type_name = token->txt;
+
+    if (sstr_compare_c(type_name, "struct") == 0) {
+        PERROR(parser, "expected field type, found reserve keyworkd 'struct'\n");
+        sstr_free(type_name);
+        return -1;
+    }
+
     if (sstr_compare_c(type_name, TYPE_NAME_INT) == 0 ||
         sstr_compare_c(type_name, TYPE_NAME_BOOL) == 0) {
         type_id = FIELD_TYPE_INT;
