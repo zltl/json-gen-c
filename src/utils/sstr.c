@@ -230,7 +230,7 @@ sstr_t sstr_vslprintf_append(sstr_t buf, const char* fmt, va_list args) {
             width = 0;
             sign = 1;
             hex = 0;
-            frac_width = 0;
+            frac_width = 6;
             slen = (size_t)-1;
 
             while (*fmt >= '0' && *fmt <= '9') {
