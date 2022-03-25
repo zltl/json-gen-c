@@ -87,6 +87,57 @@ TEST(unmarshal_int_array, random) {
     }
 }
 
+
+TEST(unmarshal_long_array, simple) {
+    {
+        sstr_t json_body = sstr(R"(
+[1, 2,3,  4,       5, 6, 7,    8,
+
+9, 10
+
+
+
+
+]
+)");
+        long *a = NULL;
+        int len = 0;
+        int r = json_unmarshal_array_long(json_body, &a, &len);
+        ASSERT_EQ(r, 0) << "json_unmarshal_array_int failed";
+        sstr_free(json_body);
+        json_body = NULL;
+        ASSERT_EQ(len, 10);
+        for (int i = 0; i < len; ++i) {
+            ASSERT_EQ(a[i], i + 1)
+                << "unmarshal array a[" << i << "] != " << i + 1;
+        }
+        free(a);
+        a = NULL;
+    }
+
+    {
+        sstr_t json_body = sstr(R"(
+[-1, -2,-3,  -4,      -5, -6, -7,    -8,
+
+-9, -10
+]
+)");
+        long *a = NULL;
+        int len = 0;
+        int r = json_unmarshal_array_long(json_body, &a, &len);
+        ASSERT_EQ(r, 0) << "json_unmarshal_array_int failed";
+        sstr_free(json_body);
+        json_body = NULL;
+        ASSERT_EQ(len, 10);
+        for (int i = 0; i < len; ++i) {
+            ASSERT_EQ(a[i], -(i + 1))
+                << "unmarshal array a[" << i << "] != " << -(i + 1);
+        }
+        free(a);
+        a = NULL;
+    }
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
