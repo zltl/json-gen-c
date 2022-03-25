@@ -49,6 +49,8 @@ install: $(TARGET_DIR)/json-gen-c
 
 clean:
 	rm -rf $(TARGET_DIR)
+	make clean -C example
+	make clean -C benchmark
 
 doxygen:
 	if [ ! -d target/doxygen-awesome-css ]; then

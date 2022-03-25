@@ -1,4 +1,4 @@
-.PHONY: all
+.PHONY: all clean
 
 .ONESHELL:
 
@@ -20,3 +20,5 @@ $(BENCH_DIR)/json_bench.cc.o: json_bench.cc
 $(BENCH_DIR)/json_bench: $(BENCH_DIR)/json.gen.c.o $(BENCH_DIR)/json_bench.cc.o $(BENCH_DIR)/sstr.c.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -lbenchmark -lpthread -o $@
 
+clean:
+	rm -rf json.gen* sstr*

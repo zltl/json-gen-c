@@ -43,15 +43,6 @@ static unsigned int hash_s(const char* data, size_t n, unsigned int seed) {
     }
     return h;
 }
-inline static unsigned int hash_2s(sstr_t key1, sstr_t key2) {
-    unsigned int res = 0xbc9f1d34;
-    sstr_t tmp = sstr_dup(key1);
-    sstr_append_of(tmp, "#", 1);
-    sstr_append(tmp, key2);
-    res = hash_s(sstr_cstr(tmp), sstr_length(tmp), res);
-    sstr_free(tmp);
-    return res;
-}
 
 inline static unsigned int hash_2s_c(const char* key1, const char* key2) {
     unsigned int res = 0xbc9f1d34;
