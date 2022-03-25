@@ -1,3 +1,7 @@
+/**
+ * @file struct_parse.c
+ * @brief parse struct definition file.
+ */
 #include "struct/struct_parse.h"
 
 #include <ctype.h>
@@ -7,7 +11,8 @@
 #include "utils/hash_map.h"
 #include "utils/sstr.h"
 
-struct struct_field* struct_field_new(sstr_t name, int type, sstr_t type_name) {
+static struct struct_field* struct_field_new(sstr_t name, int type,
+                                             sstr_t type_name) {
     struct struct_field* field =
         (struct struct_field*)malloc(sizeof(struct struct_field));
     if (field == NULL) {
@@ -21,7 +26,7 @@ struct struct_field* struct_field_new(sstr_t name, int type, sstr_t type_name) {
     return field;
 }
 
-void struct_field_free(struct struct_field* field) {
+static void struct_field_free(struct struct_field* field) {
     if (field) {
         sstr_free(field->name);
         sstr_free(field->type_name);
@@ -29,7 +34,7 @@ void struct_field_free(struct struct_field* field) {
     free(field);
 }
 
-void struct_field_free_all(struct struct_field* field) {
+static void struct_field_free_all(struct struct_field* field) {
     struct struct_field* tmp = NULL;
     while (field) {
         tmp = field->next;
@@ -38,12 +43,13 @@ void struct_field_free_all(struct struct_field* field) {
     }
 }
 
-void struct_field_add(struct struct_field** head, struct struct_field* field) {
+static void struct_field_add(struct struct_field** head,
+                             struct struct_field* field) {
     field->next = *head;
     *head = field;
 }
 
-struct struct_container* struct_container_new() {
+static struct struct_container* struct_container_new() {
     struct struct_container* container =
         (struct struct_container*)malloc(sizeof(struct struct_container));
     if (container == NULL) {
@@ -54,7 +60,7 @@ struct struct_container* struct_container_new() {
     return container;
 }
 
-void struct_container_free(struct struct_container* container) {
+static void struct_container_free(struct struct_container* container) {
     if (container) {
         if (container->name) {
             sstr_free(container->name);
@@ -64,7 +70,7 @@ void struct_container_free(struct struct_container* container) {
     }
 }
 
-void struct_field_reverse(struct struct_field** head) {
+static void struct_field_reverse(struct struct_field** head) {
     struct struct_field* prev = NULL;
     struct struct_field* cur = *head;
     struct struct_field* next = NULL;
@@ -109,18 +115,7 @@ void struct_parser_free(struct struct_parser* parser) {
     }
 }
 
-struct struct_token* struct_token_new(int type, sstr_t txt) {
-    struct struct_token* token =
-        (struct struct_token*)malloc(sizeof(struct struct_token));
-    if (token == NULL) {
-        return NULL;
-    }
-    token->type = type;
-    token->txt = txt;
-    return token;
-}
-
-void token_clear(struct struct_token* token) {
+static void token_clear(struct struct_token* token) {
     if (token) {
         if (token->txt) {
             sstr_free(token->txt);
@@ -129,7 +124,7 @@ void token_clear(struct struct_token* token) {
     }
 }
 
-void ptoken(struct struct_parser* parser, struct struct_token* token) {
+static void ptoken(struct struct_parser* parser, struct struct_token* token) {
     int tk = token->type;
     if (tk == TOKEN_ERROR) {
         fprintf(stderr, "error at line %d, col %d, expected identifier\n",
@@ -152,8 +147,8 @@ void ptoken(struct struct_parser* parser, struct struct_token* token) {
 #endif  // JSON_DEUBG
 }
 
-int next_token_(struct struct_parser* parser, sstr_t content,
-                struct struct_token* token) {
+static int next_token_(struct struct_parser* parser, sstr_t content,
+                       struct struct_token* token) {
     long i = 0;
     if (parser->pos.offset >= (long)sstr_length(content) - 1) {
         parser->pos.offset++;
@@ -259,15 +254,15 @@ int next_token_(struct struct_parser* parser, sstr_t content,
     return TOKEN_EOF;
 }
 
-int next_token(struct struct_parser* parser, sstr_t content,
-               struct struct_token* token) {
+static int next_token(struct struct_parser* parser, sstr_t content,
+                      struct struct_token* token) {
     token_clear(token);
     int tk = next_token_(parser, content, token);
     ptoken(parser, token);
     return tk;
 }
 
-char* token_type_str(struct struct_token* token) {
+static char* token_type_str(struct struct_token* token) {
     switch (token->type) {
         case TOKEN_IDENTIFY:
             return sstr_cstr(token->txt);

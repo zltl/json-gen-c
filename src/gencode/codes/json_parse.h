@@ -16,6 +16,8 @@
 #define JSON_TOKEN_EOF -2
 #define JSON_ERROR -1
 
+// field type id
+// !NOTE: MUST SAME AS IN src/struct/struct_parse.h
 #define FIELD_TYPE_INT 0
 #define FIELD_TYPE_LONG 1
 #define FIELD_TYPE_FLOAT 2
