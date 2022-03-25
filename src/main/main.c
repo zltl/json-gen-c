@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "extra_codes_sstr.inc"
 #include "gencode/gencode.h"
 #include "struct/struct_parse.h"
 #include "utils/io.h"
@@ -87,6 +86,8 @@ int main(int argc, const char **argv) {
     sstr_t head_ext = sstr(options.output_path);
     sstr_append_cstr(source_ext, "/sstr.c");
     sstr_append_cstr(head_ext, "/sstr.h");
+    // include utils_sstr_c utils_sstr_h
+#include "extra_codes_sstr.inc"
     sstr_t source_ext_c = sstr_of(utils_sstr_c, utils_sstr_c_len);
     sstr_t head_ext_h = sstr_of(utils_sstr_h, utils_sstr_h_len);
     write_file(sstr_cstr(source_ext), source_ext_c);
