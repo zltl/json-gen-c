@@ -15,7 +15,7 @@ $(BENCH_DIR)/sstr.c.o: json.gen.c
 $(BENCH_DIR)/json.gen.c.o: json.gen.c structs.json-gen-c
 	$(CC) $(CFLAGS) -I. -c json.gen.c -o $@
 $(BENCH_DIR)/json_bench.cc.o: json_bench.cc
-	$(CC) $(CXXFLAGS) -I. -c $< -o $@
+	$(CXX) $(CXXFLAGS) -I. -c $< -o $@
 
 $(BENCH_DIR)/json_bench: $(BENCH_DIR)/json.gen.c.o $(BENCH_DIR)/json_bench.cc.o $(BENCH_DIR)/sstr.c.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -lbenchmark -lpthread -o $@

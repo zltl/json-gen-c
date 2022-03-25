@@ -1,0 +1,10 @@
+
+
+struct TestStruct {
+	   int int_val;
+	   long long_val;
+	   float float_val;
+	   double double_val;
+	   bool bool_val;
+	   sstr_t sstr_val;
+}

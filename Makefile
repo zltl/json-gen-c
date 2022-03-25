@@ -1,4 +1,4 @@
-.PHONY: all libs clean example objs doxygen benchmark install
+.PHONY: all libs clean example objs doxygen benchmark install test
 .ONESHELL:
 
 TARGET_DIR ?=
@@ -49,6 +49,7 @@ clean:
 	rm -rf $(TARGET_DIR)
 	make clean -C example
 	make clean -C benchmark
+	make clean -C test
 
 doxygen:
 	if [ ! -d target/doxygen-awesome-css ]; then
@@ -62,3 +63,7 @@ example: json-gen-c
 
 benchmark: json-gen-c
 	make -C benchmark
+
+test: json-gen-c
+	make -C test
+

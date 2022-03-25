@@ -464,6 +464,12 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
         //                                 ---
         int tk = JSON_TOKEN_INTEGER;
         int start_pos = i;
+        if (data[i] == '-') {
+            sstr_append_of(txt, data+i, 1);
+            i++;
+            start_pos = i;
+            pos->col++;
+        }
         while (i < len &&
                (isalnum(data[i]) || data[i] == '_' || data[i] == '.')) {
             if (data[i] == '.' && tk == JSON_TOKEN_INTEGER) {
@@ -478,7 +484,7 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
         if (tk == JSON_TOKEN_INTEGER || tk == JSON_TOKEN_FLOAT) {
             sstr_append_of(txt, data + start_pos, i - start_pos);
             pos->offset = i;
-            return JSON_TOKEN_INTEGER;
+            return tk;
         }
 
         if (tk == JSON_TOKEN_IDENTIFY) {

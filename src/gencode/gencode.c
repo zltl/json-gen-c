@@ -271,7 +271,6 @@ static void gen_code_struct_marshal_array(struct struct_container* st,
 }
 
 static void gen_code_scalar_marshal_array(sstr_t source) {
-    // int
     sstr_append_cstr(
         source,
         "int json_marshal_array_int(int*obj, int len, sstr_t out) {\n"
@@ -628,25 +627,22 @@ int gencode_head_guard_begin(sstr_t head) {
     sstr_append_cstr(head, "extern \"C\" {\n");
     sstr_append_cstr(head, "#endif\n\n");
     sstr_append_cstr(
-        head, "int json_marshal_array_int(int*obj, int len, sstr_t out);\n");
-    sstr_append_cstr(
-        head, "int json_marshal_array_long(long*obj, int len, sstr_t out);\n");
-    sstr_append_cstr(
         head,
-        "int json_marshal_array_float(float*obj, int len, sstr_t out);\n");
-    sstr_append_cstr(
-        head,
-        "int json_marshal_array_double(double*obj, int len, sstr_t out);\n");
-    sstr_append_cstr(
-        head,
-        "int json_marshal_array_sstr_t(sstr_t*obj, int len, sstr_t out);\n\n");
+        "int json_marshal_array_int(int*obj, int len, sstr_t out);\n"
+        "int json_marshal_array_long(long*obj, int len, sstr_t out);\n"
+        "int json_marshal_array_float(float*obj, int len, sstr_t out);\n"
+        "int json_marshal_array_double(double*obj, int len, sstr_t out);\n"
+        "int json_marshal_array_sstr_t(sstr_t*obj, int len, sstr_t out);\n\n"
+        "int json_unmarshal_array_int(sstr_t content, int** ptr, int* len);\n"
+        "int json_unmarshal_array_long(sstr_t content, long** ptr, int* len);\n"
+        "int json_unmarshal_array_double(sstr_t content, double** ptr, int* len);\n"
+        "int json_unmarshal_array_float(sstr_t content, float** ptr, int* len);\n"
+        "int json_unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, int* len);\n\n");
 
     return 0;
 }
 
 int gencode_head_guard_end(sstr_t head) {
-    sstr_append_of(head, codes_json_parse_h, (size_t)codes_json_parse_h_len);
-
     sstr_printf_append(head, "\n#ifdef __cplusplus\n}\n#endif\n\n#endif\n\n");
 
     return 0;
@@ -657,6 +653,7 @@ int gencode_source_begin(sstr_t source) {
                        "#include \"%s\"\n\n#include <stdio.h>\n"
                        "#include <malloc.h>\n\n",
                        OUTPUT_H_FILENAME);
+    sstr_append_of(source, codes_json_parse_h, (size_t)codes_json_parse_h_len);
     gen_code_scalar_marshal_array(source);
     return 0;
 }
