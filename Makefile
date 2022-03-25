@@ -28,8 +28,6 @@ $(TARGET_DIR)/utils.a: $(wildcard src/utils/*.c) $(wildcard src/utils/*.h)
 	make -C src/utils
 $(TARGET_DIR)/struct.a: $(wildcard src/struct/*.c) $(wildcard src/struct/*.h)
 	make -C src/struct
-#$(TARGET_DIR)/json.a: $(wildcard src/json/*.c) $(wildcard src/json/*.h)$
-#	make -C src/json
 $(TARGET_DIR)/gencode.a: $(wildcard src/gencode/*.c) $(wildcard src/gencode/*.h) $(wildcard src/gencode/codes/*)
 	make -C src/gencode
 
