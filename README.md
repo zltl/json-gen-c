@@ -162,7 +162,7 @@ int json_marshal_<struct_name>(struct <struct_name>*obj, sstr_t out);
 
 // marshal an array of struct to json string.
 // return 0 if success.
-int json_marshal_array<struct_name>(struct <struct_name>*obj, int len, sstr_t out);
+int json_marshal_array_<struct_name>(struct <struct_name>*obj, int len, sstr_t out);
 
 // unmarshal a json string to a struct.
 // return 0 if success.
