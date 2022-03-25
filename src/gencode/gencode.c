@@ -336,7 +336,9 @@ static void gen_code_scalar_marshal_array(sstr_t source) {
         "        if (i != 0) {\n"
         "            sstr_append_of(out, \",\", 1);\n"
         "        }\n"
-        "        sstr_printf_append(out, \"\\\"%S\\\"\", obj[i]);\n"
+        "        sstr_append_cstr(out, \"\\\"\");\n"
+        "        sstr_json_escape_string_append(out, obj[i]);\n"
+        "        sstr_append_cstr(out, \"\\\"\");\n"
         "    }\n"
         "    sstr_append_of(out, \"]\", 1);\n"
         "    return 0;\n"
@@ -635,9 +637,12 @@ int gencode_head_guard_begin(sstr_t head) {
         "int json_marshal_array_sstr_t(sstr_t*obj, int len, sstr_t out);\n\n"
         "int json_unmarshal_array_int(sstr_t content, int** ptr, int* len);\n"
         "int json_unmarshal_array_long(sstr_t content, long** ptr, int* len);\n"
-        "int json_unmarshal_array_double(sstr_t content, double** ptr, int* len);\n"
-        "int json_unmarshal_array_float(sstr_t content, float** ptr, int* len);\n"
-        "int json_unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, int* len);\n\n");
+        "int json_unmarshal_array_double(sstr_t content, double** ptr, int* "
+        "len);\n"
+        "int json_unmarshal_array_float(sstr_t content, float** ptr, int* "
+        "len);\n"
+        "int json_unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, int* "
+        "len);\n\n");
 
     return 0;
 }

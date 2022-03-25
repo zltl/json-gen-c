@@ -13,6 +13,7 @@ ifneq ($(JSON_DEBUG),)
 	DEBUG_FLAGS = -DJSON_DEBUG
 	SANITIZER_FLAGS = -fsanitize=address -lasan
 endif
+SANITIZER_FLAGS = -fsanitize=address -lasan
 
 CFLAGS ?= -Wall -Wextra -Werror -std=c11 -ggdb -I$(ROOT_DIR)/src $(SANITIZER_FLAGS) $(DEBUG_FLAGS)
 CXXFLAGS ?= -Wall -Wextra -Werror -std=c++17 -ggdb -I$(ROOT_DIR)/src $(SANITIZER_FLAGS) $(DEBUG_FLAGS)
