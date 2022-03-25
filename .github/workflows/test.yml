@@ -25,6 +25,8 @@ jobs:
       run: ./target/example
     - name: run benchmark
       run: ./target/benchmark/json_bench
-    - name: run test
+    - name: build test
+      run: make test
+    - name: run simple_test
       run: ./target/test/simple_test
 
