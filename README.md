@@ -141,6 +141,7 @@ The field type can be one of the following:
 - `float`
 - `double`
 - `sstr_t`
+- `bool`
 - a struct name
 
 If a field is an array, just append `[]` after the field name.
