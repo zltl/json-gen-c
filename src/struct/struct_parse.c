@@ -349,14 +349,16 @@ int struct_parse_field(struct struct_parser* parser, sstr_t content,
     type_name = token->txt;
 
     if (sstr_compare_c(type_name, "struct") == 0) {
-        PERROR(parser, "expected field type, found reserve keyworkd 'struct'\n");
+        PERROR(parser,
+               "expected field type, found reserve keyworkd 'struct'\n");
         sstr_free(type_name);
         return -1;
     }
 
-    if (sstr_compare_c(type_name, TYPE_NAME_INT) == 0 ||
-        sstr_compare_c(type_name, TYPE_NAME_BOOL) == 0) {
+    if (sstr_compare_c(type_name, TYPE_NAME_INT) == 0) {
         type_id = FIELD_TYPE_INT;
+    } else if (sstr_compare_c(type_name, TYPE_NAME_BOOL) == 0) {
+        type_id = FIELD_TYPE_BOOL;
     } else if (sstr_compare_c(type_name, TYPE_NAME_LONG) == 0) {
         type_id = FIELD_TYPE_LONG;
     } else if (sstr_compare_c(type_name, TYPE_NAME_FLOAT) == 0) {
@@ -369,8 +371,12 @@ int struct_parse_field(struct struct_parser* parser, sstr_t content,
         type_id = FIELD_TYPE_STRUCT;
     }
     field->type = type_id;
-    field->type_name = type_name;
-    token->txt = NULL;
+    if (type_id == FIELD_TYPE_BOOL) {
+        field->type_name = sstr("int");
+    } else {
+        field->type_name = type_name;
+        token->txt = NULL;
+    }
 
     // field name
     tk = next_token(parser, content, token);

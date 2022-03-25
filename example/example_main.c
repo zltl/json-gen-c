@@ -13,6 +13,7 @@ void example_scalar(void) {
     a.int_val1 = 65536;
     a.long_val = 123456789;
     a.int_val2 = 1;
+    a.bool_val = 1;
     a.sstr_val = sstr("hello\n\r\\ \" ''' world 你好世界");
 
     sstr_t json_out = sstr_new();
@@ -23,9 +24,9 @@ void example_scalar(void) {
     json_unmarshal_D(json_out, &b);
     printf(
         "unmarshal b from json> double_val=%f float_val=%f int_val1=%d "
-        "long_val=%ld int_val2=%d sstr_val=%s\n",
+        "long_val=%ld int_val2=%d sstr_val=%s bool_val=%d\n",
         b.double_val, b.float_val, b.int_val1, b.long_val, b.int_val2,
-        sstr_cstr(b.sstr_val));
+        sstr_cstr(b.sstr_val), b.bool_val);
 
     sstr_t json_out2 = sstr_new();
     json_marshal_D(&b, json_out2);

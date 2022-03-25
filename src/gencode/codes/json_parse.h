@@ -22,6 +22,7 @@
 #define FIELD_TYPE_DOUBLE 3
 #define FIELD_TYPE_SSTR 4
 #define FIELD_TYPE_STRUCT 6
+#define FIELD_TYPE_BOOL 7
 
 struct json_parse_param {
     void* instance_ptr;

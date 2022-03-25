@@ -1,7 +1,7 @@
 /**
  * @file struct/struct_parse.h
  * @brief Parse struct definitions. Support scalar types(int, long, float,
- * double), arrays, structs.
+ * double, sstr_t), arrays, structs.
  */
 
 #ifndef STRUCT_PARSE_H_
@@ -22,6 +22,7 @@ extern "C" {
 #define FIELD_TYPE_DOUBLE 3
 #define FIELD_TYPE_SSTR 4
 #define FIELD_TYPE_STRUCT 6
+#define FIELD_TYPE_BOOL 7
 
 #define TYPE_NAME_INT "int"
 #define TYPE_NAME_BOOL "bool"
@@ -30,7 +31,7 @@ extern "C" {
 #define TYPE_NAME_FLOAT "float"
 #define TYPE_NAME_DOUBLE "double"
 
-#define STRUCT_MAP_BUCKET_SIZE 128
+#define STRUCT_MAP_BUCKET_SIZE 1280
 
 struct struct_field {
     sstr_t name;

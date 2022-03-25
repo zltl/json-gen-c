@@ -489,6 +489,12 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
             pos->offset = i;
             return JSON_TOKEN_INTEGER;
         }
+
+        if (tk == JSON_TOKEN_IDENTIFY) {
+            sstr_append_of(txt, data + start_pos, i - start_pos);
+            pos->offset = i;
+        }
+
         if (sstr_compare_c(txt, "true") == 0) {
             tk = JSON_TOKEN_BOOL_TRUE;
         } else if (sstr_compare_c(txt, "false") == 0) {
@@ -1076,6 +1082,7 @@ int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                     break;
                 }
                 case FIELD_TYPE_INT:
+                case FIELD_TYPE_BOOL:
                     json_unmarshal_array_internal_int(
                         content, pos, fi->offset + param->instance_ptr, &len,
                         txt);
@@ -1117,6 +1124,7 @@ int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
         // field value
         switch (fi->field_type) {
             case FIELD_TYPE_INT:
+            case FIELD_TYPE_BOOL:
                 r = json_unmarshal_scalar_int(
                     content, pos,
                     (int*)((char*)param->instance_ptr + fi->offset), txt);
