@@ -18,6 +18,17 @@ make
 sudo make install
 ```
 
+To build example, tests, and benchmarks
+
+```bash
+# build ./target/example
+make example
+# build ./target/test/unit_test
+make test
+# build ./target/benchmark/json_bench
+make benchmark
+```
+
 ## Quick start
 
 [example](./example/example.json-gen-c)
