@@ -101,7 +101,7 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
                        st->name, st->name);
     sstr_printf_append(header,
                        "int json_unmarshal_array_%S(sstr_t in, struct %S** "
-                       "obj, int* len);\n",
+                       "obj, int* len);\n\n",
                        st->name, st->name);
 }
 
