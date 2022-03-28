@@ -6,7 +6,15 @@
 #include "utils/io.h"
 
 static void usage() {
-    printf("Usage: json-gen-c -out <output_dir> -in <input_file>\n");
+    printf(
+        "Usage: json-gen-c -out <output_dir> -in <input_file>\n"
+        "Generate JSON operating C codes from struct definition.\n\n"
+        "Options:\n"
+        "    -in <input_file> Specify the input struct definition file.\n"
+        "    -out <output_dir> Specify the output codes location, default to "
+        ".\n\n"
+        "json-gen-c document: https://github.com/zltl/json-gen-c\n"
+        "Report bugs to: https://github.com/zltl/json-gen-c/issues\n");
 }
 
 struct options {
@@ -32,7 +40,7 @@ static int options_parse(int argc, const char **argv, struct options *options) {
 int main(int argc, const char **argv) {
     struct options options = {NULL, NULL};
     options_parse(argc, argv, &options);
-    if (options.input_file == NULL) {
+    if (options.input_file == NULL || options.output_path == NULL) {
         usage();
         return -1;
     }
