@@ -38,7 +38,7 @@ extern "C" {
  * @brief We use a hash map to store parsed structs, and use the struct name
  * as the key. This is the size of the hash map's bucket.
  */
-#define STRUCT_MAP_BUCKET_SIZE 1280
+#define STRUCT_MAP_BUCKET_SIZE 4096
 
 /**
  * @brief structure to store field list of parsed structs. A struct may have
