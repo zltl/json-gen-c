@@ -87,6 +87,8 @@ struct struct_parser {
     struct hash_map* struct_map;
     // position of string to be parsed
     struct pos pos;
+    // name of parser
+    char *name;
 };
 
 // token types of struct definitions, return by next_token()
@@ -96,6 +98,8 @@ struct struct_parser {
 #define TOKEN_LEFT_BRACKET '['
 #define TOKEN_RIGHT_BRACKET ']'
 #define TOKEN_SEMICOLON ';'
+#define TOKEN_SHARPE '#'
+#define TOKEN_STRING 4
 #define TOKEN_IDENTIFY 1
 #define TOKEN_INTEGER 2
 #define TOKEN_FLOAT 3

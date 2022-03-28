@@ -1,0 +1,10 @@
+// scarlar type D
+struct D {
+    int int_val1;
+    int int_val2;
+    long long_val;
+    double double_val;
+    float float_val;
+    sstr_t sstr_val;
+    bool bool_val;
+}

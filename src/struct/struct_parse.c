@@ -7,8 +7,10 @@
 #include <ctype.h>
 #include <malloc.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "utils/hash_map.h"
+#include "utils/io.h"
 #include "utils/sstr.h"
 
 static struct struct_field* struct_field_new(sstr_t name, int type,
@@ -104,6 +106,7 @@ struct struct_parser* struct_parser_new() {
     parser->pos.col = 0;
     parser->pos.line = 1;
     parser->pos.offset = 0;
+    parser->name = NULL;
 
     return parser;
 }
@@ -133,16 +136,16 @@ static void ptoken(struct struct_parser* parser, struct struct_token* token) {
     }
 #ifdef JSON_DEBUG
     if (tk == TOKEN_EOF) {
-        printf("TOKEN>EOF\n");
+        printf("TOKEN>EOF, file=%s\n", parser->name);
         return;
     }
 
     if (tk == TOKEN_IDENTIFY || tk == TOKEN_INTEGER || tk == TOKEN_FLOAT) {
-        printf("TOKEN>\'%s\', line=%d, col=%d\n", sstr_cstr(token->txt),
-               parser->pos.line, parser->pos.col);
+        printf("TOKEN>\'%s\', file=%s, line=%d, col=%d\n", parser->name,
+               sstr_cstr(token->txt), parser->pos.line, parser->pos.col);
     } else {
-        printf("TOKEN>\'%c\', line=%d, col=%d\n", tk, parser->pos.line,
-               parser->pos.col);
+        printf("TOKEN>\'%c\', file=%s, line=%d, col=%d\n", tk, parser->name,
+               parser->pos.line, parser->pos.col);
     }
 #endif  // JSON_DEUBG
 }
@@ -167,6 +170,46 @@ static int next_token_(struct struct_parser* parser, sstr_t content,
             parser->pos.col++;
         }
         switch (data[i]) {
+            case '#':
+                token->type = TOKEN_SHARPE;
+                parser->pos.offset = i + 1;
+                return TOKEN_SHARPE;
+            case '\"': {
+                token->type = TOKEN_STRING;
+                parser->pos.offset = i + 1;
+                int start_pos = parser->pos.offset;
+                int end_pos = start_pos;
+                for (; end_pos < length; ++end_pos) {
+                    parser->pos.col++;
+                    if (data[end_pos] == '\"') {
+                        parser->pos.offset = end_pos + 1;
+                        token->txt =
+                            sstr_of(data + start_pos, end_pos - start_pos);
+                        return TOKEN_STRING;
+                    }
+                }
+                token->type = TOKEN_ERROR;
+                parser->pos.offset = end_pos;
+                return TOKEN_ERROR;
+            }
+            case '<': {
+                token->type = TOKEN_STRING;
+                parser->pos.offset = i + 1;
+                int start_pos = parser->pos.offset;
+                int end_pos = start_pos;
+                for (; end_pos < length; ++end_pos) {
+                    parser->pos.col++;
+                    if (data[end_pos] == '>') {
+                        parser->pos.offset++;
+                        token->txt =
+                            sstr_of(data + start_pos, end_pos - start_pos);
+                        return TOKEN_STRING;
+                    }
+                }
+                token->type = TOKEN_ERROR;
+                parser->pos.offset = end_pos;
+                return TOKEN_ERROR;
+            }
             case '{':
                 token->type = TOKEN_LEFT_BRACE;
                 parser->pos.offset = i + 1;
@@ -264,6 +307,10 @@ static int next_token(struct struct_parser* parser, sstr_t content,
 
 static char* token_type_str(struct struct_token* token) {
     switch (token->type) {
+        case TOKEN_SHARPE:
+            return "#";
+        case TOKEN_STRING:
+            return sstr_cstr(token->txt);
         case TOKEN_IDENTIFY:
             return sstr_cstr(token->txt);
         case TOKEN_LEFT_BRACE:
@@ -284,9 +331,60 @@ static char* token_type_str(struct struct_token* token) {
     return "--UNKNOWN--";
 }
 
-#define PERROR(parser, fmt, ...)                               \
-    fprintf(stderr, "line %d, col %d: " fmt, parser->pos.line, \
-            parser->pos.col, ##__VA_ARGS__)
+#define PERROR(parser, fmt, ...)                                    \
+    fprintf(stderr, "file %s, line %d, col %d: " fmt, parser->name, \
+            parser->pos.line, parser->pos.col, ##__VA_ARGS__)
+
+int struct_parse_include(struct struct_parser* parser, sstr_t content,
+                         struct struct_token* token) {
+    int tk = next_token(parser, content, token);
+    if (tk != TOKEN_IDENTIFY || sstr_compare_c(token->txt, "include") != 0) {
+        PERROR(parser, "expect #include, but found %s\n",
+               token_type_str(token));
+        return -1;
+    }
+
+    tk = next_token(parser, content, token);
+    if (tk != TOKEN_STRING) {
+        PERROR(parser, "expect string file name, but found %s\n",
+               token_type_str(token));
+        return -1;
+    }
+
+    char* filename = sstr_cstr(token->txt);
+    sstr_t file = sstr_new();
+    int fname_len = strlen(parser->name);
+    while (fname_len >= 0 && parser->name[fname_len] != '/') {
+        fname_len--;
+    }
+    if (fname_len == !0) {
+        sstr_append_of(file, parser->name, fname_len);
+    }
+    sstr_append_cstr(file, filename);
+    sstr_free(token->txt);
+    token->txt = NULL;
+
+    sstr_t sub_content = sstr_new();
+    int r = read_file(sstr_cstr(file), sub_content);
+    if (r != 0) {
+        fprintf(stderr, "error reading file %s", sstr_cstr(file));
+        sstr_free(sub_content);
+        sstr_free(file);
+
+        return -1;
+    }
+    struct struct_parser sub_parser;
+    sub_parser.name = sstr_cstr(file);
+    sub_parser.pos.col = 0;
+    sub_parser.pos.line = 1;
+    sub_parser.pos.offset = 0;
+    sub_parser.struct_map = parser->struct_map;
+    r = struct_parser_parse(&sub_parser, sub_content);
+    sstr_free(sub_content);
+    sstr_free(file);
+
+    return r;
+}
 
 int struct_parse_struct_identify_struct(struct struct_parser* parser,
                                         sstr_t content,
@@ -299,6 +397,10 @@ int struct_parse_struct_identify_struct(struct struct_parser* parser,
     }
     if (tk == TOKEN_EOF) {
         return 0;
+    }
+
+    if (tk == TOKEN_SHARPE) {
+        return struct_parse_include(parser, content, token);
     }
 
     if (tk != TOKEN_IDENTIFY) {
@@ -424,6 +526,10 @@ int struct_parse_struct(struct struct_parser* parser, sstr_t content,
 
     // 'name'
     int tk = next_token(parser, content, token);
+    if (tk == TOKEN_EOF) {
+        return 0;
+    }
+
     if (tk != TOKEN_IDENTIFY) {
         PERROR(parser, "expected struct name, found \'%s\'\n",
                token_type_str(token));

@@ -38,6 +38,7 @@ static int options_parse(int argc, const char **argv, struct options *options) {
 }
 
 int main(int argc, const char **argv) {
+    // parse options
     struct options options = {NULL, NULL};
     options_parse(argc, argv, &options);
     if (options.input_file == NULL || options.output_path == NULL) {
@@ -45,6 +46,7 @@ int main(int argc, const char **argv) {
         return -1;
     }
 
+    // read content of input file
     sstr_t content = sstr_new();
     int r = read_file(options.input_file, content);
     if (r != 0) {
@@ -53,11 +55,14 @@ int main(int argc, const char **argv) {
         return -1;
     }
 
+    // new parser
     struct struct_parser *parser = struct_parser_new();
     if (parser == NULL) {
         return -1;
     }
+    parser->name = options.input_file;
 
+    // start parse
     r = struct_parser_parse(parser, content);
     if (r < 0) {
         fprintf(stderr, "struct parse failed\n");
