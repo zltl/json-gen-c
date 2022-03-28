@@ -9,7 +9,7 @@
 #include "utils/hash_map.h"
 #include "utils/sstr.h"
 
-#define DEPENDENCY_HASH_MAP_BUCKET_SIZE 1280
+#define DEPENDENCY_HASH_MAP_BUCKET_SIZE 4096
 
 static unsigned int hash_s(const char* data, size_t n, unsigned int seed) {
     // unsigned int seed = 0xbc9f1d34;
