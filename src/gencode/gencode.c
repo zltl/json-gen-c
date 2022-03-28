@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "extra_codes.inc"
 #include "struct/struct_parse.h"
 #include "utils/hash_map.h"
 #include "utils/sstr.h"
@@ -653,6 +652,7 @@ int gencode_head_guard_end(sstr_t head) {
     return 0;
 }
 
+#include "extra_codes.inc"
 int gencode_source_begin(sstr_t source) {
     sstr_printf_append(source,
                        "#include \"%s\"\n\n#include <stdio.h>\n"

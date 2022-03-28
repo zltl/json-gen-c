@@ -27,6 +27,6 @@ jobs:
       run: ./target/benchmark/json_bench
     - name: build test
       run: make test
-    - name: run simple_test
-      run: ./target/test/simple_test
+    - name: run unit_test
+      run: ./target/test/unit_test
 
