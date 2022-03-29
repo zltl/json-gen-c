@@ -1,19 +1,195 @@
 .\" Manpage for json-gen-c.
 .\" Contact liaotonglang@gmail.com to correct errors or typos.
-.TH man 1 "29 Mar 2022" "v0.1.4" "json-gen-c man page"
+.TH man 1 "29 Mar 2022" "v0.1.5" "json-gen-c man page"
 .SH NAME
 json-gen-c \- generate C code for json manipulation
 .SH SYNOPSIS
 json-gen-c -in [INPUTFILE] -out [OUTPUTDIR]
 .SH DESCRIPTION
 json-gen-c is an easy mechanism for searializing C struct to JSON and deserializing JSON to C struct back. It parse structs' definition file then generate C code to serialize and deserialize the structs.
+
+.SS Define Structs
+.PP
+For example, create a file name \f[C]struct.json\-gen\-c\f[R] as
+contents below:
+.IP
+.nf
+\f[C]
+struct A {
+    int int_val1;
+    int int_val2;
+    long long_val;
+    double double_val;
+    float float_val;
+    sstr_t sstr_val;
+    int int_val_array[];
+    B b_val;
+};
+
+struct B {
+    int id;
+};
+\f[R]
+.fi
+.SS Compiling Your Struct Definition File
+.IP
+.nf
+\f[C]
+json\-gen\-c \-in struct.json\-gen\-c \-out .
+\f[R]
+.fi
+.PP
+This generates the following files in your specified destination
+directory:
+.IP \[bu] 2
+\f[C]json.gen.h\f[R], the header which declares your generated
+structures and functions.
+.IP \[bu] 2
+\f[C]json.gen.c\f[R], which contains the implementation of your
+functions.
+.IP \[bu] 2
+\f[C]sstr.h\f[R], \f[C]sstr.c\f[R], the string manipulation helper
+functions that generated code depends on.
+.SS Use Your Generated Codes
+.SS To Serialize Structs to JSON
+.IP
+.nf
+\f[C]
+struct A a;
+A_init(&a);
+// set values to a ...
+// ...
+sstr_t json_str = sstr_new();
+json_marshal_A(&a, json_str);
+
+printf(\[dq]marshal a to json> %s\[rs]n\[dq], sstr_cstr(json_str));
+
+sstr_free(json_str);
+A_clear(&a);
+\f[R]
+.fi
+.SS To Serialize Array of Structs to JSON
+.IP
+.nf
+\f[C]
+struct A a[3];
+for (i = 0; i < 3; ++i) {
+    A_init(&a[i]);
+    // set values to a[i] ...
+}
+
+sstr_t json_str = sstr_new();
+json_marshal_array_A(a, 3, json_str);
+
+printf(\[dq]marshal a[] to json> %s\[rs]n\[dq], sstr_cstr(json_str));
+
+for (i = 0; i < 3; ++i) {
+    A_clear(&a[i]);
+}
+\f[R]
+.fi
+.SS To Deserialize JSON to Structs
+.IP
+.nf
+\f[C]
+// const char *p_str = \[dq]{this is a json string}\[dq];
+// sstr_t json_str = sstr(pstr);
+
+struct A a;
+A_init(&a);
+json_unmarshal_A(json_str, &a); // json_str is a type of sstr_t
+// ...
+A_clear(&a);
+\f[R]
+.fi
+.SS To Deserialize JSON to Array of Structs
+.IP
+.nf
+\f[C]
+// const char *p_str = \[dq][this is a json string]\[dq];
+// sstr_t json_str = sstr(pstr);
+
+struct A *a = NULL;
+int len = 0;
+json_unmarshal_array_A(&a, &len, json_str);
+// ...
+int i;
+for (i = 0; i < len; ++i) {
+    A_clear(&a[i]);
+}
+free(a);
+\f[R]
+.fi
+.SS The Format of Structs Definition File
+.PP
+Define a struct like:
+.IP
+.nf
+\f[C]
+struct <struct_name> {
+    <field_type> <field_name> []?;
+    <field_type> <field_name> []?;
+    ...
+};
+\f[R]
+.fi
+.PP
+The field type can be one of the following:
+.IP \[bu] 2
+\f[C]int\f[R]
+.IP \[bu] 2
+\f[C]long\f[R]
+.IP \[bu] 2
+\f[C]float\f[R]
+.IP \[bu] 2
+\f[C]double\f[R]
+.IP \[bu] 2
+\f[C]sstr_t\f[R]
+.IP \[bu] 2
+\f[C]bool\f[R]
+.IP \[bu] 2
+a struct name
+.PP
+If a field is an array, just append \f[C][]\f[R] after the field name.
+.SS The JSON API
+.IP
+.nf
+\f[C]
+// initialize a struct
+// always return 0
+int <struct_name>_init(struct <struct_name> *obj);
+
+// uninitialize a struct
+// always return 0
+int <struct_name>_clear(struct <struct_name> *obj);
+
+// marshal a struct to json string.
+// return 0 if success.
+int json_marshal_<struct_name>(struct <struct_name>*obj, sstr_t out);
+
+// marshal an array of struct to json string.
+// return 0 if success.
+int json_marshal_array_<struct_name>(struct <struct_name>*obj, int len, sstr_t out);
+
+// unmarshal a json string to a struct.
+// return 0 if success.
+int json_unmarshal_<struct_name>(sstr_t in, struct <struct_name>*obj);
+
+// unmarshal a json string to array of struct
+// return 0 if success.
+int json_unmarshal_<struct_name>(sstr_t in, struct <struct_name>**obj, int *len);
+\f[R]
+.fi
+
 .SH OPTIONS
 -in <input_file> Specify the input struct definition file.
 
 -out <output_dir> Specify the output codes location.
-.SH SEE ALSO
 
-.SH BUGS
+
+.SH COPYRIGHT
+Copyright © 2022 liao tonglang.  License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.  There is NO WARRANTY, to the extent permitted by law.
 
 .SH AUTHOR
 Liao Tonglang (liaotonglang@gmail.com)
