@@ -3,6 +3,8 @@
 
 TARGET_DIR ?=
 
+DEST ?= /usr/bin
+
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 ifeq ($(TARGET_DIR),)
 	TARGET_DIR = $(ROOT_DIR)/target
@@ -47,7 +49,12 @@ $(TARGET_DIR)/json-gen-c: libs $(TARGET_DIR)/main.o
 	$(CC) $(CFLAGS) $(TARGET_DIR)/main.o $(libs_mmm) -o $@
 
 install: $(TARGET_DIR)/json-gen-c
-	cp -f $(TARGET_DIR)/json-gen-c /usr/bin/
+	@cp -f $(TARGET_DIR)/json-gen-c $(DEST)/json-gen-c
+	@echo json-gen-c has been installed on your device
+
+uninstall:
+	@rm -rf $(DEST)/json-gen-c
+	@echo json-gen-c has been removed from your device
 
 clean:
 	rm -rf $(TARGET_DIR)
