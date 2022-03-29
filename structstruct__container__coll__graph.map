@@ -1,0 +1,4 @@
+<map id="struct_container" name="struct_container">
+<area shape="rect" id="node1" title="structure to store parsed structs. A struct may have multiple fields, we put fields in a linked list." alt="" coords="5,95,132,121"/>
+<area shape="rect" id="node2" href="$structstruct__field.html" title="structure to store field list of parsed structs. A struct may have multiple field,..." alt="" coords="21,5,116,32"/>
+</map>

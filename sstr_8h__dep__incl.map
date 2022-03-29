@@ -1,0 +1,9 @@
+<map id="src/utils/sstr.h" name="src/utils/sstr.h">
+<area shape="rect" id="node1" title="sstr_t are objects that represent sequences of characters." alt="" coords="388,5,500,32"/>
+<area shape="rect" id="node2" href="$gencode_8h.html" title="generate json manipulate codes." alt="" coords="259,155,429,181"/>
+<area shape="rect" id="node3" href="$struct__parse_8c.html" title="parse struct definition file." alt="" coords="274,229,451,256"/>
+<area shape="rect" id="node4" href="$struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="5,155,184,181"/>
+<area shape="rect" id="node5" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="167,80,323,107"/>
+<area shape="rect" id="node6" href="$io_8h.html" title="file operation helper functions." alt="" coords="453,155,555,181"/>
+<area shape="rect" id="node7" href="$sstr_8c.html" title="Implementation of the sstr.h header file." alt="" coords="630,80,741,107"/>
+</map>

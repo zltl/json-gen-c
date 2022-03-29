@@ -1,0 +1,13 @@
+<map id="src/struct/struct_parse.c" name="src/struct/struct_parse.c">
+<area shape="rect" id="node1" title="parse struct definition file." alt="" coords="329,5,506,32"/>
+<area shape="rect" id="node2" href="$struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="125,80,280,107"/>
+<area shape="rect" id="node4" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="5,155,139,181"/>
+<area shape="rect" id="node5" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="222,229,311,256"/>
+<area shape="rect" id="node7" title=" " alt="" coords="419,80,490,107"/>
+<area shape="rect" id="node8" title=" " alt="" coords="514,80,593,107"/>
+<area shape="rect" id="node9" title=" " alt="" coords="617,80,684,107"/>
+<area shape="rect" id="node10" title=" " alt="" coords="709,80,779,107"/>
+<area shape="rect" id="node11" href="$io_8h.html" title="file operation helper functions." alt="" coords="265,155,343,181"/>
+<area shape="rect" id="node3" title=" " alt="" coords="135,304,209,331"/>
+<area shape="rect" id="node6" title=" " alt="" coords="233,304,308,331"/>
+</map>
