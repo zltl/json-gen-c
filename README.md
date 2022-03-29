@@ -1,7 +1,7 @@
 json-gen-c
 ---
 
-[![build run](https://github.com/zltl/json-gen-c/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/zltl/json-gen-c/actions/workflows/test.yml)
+[![build test action](https://github.com/zltl/json-gen-c/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/zltl/json-gen-c/actions/workflows/test.yml)
 
 ## Overview
 
@@ -9,7 +9,7 @@ json-gen-c is an easy mechanism for searializing C struct to JSON and
 deserializing JSON to C struct back. It parse structs' definition file
 then generate C code to serialize and deserialize the structs.
 
-![cover](./doc/json-gen-c.png)
+![covor](https://raw.githubusercontent.com/zltl/json-gen-c/main/doc/json-gen-c.png)
 
 ## Build and install
 
