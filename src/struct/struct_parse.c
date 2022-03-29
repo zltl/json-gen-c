@@ -335,8 +335,8 @@ static char* token_type_str(struct struct_token* token) {
     fprintf(stderr, "file %s, line %d, col %d: " fmt, parser->name, \
             parser->pos.line, parser->pos.col, ##__VA_ARGS__)
 
-int struct_parse_include(struct struct_parser* parser, sstr_t content,
-                         struct struct_token* token) {
+static int struct_parse_include(struct struct_parser* parser, sstr_t content,
+                                struct struct_token* token) {
     int tk = next_token(parser, content, token);
     if (tk != TOKEN_IDENTIFY || sstr_compare_c(token->txt, "include") != 0) {
         PERROR(parser, "expect #include, but found %s\n",
@@ -386,9 +386,9 @@ int struct_parse_include(struct struct_parser* parser, sstr_t content,
     return r;
 }
 
-int struct_parse_struct_identify_struct(struct struct_parser* parser,
-                                        sstr_t content,
-                                        struct struct_token* token) {
+static int parse_keyword_struct_or_include(struct struct_parser* parser,
+                                           sstr_t content,
+                                           struct struct_token* token) {
     int tk = 0;
 
     tk = next_token(parser, content, token);
@@ -416,8 +416,9 @@ int struct_parse_struct_identify_struct(struct struct_parser* parser,
     return 0;
 }
 
-int struct_parse_field(struct struct_parser* parser, sstr_t content,
-                       struct struct_token* token, struct struct_field* field) {
+static int struct_parse_field(struct struct_parser* parser, sstr_t content,
+                              struct struct_token* token,
+                              struct struct_field* field) {
     sstr_t type_name = NULL;
     int type_id = 0;
 
@@ -512,11 +513,11 @@ int struct_parse_field(struct struct_parser* parser, sstr_t content,
     return 0;
 }
 
-int struct_parse_struct(struct struct_parser* parser, sstr_t content,
+static int parse_struct(struct struct_parser* parser, sstr_t content,
                         struct struct_token* token,
                         struct struct_container* sct) {
     // 'struct'
-    int r = struct_parse_struct_identify_struct(parser, content, token);
+    int r = parse_keyword_struct_or_include(parser, content, token);
     if (r != 0) {
         return r;
     }
@@ -579,7 +580,7 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
     token.txt = NULL;
     do {
         struct struct_container* sct = struct_container_new();
-        int r = struct_parse_struct(parser, content, &token, sct);
+        int r = parse_struct(parser, content, &token, sct);
         if (r != 0) {
             struct_container_free(sct);
             return r;
