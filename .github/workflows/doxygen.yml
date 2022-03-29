@@ -1,0 +1,31 @@
+name: Doxygen
+
+on:
+  repository_dispatch:
+  push:
+    branches:
+      - main
+      - gh-pages
+
+# In that case do the job 'make_and_deploy_doxygen'
+jobs:
+  make_and_deploy_doxygen:
+    runs-on: ubuntu-latest
+    # which needs the following steps to be executed:
+    steps:
+      # 1. Checkout current branch of GitHub repository.
+      - name: Checkout current branch
+        uses: actions/checkout@v2
+      # 2. Install doxygen and its auxiliary components.
+      - name: Install doxygen and latex components
+        run: sudo apt-get update; sudo apt-get install -y doxygen graphviz texlive-full make
+      # 3. Create the doxygen pages.
+      - name: Create the doxygen
+        run: make doxygen
+      # Deploy to GitHub Pages
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/doc/html
