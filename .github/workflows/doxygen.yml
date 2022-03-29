@@ -17,8 +17,8 @@ jobs:
       - name: Checkout current branch
         uses: actions/checkout@v2
       # 2. Install doxygen and its auxiliary components.
-      - name: Install doxygen and latex components
-        run: sudo apt-get update; sudo apt-get install -y doxygen graphviz texlive-full make
+      - name: Install doxygen
+        run: sudo apt-get install -y doxygen graphviz make
       # 3. Create the doxygen pages.
       - name: Create the doxygen
         run: make doxygen

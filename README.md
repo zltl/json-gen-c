@@ -11,6 +11,8 @@ then generate C code to serialize and deserialize the structs.
 
 ![covor](https://raw.githubusercontent.com/zltl/json-gen-c/main/doc/json-gen-c.png)
 
+- [Document](https://zltl.github.io/json-gen-c/)
+
 ## Build and install
 
 ```bash
