@@ -54,7 +54,7 @@ struct B {
 };
 ```
 
-### Compiling Your json-gen-c File
+### Compiling Your Struct Definition File
 
 ```bash
 json-gen-c -in struct.json-gen-c -out .
