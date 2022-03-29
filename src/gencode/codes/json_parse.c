@@ -44,7 +44,7 @@ static unsigned int hash_s(const char* data, size_t n, unsigned int seed) {
     return h;
 }
 
-inline static unsigned int hash_2s_c(const char* key1, const char* key2) {
+static unsigned int hash_2s_c(const char* key1, const char* key2) {
     unsigned int res = 0xbc9f1d34;
     sstr_t tmp = sstr(key1);
     sstr_append_of(tmp, "#", 1);
@@ -54,8 +54,8 @@ inline static unsigned int hash_2s_c(const char* key1, const char* key2) {
     return res;
 }
 
-struct json_field_offset_item* json_field_offset_item_find(const char* st,
-                                                           const char* field) {
+static struct json_field_offset_item* json_field_offset_item_find(
+    const char* st, const char* field) {
     unsigned int h = hash_2s_c(st, field) % json_entry_hash_size;
     int id = json_entry_hash[h];
     if (id < 0) {
@@ -465,7 +465,7 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
         int tk = JSON_TOKEN_INTEGER;
         int start_pos = i;
         if (data[i] == '-') {
-            sstr_append_of(txt, data+i, 1);
+            sstr_append_of(txt, data + i, 1);
             i++;
             start_pos = i;
             pos->col++;
@@ -512,8 +512,8 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
     return JSON_TOKEN_EOF;
 }
 
-int json_unmarshal_scalar_int(sstr_t content, struct json_pos* pos, int* val,
-                              sstr_t txt) {
+static int json_unmarshal_scalar_int(sstr_t content, struct json_pos* pos,
+                                     int* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk == JSON_TOKEN_BOOL_FALSE) {
         *val = 0;
@@ -531,8 +531,8 @@ int json_unmarshal_scalar_int(sstr_t content, struct json_pos* pos, int* val,
     return 0;
 }
 
-int json_unmarshal_scalar_long(sstr_t content, struct json_pos* pos, long* val,
-                               sstr_t txt) {
+static int json_unmarshal_scalar_long(sstr_t content, struct json_pos* pos,
+                                      long* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_INTEGER) {
         sstr_t e =
@@ -546,8 +546,8 @@ int json_unmarshal_scalar_long(sstr_t content, struct json_pos* pos, long* val,
     return 0;
 }
 
-int json_unmarshal_scalar_float(sstr_t content, struct json_pos* pos,
-                                float* val, sstr_t txt) {
+static int json_unmarshal_scalar_float(sstr_t content, struct json_pos* pos,
+                                       float* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_FLOAT && tk != JSON_TOKEN_INTEGER) {
         sstr_t e = PERROR(pos, "expected floating number but got '%s'",
@@ -561,8 +561,8 @@ int json_unmarshal_scalar_float(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
-int json_unmarshal_scalar_double(sstr_t content, struct json_pos* pos,
-                                 double* val, sstr_t txt) {
+static int json_unmarshal_scalar_double(sstr_t content, struct json_pos* pos,
+                                        double* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_FLOAT && tk != JSON_TOKEN_INTEGER) {
         sstr_t e = PERROR(pos, "expected floating number but got '%s'",
@@ -576,8 +576,8 @@ int json_unmarshal_scalar_double(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
-int json_unmarshal_scalar_sstr_t(sstr_t content, struct json_pos* pos,
-                                 sstr_t* val, sstr_t txt) {
+static int json_unmarshal_scalar_sstr_t(sstr_t content, struct json_pos* pos,
+                                        sstr_t* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk == JSON_TOKEN_NULL) {
         return 0;
@@ -620,8 +620,9 @@ static int json_unmarshal_ignore_value(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
-int json_unmarshal_array_internal_int(sstr_t content, struct json_pos* pos,
-                                      int** ptr, int* ptrlen, sstr_t txt) {
+static int json_unmarshal_array_internal_int(sstr_t content,
+                                             struct json_pos* pos, int** ptr,
+                                             int* ptrlen, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_LEFT_BRACKET) {
         sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
@@ -659,8 +660,9 @@ int json_unmarshal_array_internal_int(sstr_t content, struct json_pos* pos,
     }
 }
 
-int json_unmarshal_array_internal_long(sstr_t content, struct json_pos* pos,
-                                       long** ptr, int* ptrlen, sstr_t txt) {
+static int json_unmarshal_array_internal_long(sstr_t content,
+                                              struct json_pos* pos, long** ptr,
+                                              int* ptrlen, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_LEFT_BRACKET) {
         sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
@@ -698,8 +700,10 @@ int json_unmarshal_array_internal_long(sstr_t content, struct json_pos* pos,
     }
 }
 
-int json_unmarshal_array_internal_float(sstr_t content, struct json_pos* pos,
-                                        float** ptr, int* ptrlen, sstr_t txt) {
+static int json_unmarshal_array_internal_float(sstr_t content,
+                                               struct json_pos* pos,
+                                               float** ptr, int* ptrlen,
+                                               sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_LEFT_BRACKET) {
         sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
@@ -737,9 +741,10 @@ int json_unmarshal_array_internal_float(sstr_t content, struct json_pos* pos,
     }
 }
 
-int json_unmarshal_array_internal_double(sstr_t content, struct json_pos* pos,
-                                         double** ptr, int* ptrlen,
-                                         sstr_t txt) {
+static int json_unmarshal_array_internal_double(sstr_t content,
+                                                struct json_pos* pos,
+                                                double** ptr, int* ptrlen,
+                                                sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_LEFT_BRACKET) {
         sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
@@ -777,9 +782,10 @@ int json_unmarshal_array_internal_double(sstr_t content, struct json_pos* pos,
     }
 }
 
-int json_unmarshal_array_internal_sstr_t(sstr_t content, struct json_pos* pos,
-                                         sstr_t** ptr, int* ptrlen,
-                                         sstr_t txt) {
+static int json_unmarshal_array_internal_sstr_t(sstr_t content,
+                                                struct json_pos* pos,
+                                                sstr_t** ptr, int* ptrlen,
+                                                sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
     if (tk != JSON_TOKEN_LEFT_BRACKET) {
         sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
@@ -900,12 +906,13 @@ int json_unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, int* len) {
     return r;
 }
 
-int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
-                                   struct json_parse_param* param, sstr_t txt);
+static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
+                                          struct json_parse_param* param,
+                                          sstr_t txt);
 
-int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
-                                  struct json_parse_param* param, int* len,
-                                  sstr_t txt) {
+static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
+                                         struct json_parse_param* param,
+                                         int* len, sstr_t txt) {
     *len = 0;
     struct json_field_offset_item* field =
         json_field_offset_item_find(param->struct_name, "");
@@ -975,8 +982,9 @@ int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
-int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
-                                   struct json_parse_param* param, sstr_t txt) {
+static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
+                                          struct json_parse_param* param,
+                                          sstr_t txt) {
     // '{'
     int tk = json_next_token(content, pos, txt);
     if (tk == JSON_TOKEN_EOF) {
