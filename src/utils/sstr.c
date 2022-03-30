@@ -158,8 +158,11 @@ sstr_t sstr_dup(sstr_t s) { return sstr_of(STR_PTR(s), sstr_length(s)); }
 sstr_t sstr_substr(sstr_t s, size_t index, size_t len) {
     size_t minlen = len;
     size_t str_len = sstr_length(s);
-    if (minlen > str_len) {
-        minlen = str_len;
+    if (index > str_len) {
+        return sstr_new();
+    }
+    if (index + minlen > str_len) {
+        minlen = str_len - index;
     }
     return sstr_of(STR_PTR(s) + index, minlen);
 }
@@ -213,8 +216,8 @@ sstr_t sstr_vslprintf_append(sstr_t buf, const char* fmt, va_list args) {
     double f;
     size_t slen;
     int64_t i64;
-    uint64_t ui64, frac;
-    unsigned int width, sign, hex, frac_width, scale, n;
+    uint64_t ui64, frac, scale;
+    unsigned int width, sign, hex, frac_width, frac_width_set, n;
     STR* S;
     /* a default d after %..x/u  */
     int df_d;
@@ -231,6 +234,7 @@ sstr_t sstr_vslprintf_append(sstr_t buf, const char* fmt, va_list args) {
             sign = 1;
             hex = 0;
             frac_width = 6;
+            frac_width_set = 0;
             slen = (size_t)-1;
 
             while (*fmt >= '0' && *fmt <= '9') {
@@ -262,9 +266,10 @@ sstr_t sstr_vslprintf_append(sstr_t buf, const char* fmt, va_list args) {
 
                     case '.':
                         fmt++;
-
+                        frac_width = 0;
                         while (*fmt >= '0' && *fmt <= '9') {
                             frac_width = frac_width * 10 + (*fmt++ - '0');
+                            frac_width_set = 1;
                         }
 
                         break;
@@ -396,6 +401,11 @@ sstr_t sstr_vslprintf_append(sstr_t buf, const char* fmt, va_list args) {
                         sstr_append_of(buf, ".", 1);
                         ptmp = sstr_sprintf_num(tmp, tmp + sizeof(tmp), frac,
                                                 '0', 0, frac_width);
+                        if (frac_width_set == 0) {
+                            while (*(ptmp - 1) == '0' && ptmp > tmp) {
+                                ptmp--;
+                            }
+                        }
                         sstr_append_of(buf, tmp, ptmp - tmp);
                     }
 
