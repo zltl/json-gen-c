@@ -6,6 +6,28 @@
 
 #include "sstr.h"
 
+/*
+  hash map to describe structs like:
+
+    hash(structname, fieldname) --> index of json_field_offset_item
+                                      |
+                                -------
+                                |
+                                v
+    json_field_offset_item:  [] [index of item] [] [] [] []
+                                       |
+                                       -----
+                                           |
+                                           v
+    json_field_offset_item: [item] [item] [item] item
+                                          |:
+                                            {
+                                                offset, type_size ...
+                                            }
+
+    json parser need this information to get the location of each field,
+    then store value to the right location.
+*/
 extern struct json_field_offset_item json_field_offset_item[];
 extern int json_entry_hash_size;
 extern int json_entry_hash[];
@@ -54,6 +76,7 @@ static unsigned int hash_2s_c(const char* key1, const char* key2) {
     return res;
 }
 
+// find the index of json_field_offset_item by structname and field name
 static struct json_field_offset_item* json_field_offset_item_find(
     const char* st, const char* field) {
     unsigned int h = hash_2s_c(st, field) % json_entry_hash_size;
@@ -73,6 +96,12 @@ static struct json_field_offset_item* json_field_offset_item_find(
             h = 0;
         }
         id = json_entry_hash[h];
+        // -1 means empty slot.
+        // The size of hash array is twize of items number, so the array
+        // should have many empty slots.
+        // We step to next slot if conflict when construct the array, so
+        // if we find empty slot, it means the key is not in the hash table
+        // array.
         if (id < 0) {
             return NULL;
         }
@@ -81,6 +110,7 @@ static struct json_field_offset_item* json_field_offset_item_find(
     return NULL;
 }
 
+/// print tokens, for debug
 static char* ptoken(int type, sstr_t txt) {
     switch (type) {
         case JSON_TOKEN_QUOTE:
@@ -118,6 +148,7 @@ static char* ptoken(int type, sstr_t txt) {
     return "";
 }
 
+// print error messages, for debugs
 #define PERROR(pos, msg, ...) \
     sstr_printf("line %d col %d: " msg, pos->line, pos->col, ##__VA_ARGS__)
 
@@ -370,6 +401,21 @@ static int json_parse_string_token(sstr_t content, struct json_pos* pos,
     return JSON_TOKEN_STRING;
 }
 
+/*
+  "string": return string JSON_TOKEN_STRING
+  [0-9]+  : return JSON_TOKEN_INTEGER
+  [0-9]+\.[0-9]+ : return JSON_TOKEN_FLOAT
+  true: return JSON_TOKEN_TRUE
+  false: return JSON_TOKEN_FALSE
+  null: return JSON_TOKEN_NULL
+  [: return [
+  ]: return ]
+  {: return {
+  }: return }
+  :: return :
+  ,: return ,
+
+*/
 static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
     long len = sstr_length(content);
     long i = pos->offset;
@@ -512,6 +558,8 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
     return JSON_TOKEN_EOF;
 }
 
+// parse integer, set integer value to *val, put error string to txt.
+// parse bool true to 1, and false to 0.
 static int json_unmarshal_scalar_int(sstr_t content, struct json_pos* pos,
                                      int* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
@@ -531,6 +579,7 @@ static int json_unmarshal_scalar_int(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
+// parse integer, set long integer value to *val, put integer string to txt.
 static int json_unmarshal_scalar_long(sstr_t content, struct json_pos* pos,
                                       long* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
@@ -546,6 +595,7 @@ static int json_unmarshal_scalar_long(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
+// parse float, set float value to *val, put error string to txt.
 static int json_unmarshal_scalar_float(sstr_t content, struct json_pos* pos,
                                        float* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
@@ -561,6 +611,8 @@ static int json_unmarshal_scalar_float(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
+// parse double floating point number, set double value to *val, put error
+// string to txt.
 static int json_unmarshal_scalar_double(sstr_t content, struct json_pos* pos,
                                         double* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
@@ -576,6 +628,8 @@ static int json_unmarshal_scalar_double(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
+// parse string value, create an sstr_t instance and set it to *val, put error
+// string to txt if error occur.
 static int json_unmarshal_scalar_sstr_t(sstr_t content, struct json_pos* pos,
                                         sstr_t* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
@@ -592,6 +646,9 @@ static int json_unmarshal_scalar_sstr_t(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
+// ignore value, just skip it.
+// call this function if parse a keyname that does not exists
+// in field list of a struct.
 static int json_unmarshal_ignore_value(sstr_t content, struct json_pos* pos,
                                        sstr_t txt) {
     int brace = 0;
@@ -620,6 +677,8 @@ static int json_unmarshal_ignore_value(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
+// parse array of string like
+//    [1, 2, 3, 8, 3, 5]
 static int json_unmarshal_array_internal_int(sstr_t content,
                                              struct json_pos* pos, int** ptr,
                                              int* ptrlen, sstr_t txt) {

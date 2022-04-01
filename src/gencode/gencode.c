@@ -560,7 +560,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
 }
 
 /*
-    generate hash mam of struct like:
+    generate hash map of struct like:
 
     hash(structname, fieldname) --> index of json_field_offset_item
                                       |
