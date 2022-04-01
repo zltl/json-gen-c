@@ -101,14 +101,60 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a0b9df81f181caafe28f28032bd2dca69"><td class="memItemLeft" align="right" valign="top"><a id="a0b9df81f181caafe28f28032bd2dca69"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>gencode_source</b> (struct <a class="el" href="structhash__map.html">hash_map</a> *struct_map, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> source, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> header)</td></tr>
+<tr class="memitem:a0b9df81f181caafe28f28032bd2dca69"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gencode_8h.html#a0b9df81f181caafe28f28032bd2dca69">gencode_source</a> (struct <a class="el" href="structhash__map.html">hash_map</a> *struct_map, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> source, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> header)</td></tr>
+<tr class="memdesc:a0b9df81f181caafe28f28032bd2dca69"><td class="mdescLeft">&#160;</td><td class="mdescRight">generate json manipulate codes by struct_map into source and header.  <a href="gencode_8h.html#a0b9df81f181caafe28f28032bd2dca69">More...</a><br /></td></tr>
 <tr class="separator:a0b9df81f181caafe28f28032bd2dca69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>generate json manipulate codes. </p>
 <dl class="section author"><dt>Author</dt><dd>your name (<a href="#" onclick="location.href='mai'+'lto:'+'you'+'@d'+'oma'+'in'+'.co'+'m'; return false;">you@d<span style="display: none;">.nosp@m.</span>omai<span style="display: none;">.nosp@m.</span>n.com</a>) </dd></dl>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a0b9df81f181caafe28f28032bd2dca69"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b9df81f181caafe28f28032bd2dca69">&#9670;&nbsp;</a></span>gencode_source()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int gencode_source </td>
+          <td>(</td>
+          <td class="paramtype">struct <a class="el" href="structhash__map.html">hash_map</a> *&#160;</td>
+          <td class="paramname"><em>struct_map</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td>
+          <td class="paramname"><em>header</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>generate json manipulate codes by struct_map into source and header. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">struct_map</td><td>the hash map that store all structs parsed from struct defintion files. </td></tr>
+    <tr><td class="paramname">source</td><td>the output source code. </td></tr>
+    <tr><td class="paramname">header</td><td>the output header code. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>int 0 if success, -1 if failed. </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- HTML footer for doxygen 1.8.17-->
 <!-- start footer part -->
