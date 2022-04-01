@@ -71,6 +71,7 @@ int main(int argc, const char **argv) {
         return -1;
     }
 
+    // the output json.gen.c and json.gen.h files.
     sstr_t source = sstr_new();
     sstr_t head = sstr_new();
     r = gencode_source(parser->struct_map, source, head);
@@ -82,6 +83,7 @@ int main(int argc, const char **argv) {
         struct_parser_free(parser);
         return -1;
     }
+    // write to json.gen.c and json.gen.h
     sstr_t out_c_file = sstr(options.output_path);
     sstr_append_of(out_c_file, "/", 1);
     sstr_append_of(out_c_file, OUTPUT_C_FILENAME, strlen(OUTPUT_C_FILENAME));
@@ -95,6 +97,7 @@ int main(int argc, const char **argv) {
     sstr_free(source);
     sstr_free(head);
 
+    // write sstr.h, sstr.c
     sstr_t source_ext = sstr(options.output_path);
     sstr_t head_ext = sstr(options.output_path);
     sstr_append_cstr(source_ext, "/sstr.c");
