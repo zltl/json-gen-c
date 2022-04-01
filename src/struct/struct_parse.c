@@ -335,8 +335,10 @@ static char* token_type_str(struct struct_token* token) {
     fprintf(stderr, "file %s, line %d, col %d: " fmt, parser->name, \
             parser->pos.line, parser->pos.col, ##__VA_ARGS__)
 
+// '#include "filename"'
 static int struct_parse_include(struct struct_parser* parser, sstr_t content,
                                 struct struct_token* token) {
+    // 'include'
     int tk = next_token(parser, content, token);
     if (tk != TOKEN_IDENTIFY || sstr_compare_c(token->txt, "include") != 0) {
         PERROR(parser, "expect #include, but found %s\n",
@@ -344,6 +346,7 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
         return -1;
     }
 
+    // '"filename"', or '<filename>'
     tk = next_token(parser, content, token);
     if (tk != TOKEN_STRING) {
         PERROR(parser, "expect string file name, but found %s\n",
@@ -351,6 +354,8 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
         return -1;
     }
 
+    // filename is relative to current file.
+    // get the real path of the file.
     char* filename = sstr_cstr(token->txt);
     sstr_t file = sstr_new();
     int fname_len = strlen(parser->name);
@@ -364,6 +369,7 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     sstr_free(token->txt);
     token->txt = NULL;
 
+    // read the contents of the file
     sstr_t sub_content = sstr_new();
     int r = read_file(sstr_cstr(file), sub_content);
     if (r != 0) {
@@ -373,12 +379,16 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
 
         return -1;
     }
+
+    // then parse it.
     struct struct_parser sub_parser;
     sub_parser.name = sstr_cstr(file);
     sub_parser.pos.col = 0;
     sub_parser.pos.line = 1;
     sub_parser.pos.offset = 0;
+    // put the structs into the upper parser->struct_map also.
     sub_parser.struct_map = parser->struct_map;
+    // then we step into the sub file.
     r = struct_parser_parse(&sub_parser, sub_content);
     sstr_free(sub_content);
     sstr_free(file);
@@ -386,6 +396,7 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     return r;
 }
 
+// parse 'struct' or '#include ' statement
 static int parse_keyword_struct_or_include(struct struct_parser* parser,
                                            sstr_t content,
                                            struct struct_token* token) {
@@ -400,9 +411,12 @@ static int parse_keyword_struct_or_include(struct struct_parser* parser,
     }
 
     if (tk == TOKEN_SHARPE) {
+        // try parse '#include "filename"'
+        // TODO: look wierd on this function, maybe need to be refactor
         return struct_parse_include(parser, content, token);
     }
 
+    // else parse 'struct' keyword
     if (tk != TOKEN_IDENTIFY) {
         PERROR(parser, "expected \'struct\', found \'%s\'\n",
                token_type_str(token));
@@ -446,6 +460,7 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
     }
     type_name = token->txt;
 
+    // field type MUST not be 'struct', it's a reserved keyword.
     if (sstr_compare_c(type_name, "struct") == 0) {
         PERROR(parser,
                "expected field type, found reserve keyworkd 'struct'\n");
@@ -453,6 +468,7 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
         return -1;
     }
 
+    // get type id of typename.
     if (sstr_compare_c(type_name, TYPE_NAME_INT) == 0) {
         type_id = FIELD_TYPE_INT;
     } else if (sstr_compare_c(type_name, TYPE_NAME_BOOL) == 0) {
@@ -469,6 +485,7 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
         type_id = FIELD_TYPE_STRUCT;
     }
     field->type = type_id;
+    // treat bool as int, because no 'bool' scalar type in C.
     if (type_id == FIELD_TYPE_BOOL) {
         field->type_name = sstr("int");
     } else {
@@ -513,10 +530,12 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
     return 0;
 }
 
+// parse a struct
+// or #include statement
 static int parse_struct(struct struct_parser* parser, sstr_t content,
                         struct struct_token* token,
                         struct struct_container* sct) {
-    // 'struct'
+    // 'struct', or '#include'
     int r = parse_keyword_struct_or_include(parser, content, token);
     if (r != 0) {
         return r;
@@ -573,12 +592,18 @@ static int parse_struct(struct struct_parser* parser, sstr_t content,
     return 0;
 }
 
+// parse a struct definition file.
+// return 0 if success, -1 if error
+// if success, the parser->struct_map will store all structs.
 int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
     struct struct_token token;
     token.txt = NULL;
     token.type = 0;
     token.txt = NULL;
+
     do {
+        // start parsing 'struct aa{ type field; type field; };'
+
         struct struct_container* sct = struct_container_new();
         int r = parse_struct(parser, content, &token, sct);
         if (r != 0) {
@@ -586,7 +611,10 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
             return r;
         }
         if (sct->name) {
+            // we insert fields into sct->fields to the head of the list,
+            // so the list is reversed.
             struct_field_reverse(&sct->fields);
+            // than insert a struct into parser->struct_map;
             hash_map_insert(parser->struct_map, sstr_dup(sct->name), sct);
         } else {
             struct_container_free(sct);
