@@ -57,19 +57,22 @@ inline static unsigned int hash_2s(sstr_t key1, sstr_t key2) {
 static void gen_code_struct_marshal_array(struct struct_container* st,
                                           sstr_t source);
 
+// header file for a single struct.
 static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
-    (void)header;
+    // struct definitions
     sstr_append_cstr(header, "struct ");
     sstr_append(header, st->name);
     sstr_append_cstr(header, " {\n");
     struct struct_field* field = st->fields;
     while (field) {
+        // fields
         sstr_append_cstr(header, "    ");
         if (field->type == FIELD_TYPE_STRUCT) {
             sstr_append_cstr(header, "struct ");
         }
         sstr_append(header, field->type_name);
         if (field->is_array) {
+            // if it's an array, set type to pointer
             sstr_append_cstr(header, "*");
         }
         sstr_append_cstr(header, " ");
@@ -77,6 +80,8 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
         sstr_append_cstr(header, ";\n");
 
         if (field->is_array) {
+            // if it's an array, add a field_name_len integer field
+            // to denote the size of array.
             sstr_printf_append(header, "    int %S_len;\n", field->name);
         }
 
@@ -84,10 +89,13 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
     }
     sstr_append_cstr(header, "};\n\n");
 
+    // init/uninit functions
     sstr_printf_append(header, "int %S_init(struct %S*obj);\n", st->name,
                        st->name);
     sstr_printf_append(header, "int %S_clear(struct %S*obj);\n", st->name,
                        st->name);
+
+    // marshal/unmarshal functions
     sstr_printf_append(header,
                        "int json_marshal_%S(struct %S* obj, sstr_t out);\n",
                        st->name, st->name);
@@ -159,6 +167,7 @@ static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
     sstr_append_cstr(source, "}\n\n");
 }
 
+// marshal function for a single struct
 static void gen_code_struct_marshal_struct(struct struct_container* st,
                                            sstr_t source) {
     sstr_printf_append(source,
@@ -344,12 +353,15 @@ static void gen_code_scalar_marshal_array(sstr_t source) {
         "}\n\n");
 }
 
+// init functions for a single struct
 static void gen_code_struct_init(struct struct_container* st, sstr_t source) {
     sstr_printf_append(source, "int %S_init(struct %S*obj) {\n", st->name,
                        st->name);
     struct struct_field* field = st->fields;
     for (; field; field = field->next) {
         if (field->is_array) {
+            // if array, an extra integer field XXX_len denoting the size
+            // of the array.
             sstr_printf_append(source, "    obj->%S = NULL;\n", field->name);
             sstr_printf_append(source, "    obj->%S_len = 0;\n", field->name);
             continue;
@@ -381,6 +393,7 @@ static void gen_code_struct_init(struct struct_container* st, sstr_t source) {
     sstr_append_cstr(source, "    return 0;\n}\n\n");
 }
 
+// clear function for a single struct
 static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
     sstr_printf_append(source, "int %S_clear(struct %S*obj) {\n", st->name,
                        st->name);
@@ -388,6 +401,7 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
     struct struct_field* field = st->fields;
     for (; field; field = field->next) {
         if (field->is_array) {
+            // free array, and set XXX_len=0
             if (field->type == FIELD_TYPE_STRUCT ||
                 field->type == FIELD_TYPE_SSTR) {
                 if (!have_i) {
@@ -412,17 +426,14 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
             sstr_printf_append(source, "    obj->%S_len = 0;\n", field->name);
             continue;
         }
+
         switch (field->type) {
             case FIELD_TYPE_INT:
             case FIELD_TYPE_BOOL:
-                sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
-                break;
             case FIELD_TYPE_LONG:
                 sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
                 break;
             case FIELD_TYPE_FLOAT:
-                sstr_printf_append(source, "    obj->%S = 0.0;\n", field->name);
-                break;
             case FIELD_TYPE_DOUBLE:
                 sstr_printf_append(source, "    obj->%S = 0.0;\n", field->name);
                 break;
@@ -441,14 +452,22 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
     sstr_append_cstr(source, "    return 0;\n}\n\n");
 }
 
+// generate the struct codes
 static void gen_code_struct(struct struct_container* st, sstr_t source,
                             sstr_t header) {
+    // type definitions and function declares.
     gen_code_struct_header(st, header);
+    // XXX_init()
     gen_code_struct_init(st, source);
+    // XXX_clear()
     gen_code_struct_clear(st, source);
+    // json_marshal_XXX()
     gen_code_struct_marshal_struct(st, source);
+    // json_unmarshal_XXX()
     gen_code_struct_unmarshal_struct(st, source);
+    // json_unmarshal_array_XXX()
     gen_code_struct_unmarshal_array_struct(st, source);
+    // json_marshal_array_XXX()
     gen_code_struct_marshal_array(st, source);
 }
 
@@ -540,6 +559,25 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
     }
 }
 
+/*
+    generate hash mam of struct like:
+
+    hash(structname, fieldname) --> index of json_field_offset_item
+                                      |
+                                -------
+                                |
+                                v
+    json_field_offset_item:  [] [index of item] [] [] [] []
+                                       |
+                                       -----
+                                           |
+                                           v
+    json_field_offset_item: [item] [item] [item] item
+                                          |:
+                                            {
+                                                offset, type_size ...
+                                            }
+*/
 static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
                                 sstr_t header) {
     int total_fields = 0;
@@ -591,6 +629,7 @@ struct do_each_struct_gen_code_param {
     sstr_t header;
 };
 
+// generate code for each struct
 static void do_each_struct_gen_code(void* key, void* value, void* ptr) {
     sstr_t k = (sstr_t)key;
     struct struct_container* v = (struct struct_container*)value;
@@ -600,11 +639,15 @@ static void do_each_struct_gen_code(void* key, void* value, void* ptr) {
 
     void* dv = NULL;
 
+    // jsut return if the struct is already generated.
     int r = hash_map_find(dep_map, k, &dv);
     if (r == HASH_MAP_OK) {
         return;
     }
 
+    // for each field, check if it is a struct type, and already
+    // inserted into dependency map, if not, we cannot generate code
+    // for this struct, just return.
     struct struct_field* iter = v->fields;
     while (iter) {
         if (iter->type == FIELD_TYPE_STRUCT) {
@@ -617,6 +660,9 @@ static void do_each_struct_gen_code(void* key, void* value, void* ptr) {
     }
     // all dependency is resolved
     gen_code_struct(v, param->source, param->header);
+
+    // now the struct is generated, we can insert it into dependency map
+    // to avoid generating it again.
     hash_map_insert(dep_map, sstr_dup(k), NULL);
 }
 
@@ -669,26 +715,44 @@ int gencode_source_end(sstr_t source) {
 }
 
 int gencode_source(struct hash_map* struct_map, sstr_t source, sstr_t header) {
+    // to ensure the order struct definition on header file, we use a hash map
+    // to store the struct names that already defined in header file.
+    // if a struct is not in the hash map, we test all field of it, if any field
+    // is a struct and not in the hash map, we skip it to the next loop. If all
+    // fields in the struct are already in the hash map, we generate the code of
+    // the struct.
     struct hash_map* dependency_map =
         hash_map_new(DEPENDENCY_HASH_MAP_BUCKET_SIZE, sstr_key_hash,
                      sstr_key_cmp, sstr_key_free, dummy_free);
     if (dependency_map == NULL) {
         return -1;
     }
+
     int i;
     struct do_each_struct_gen_code_param param;
     param.dependency_map = dependency_map;
     param.source = source;
     param.header = header;
+
+    // generate header guards and all common functions declarations.
     gencode_head_guard_begin(header);
+    // includes, and all common functions, scalar type parsing codes.
     gencode_source_begin(source);
 
+    // Think about the worst case, we only have one struct defined on each loop,
+    // then we must have loop through struct_map the times same as the number of
+    // structs.
     for (i = 0; i < struct_map->size; ++i) {
+        // for each struct, find a struct that not defined and all it's fields
+        // are already defined, generate the codes for it.
         hash_map_for_each(struct_map, do_each_struct_gen_code, &param);
         if (struct_map->size == dependency_map->size) {
             break;
         }
     }
+    // if all struct are already defined, the dependency_map's size
+    // should be equal to struct_map's size.
+    // if not, we have a circular dependency.
     if (struct_map->size != dependency_map->size) {
         printf("msize = %d, d size=%d\n", struct_map->size,
                dependency_map->size);
@@ -697,8 +761,13 @@ int gencode_source(struct hash_map* struct_map, sstr_t source, sstr_t header) {
         return -1;
     }
 
+    // generate a hashmap to store the structs name, fields, types, and the
+    // offset of each field on the struct. the json parser codes need this
+    // information to store the parsed data.
     gen_code_offset_map(struct_map, source, header);
+
     gencode_head_guard_end(header);
+    // append json_parse.c
     gencode_source_end(source);
 
     hash_map_free(dependency_map);
