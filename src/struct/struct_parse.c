@@ -520,13 +520,11 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
         }
 
         tk = next_token(parser, content, token);
-        if (tk != TOKEN_SEMICOLON) {
-            PERROR(parser, "expected \';\', found \'%s\'\n",
-                   token_type_str(token));
-            return -1;
-        }
     }
-
+    if (tk != TOKEN_SEMICOLON) {
+        PERROR(parser, "expected \';\', found \'%s\'\n", token_type_str(token));
+        return -1;
+    }
     return 0;
 }
 
