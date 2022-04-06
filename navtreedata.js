@@ -24,8 +24,8 @@ var NAVTREE =
 [
   [ "json-gen-c", "index.html", [
     [ "Overview", "index.html#autotoc_md0", null ],
-    [ "Build and install", "index.html#autotoc_md1", null ],
-    [ "Quick start", "index.html#autotoc_md2", [
+    [ "Build and Install", "index.html#autotoc_md1", null ],
+    [ "Quick Start", "index.html#autotoc_md2", [
       [ "Define Structs", "index.html#autotoc_md3", null ],
       [ "Compiling Your Struct Definition File", "index.html#autotoc_md4", null ],
       [ "Use Your Generated Codes", "index.html#autotoc_md5", [
