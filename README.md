@@ -5,15 +5,15 @@ json-gen-c
 
 ## Overview
 
-json-gen-c is an easy mechanism for searializing C struct to JSON and
-deserializing JSON to C struct back. It parse structs' definition file
-then generate C code to serialize and deserialize the structs.
+json-gen-c is a program for searializing C struct to JSON and
+deserializing JSON to C struct back. It parse structs' definition files
+then generate C codes to serialize and deserialize the structs.
 
 ![covor](https://raw.githubusercontent.com/zltl/json-gen-c/main/doc/json-gen-c.png)
 
 - [Document](https://zltl.github.io/json-gen-c/)
 
-## Build and install
+## Build and Install
 
 ```bash
 make
@@ -31,7 +31,7 @@ make test
 make benchmark
 ```
 
-## Quick start
+## Quick Start
 
 [example](./example/example.json-gen-c)
 
