@@ -70,7 +70,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="textblock"><p><a href="https://github.com/zltl/json-gen-c/actions/workflows/test.yml"><object type="image/svg+xml" data="https://github.com/zltl/json-gen-c/actions/workflows/test.yml/badge.svg?branch=main" style="pointer-events: none;">build test action</object></a></p>
 <h1><a class="anchor" id="autotoc_md0"></a>
 Overview</h1>
-<p>json-gen-c is a program for searializing C struct to JSON and deserializing JSON to C struct back. It parse structs' definition files then generate C codes to serialize and deserialize the structs.</p>
+<p>json-gen-c is a program for searializing C struct to JSON and deserializing JSON to C struct back. It parse structs' definition files then generate C codes to serialize and deserialize <code>struct</code>s.</p>
 <p><img src="https://raw.githubusercontent.com/zltl/json-gen-c/main/doc/json-gen-c.png" alt="covor" class="inline"/></p>
 <ul>
 <li><a href="https://zltl.github.io/json-gen-c/">Document</a></li>
@@ -106,7 +106,8 @@ Define Structs</h2>
 <div class="line"><span class="keyword">struct </span>B {</div>
 <div class="line">    <span class="keywordtype">int</span> id;</div>
 <div class="line">};</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md4"></a>
+</div><!-- fragment --><p>Note that we don't use C-style string <code>char*</code>, a more resonable type is <code>sstr_t</code>. You can find more details about <code>sstr_t</code> in <a href="https://zltl.github.io/json-gen-c/sstr_8h.html">document of sstr</a>.</p>
+<h2><a class="anchor" id="autotoc_md4"></a>
 Compiling Your Struct Definition File</h2>
 <div class="fragment"><div class="line">json-gen-c -in struct.json-gen-c -out .</div>
 </div><!-- fragment --><p>This generates the following files in your specified destination directory:</p>
