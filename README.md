@@ -7,7 +7,7 @@ json-gen-c
 
 json-gen-c is a program for searializing C struct to JSON and
 deserializing JSON to C struct back. It parse structs' definition files
-then generate C codes to serialize and deserialize the structs.
+then generate C codes to serialize and deserialize `struct`s.
 
 ![covor](https://raw.githubusercontent.com/zltl/json-gen-c/main/doc/json-gen-c.png)
 
@@ -55,6 +55,10 @@ struct B {
     int id;
 };
 ```
+
+Note that we don't use C-style string `char*`, a more resonable type is 
+`sstr_t`. You can find more details about `sstr_t` in 
+[document of sstr](https://zltl.github.io/json-gen-c/sstr_8h.html).
 
 ### Compiling Your Struct Definition File
 
