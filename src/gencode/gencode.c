@@ -90,33 +90,112 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
     sstr_append_cstr(header, "};\n\n");
 
     // init/uninit functions
-    sstr_printf_append(header, "int %S_init(struct %S*obj);\n", st->name,
+    sstr_printf_append(header,
+                       "/**\n"
+                       " * @brief initialize function for struct %S\n"
+                       " * it set all fields of obj to 0.\n"
+                       " *\n"
+                       " * @param obj the struct object to be initialized\n"
+                       " */\n",
                        st->name);
-    sstr_printf_append(header, "int %S_clear(struct %S*obj);\n", st->name,
+    sstr_printf_append(header, "int %S_init(struct %S* obj);\n", st->name,
+                       st->name);
+
+    sstr_printf_append(
+        header,
+        "/**\n"
+        " * @brief uninitialize function for struct %S\n"
+        " * it set all fields of obj to 0, and free all\n"
+        " * dynamically allocated memory of fields inside recursively.\n"
+        " */\n",
+        st->name);
+    sstr_printf_append(header, "int %S_clear(struct %S* obj);\n", st->name,
                        st->name);
 
     // marshal/unmarshal functions
+    sstr_printf_append(
+        header,
+        "/**\n"
+        " * @brief Convert (marshal) struct %S to a well indented json "
+        "string.\n"
+        " * @param obj the struct object to be marshaled\n"
+        " * @param indent the indentation spaces of the output json string\n"
+        " * @param curindent the current indentation before call this "
+        "function,\n"
+        " * set it to 0 if for normal purpose.\n"
+        " * @param out the output json string.\n"
+        " */\n",
+        st->name);
     sstr_printf_append(header,
                        "int json_marshal_indent_%S(struct %S* obj, int indent, "
                        "int curindent, sstr_t out);\n",
                        st->name, st->name);
+
+    sstr_printf_append(
+        header,
+        "/**\n"
+        " * @brief Convert (marshal) struct %S to a not indented json "
+        "string.\n"
+        " * @param obj the struct object to be marshaled\n"
+        " * @param out the output json string.\n"
+        " */\n",
+        st->name);
     sstr_printf_append(header,
                        "#define json_marshal_%S(obj, out) "
                        "json_marshal_indent_%S(obj, 0, 0, out)\n",
                        st->name, st->name);
 
+    sstr_printf_append(
+        header,
+        "/**\n"
+        " * @brief Convert (marshal) an array of struct %S to a well indented "
+        "json string.\n"
+        " * @param obj the array of struct object to be marshaled\n"
+        " * @param indent the indentation spaces of the output json string\n"
+        " * @param curindent the current indentation before call this "
+        "function,\n"
+        " * set it to 0 if for normal purpose.\n"
+        " * @param out the output json string.\n"
+        " */\n",
+        st->name);
     sstr_printf_append(header,
                        "int json_marshal_array_indent_%S(struct %S* obj, int "
                        "len, int indent, int curindent, sstr_t out);\n",
                        st->name, st->name);
+    sstr_printf_append(
+        header,
+        "/**\n"
+        " * @brief Convert (marshal) array of struct %S to a (un)indented json "
+        "string.\n"
+        " * @param obj the struct object to be marshaled\n"
+        " * @param out the output json string.\n"
+        " */\n",
+        st->name);
     sstr_printf_append(header,
                        "#define json_marshal_array_%S(obj, len, out) "
                        "json_marshal_array_indent_%S(obj, len, 0, 0, out)\n",
                        st->name, st->name);
 
     sstr_printf_append(header,
+                       "/**\n"
+                       " * @brief Convert (unmarshal) a json string to an "
+                       "object of struct %S.\n"
+                       " * @param in the input json string.\n"
+                       " * @param obj the output struct object.\n"
+                       " */\n",
+                       st->name);
+    sstr_printf_append(header,
                        "int json_unmarshal_%S(sstr_t in, struct %S* obj);\n",
                        st->name, st->name);
+    sstr_printf_append(header,
+                       "/**\n"
+                       " * @brief Convert (unmarshal) a json string to an "
+                       "object array of struct %S.\n"
+                       " * @param in the input json string.\n"
+                       " * @param obj the output struct object.\n"
+                       " * @param len the output length of the array.\n"
+                       " */\n",
+                       st->name);
     sstr_printf_append(header,
                        "int json_unmarshal_array_%S(sstr_t in, struct %S** "
                        "obj, int* len);\n\n",
@@ -186,7 +265,8 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                        st->name, st->name);
     sstr_append_cstr(source,
                      "    char tmp_cstr[64];\n    (void)tmp_cstr;\n"
-                     "    if (indent && sstr_length(out) && sstr_cstr(out)[sstr_length(out)-1] != ':') {\n"
+                     "    if (indent && sstr_length(out) && "
+                     "sstr_cstr(out)[sstr_length(out)-1] != ':') {\n"
                      "        sstr_append_indent(out, curindent);\n"
                      "    }\n"
                      "    sstr_append_cstr(out, \"{\");\n"
@@ -292,13 +372,12 @@ static void gen_code_struct_marshal_array(struct struct_container* st,
                        "len, int indent, int curindent, sstr_t out) {\n",
                        st->name, st->name);
 
-    sstr_append_cstr(
-        source,
-        "    int i;\n"
-        "    sstr_append_of(out, \"[\", 1);\n"
-        "    sstr_append_of_if(out, \"\\n\", 1, indent);\n"
-        "    curindent += indent;\n"
-        "    for (i = 0; i < len; i++) {\n");
+    sstr_append_cstr(source,
+                     "    int i;\n"
+                     "    sstr_append_of(out, \"[\", 1);\n"
+                     "    sstr_append_of_if(out, \"\\n\", 1, indent);\n"
+                     "    curindent += indent;\n"
+                     "    for (i = 0; i < len; i++) {\n");
     sstr_printf_append(
         source,
         "        json_marshal_indent_%S(&obj[i], indent, curindent, out);\n",
@@ -549,9 +628,9 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
                                 sstr_t header) {
     int total_fields = 0;
     hash_map_for_each(struct_map, count_fields_fd, &total_fields);
-    sstr_printf_append(header, "#define JSON_FIELD_OFFSET_ITEM_SIZE %d\n",
+    sstr_printf_append(source, "#define JSON_FIELD_OFFSET_ITEM_SIZE %d\n",
                        total_fields + struct_map->size + 1);
-    sstr_append_cstr(header,
+    sstr_append_cstr(source,
                      "struct json_field_offset_item {\n"
                      "    int offset;\n"
                      "    int type_size;\n"
@@ -642,16 +721,69 @@ int gencode_head_guard_begin(sstr_t head) {
     sstr_append_cstr(head, "#endif\n\n");
     sstr_append_cstr(
         head,
-        "int json_marshal_array_indent_int(int*obj, int len, int indent, int "
+        "/**\n"
+        " * @brief Convert (marshal) array of int to indented json string.\n"
+        " * @param obj The array of ints.\n"
+        " * @param len length of array obj.\n"
+        " * @indent The indent space of json string.\n"
+        " * @curindent The current indent space of json string before calling "
+        "this function, \n"
+        " * set to 0 if you don't kown what it means.\n"
+        " * @param out The output json string.\n"
+        " */\n"
+        "int json_marshal_array_indent_int(int* obj, int len, int indent, int "
         "curindent, sstr_t out);\n"
-        "int json_marshal_array_indent_long(long*obj, int len, int indent, int "
+        "/**\n"
+        " * @brief Convert (marshal) array of longs to indented json string.\n"
+        " * @param obj The array of longs.\n"
+        " * @param len length of array obj.\n"
+        " * @indent The indent space of json string.\n"
+        " * @curindent The current indent space of json string before calling "
+        "this function, \n"
+        " * set to 0 if you don't kown what it means.\n"
+        " * @param out The output json string.\n"
+        " */\n"
+        "int json_marshal_array_indent_long(long* obj, int len, int indent, "
+        "int "
         "curindent, sstr_t out);\n"
-        "int json_marshal_array_indent_float(float*obj, int len, int indent, "
+        "/**\n"
+        " * @brief Convert (marshal) array of floats to indented json string.\n"
+        " * @param obj The array of floats.\n"
+        " * @param len length of array obj.\n"
+        " * @indent The indent space of json string.\n"
+        " * @curindent The current indent space of json string before calling "
+        "this function, \n"
+        " * set to 0 if you don't kown what it means.\n"
+        " * @param out The output json string.\n"
+        " */\n"
+        "int json_marshal_array_indent_float(float* obj, int len, int indent, "
         "int curindent, sstr_t out);\n"
-        "int json_marshal_array_indent_double(double*obj, int len, int indent, "
+        "/**\n"
+        " * @brief Convert (marshal) array of double to indented json string.\n"
+        " * @param obj The array of doubles.\n"
+        " * @param len length of array obj.\n"
+        " * @indent The indent space of json string.\n"
+        " * @curindent The current indent space of json string before calling "
+        "this function, \n"
+        " * set to 0 if you don't kown what it means.\n"
+        " * @param out The output json string.\n"
+        " */\n"
+        "int json_marshal_array_indent_double(double* obj, int len, int "
+        "indent, "
         "int curindent, sstr_t "
         "out);\n"
-        "int json_marshal_array_indent_sstr_t(sstr_t*obj, int len, int indent, "
+        "/**\n"
+        " * @brief Convert (marshal) array of sstr_t to indented json string.\n"
+        " * @param obj The array of sstr_t's.\n"
+        " * @param len length of array obj.\n"
+        " * @indent The indent space of json string.\n"
+        " * @curindent The current indent space of json string before calling "
+        "this function, \n"
+        " * set to 0 if you don't kown what it means.\n"
+        " * @param out The output json string.\n"
+        " */\n"
+        "int json_marshal_array_indent_sstr_t(sstr_t* obj, int len, int "
+        "indent, "
         "int curindent, sstr_t "
         "out);\n\n"
         "#define json_marshal_array_int(obj, len, out) "
@@ -665,16 +797,46 @@ int gencode_head_guard_begin(sstr_t head) {
         "#define json_marshal_array_sstr_t(obj, len, out) "
         "json_marshal_array_indent_sstr_t(obj, len, 0, 0, out)\n\n"
 
+        "/**\n"
+        " * @brief Convert (unmarshal) json string to array of int.\n"
+        " * @param content The json string.\n"
+        " * @param ptr A pointer to array of int.\n"
+        " * @param len A pointer to int variable to store length of array.\n"
+        " */\n"
         "int json_unmarshal_array_int(sstr_t content, int** ptr, int* "
         "len);\n"
+        "/**\n"
+        " * @brief Convert (unmarshal) json string to array of long.\n"
+        " * @param content The json string.\n"
+        " * @param ptr A pointer to array of long.\n"
+        " * @param len A pointer to int variable to store length of array.\n"
+        " */\n"
         "int json_unmarshal_array_long(sstr_t content, long** ptr, int* "
         "len);\n"
+        "/**\n"
+        " * @brief Convert (unmarshal) json string to array of double.\n"
+        " * @param content The json string.\n"
+        " * @param ptr A pointer to array of double.\n"
+        " * @param len A pointer to int variable to store length of array.\n"
+        " */\n"
         "int json_unmarshal_array_double(sstr_t content, double** ptr, "
         "int* "
         "len);\n"
+        "/**\n"
+        " * @brief Convert (unmarshal) json string to array of float.\n"
+        " * @param content The json string.\n"
+        " * @param ptr A pointer to array of floats.\n"
+        " * @param len A pointer to int variable to store length of array.\n"
+        " */\n"
         "int json_unmarshal_array_float(sstr_t content, float** ptr, "
         "int* "
         "len);\n"
+        "/**\n"
+        " * @brief Convert (unmarshal) json string to array of sstr_t.\n"
+        " * @param content The json string.\n"
+        " * @param ptr A pointer to array of sstr_t.\n"
+        " * @param len A pointer to int variable to store length of array.\n"
+        " */\n"
         "int json_unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, "
         "int* "
         "len);\n\n");
@@ -729,6 +891,11 @@ int gencode_source(struct hash_map* struct_map, sstr_t source, sstr_t header) {
     // includes, and all common functions, scalar type parsing codes.
     gencode_source_begin(source);
 
+    // generate a hashmap to store the structs name, fields, types, and the
+    // offset of each field on the struct. the json parser codes need this
+    // information to store the parsed data.
+    gen_code_offset_map(struct_map, source, header);
+
     // Think about the worst case, we only have one struct defined on each loop,
     // then we must have loop through struct_map the times same as the number of
     // structs.
@@ -750,11 +917,6 @@ int gencode_source(struct hash_map* struct_map, sstr_t source, sstr_t header) {
         hash_map_free(dependency_map);
         return -1;
     }
-
-    // generate a hashmap to store the structs name, fields, types, and the
-    // offset of each field on the struct. the json parser codes need this
-    // information to store the parsed data.
-    gen_code_offset_map(struct_map, source, header);
 
     gencode_head_guard_end(header);
     // append json_parse.c
