@@ -17,7 +17,7 @@ void example_scalar(void) {
     a.sstr_val = sstr("hello\n\r\\ \" ''' world 你好世界");
 
     sstr_t json_out = sstr_new();
-    json_marshal_D(&a, json_out);
+    json_marshal_indent_D(&a, 4, 0, json_out);
     printf("marshal a to json> %s\n", sstr_cstr(json_out));
 
     struct D b;
@@ -29,7 +29,7 @@ void example_scalar(void) {
         sstr_cstr(b.sstr_val), b.bool_val);
 
     sstr_t json_out2 = sstr_new();
-    json_marshal_D(&b, json_out2);
+    json_marshal_indent_D(&b, 4, 0, json_out2);
     printf("marshal b to json> %s\n", sstr_cstr(json_out2));
 
     sstr_free(json_out2);
@@ -52,7 +52,7 @@ void example_struct_array(void) {
         a[i].sstr_val = sstr_printf("hello[%d]world", i);
     }
     sstr_t json_out = sstr_new();
-    json_marshal_array_D(a, 3, json_out);
+    json_marshal_array_indent_D(a, 3, 4, 0, json_out);
     printf("marshal a[] to json> %s\n", sstr_cstr(json_out));
 
     struct D* b = NULL;
@@ -61,7 +61,7 @@ void example_struct_array(void) {
     printf("unmarshal b[] from json> len=%d\n", len);
 
     sstr_t json_out2 = sstr_new();
-    json_marshal_array_D(b, len, json_out2);
+    json_marshal_array_indent_D(b, len, 4, 0, json_out2);
     printf("marshal b[] to json> %s\n", sstr_cstr(json_out2));
     sstr_free(json_out2);
     sstr_free(json_out);
@@ -113,7 +113,7 @@ void example_struct_C() {
     }
 
     sstr_t json_out = sstr_new();
-    json_marshal_C(&c, json_out);
+    json_marshal_indent_C(&c, 4, 0, json_out);
     printf("marshal c to json> %s\n", sstr_cstr(json_out));
 
     struct C c2;
@@ -121,7 +121,7 @@ void example_struct_C() {
     json_unmarshal_C(json_out, &c2);
 
     sstr_t json_out2 = sstr_new();
-    json_marshal_C(&c2, json_out2);
+    json_marshal_indent_C(&c2, 4, 0, json_out2);
     printf("marshal c2 to json> %s\n", sstr_cstr(json_out2));
 
     sstr_free(json_out2);

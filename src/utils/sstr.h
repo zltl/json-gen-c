@@ -1,5 +1,5 @@
 /**
- * @file utils/sstr.h
+ * @file sstr.h
  * @brief sstr_t are objects that represent sequences of characters.
  * @details The standard C style string is a sequence of characters terminated
  * by a null character, which is easy to cause buffer overflow. And it's
@@ -147,6 +147,14 @@ int sstr_compare_c(sstr_t a, const char* b);
 void sstr_append_zero(sstr_t s, size_t length);
 
 /**
+ * @brief append spaces at the end of the sstr_t.
+ *
+ * @param s the sstr_t to append spaces to.
+ * @param indent numbers of spaces to append.
+ */
+void sstr_append_indent(sstr_t s, size_t indent);
+
+/**
  * @brief Extends the sstr_t by appending additional characters in \a data with
  * length of \a length at the end of its current value .
  *
@@ -173,6 +181,10 @@ void sstr_append(sstr_t dst, sstr_t src);
  * @param src source C-style string.
  */
 void sstr_append_cstr(sstr_t dst, const char* src);
+
+void sstr_append_of_if(sstr_t s, const void* data, size_t length, int cond);
+
+void sstr_append_cstr_if(sstr_t dst, const char* src, int cond);
 
 /**
  * @brief Duplicate \a s and return.

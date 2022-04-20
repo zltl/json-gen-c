@@ -97,12 +97,22 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
 
     // marshal/unmarshal functions
     sstr_printf_append(header,
-                       "int json_marshal_%S(struct %S* obj, sstr_t out);\n",
+                       "int json_marshal_indent_%S(struct %S* obj, int indent, "
+                       "int curindent, sstr_t out);\n",
                        st->name, st->name);
-    sstr_printf_append(
-        header,
-        "int json_marshal_array_%S(struct %S* obj, int len, sstr_t out);\n",
-        st->name, st->name);
+    sstr_printf_append(header,
+                       "#define json_marshal_%S(obj, out) "
+                       "json_marshal_indent_%S(obj, 0, 0, out)\n",
+                       st->name, st->name);
+
+    sstr_printf_append(header,
+                       "int json_marshal_array_indent_%S(struct %S* obj, int "
+                       "len, int indent, int curindent, sstr_t out);\n",
+                       st->name, st->name);
+    sstr_printf_append(header,
+                       "#define json_marshal_array_%S(obj, len, out) "
+                       "json_marshal_array_indent_%S(obj, len, 0, 0, out)\n",
+                       st->name, st->name);
 
     sstr_printf_append(header,
                        "int json_unmarshal_%S(sstr_t in, struct %S* obj);\n",
@@ -171,25 +181,35 @@ static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
 static void gen_code_struct_marshal_struct(struct struct_container* st,
                                            sstr_t source) {
     sstr_printf_append(source,
-                       "int json_marshal_%S(struct %S* obj, sstr_t out) {\n",
+                       "int json_marshal_indent_%S(struct %S* obj, int indent, "
+                       "int curindent, sstr_t out) {\n",
                        st->name, st->name);
-    sstr_append_cstr(source, "    char tmp_cstr[64];\n    (void)tmp_cstr;\n");
+    sstr_append_cstr(source,
+                     "    char tmp_cstr[64];\n    (void)tmp_cstr;\n"
+                     "    if (indent && sstr_length(out) && sstr_cstr(out)[sstr_length(out)-1] != ':') {\n"
+                     "        sstr_append_indent(out, curindent);\n"
+                     "    }\n"
+                     "    sstr_append_cstr(out, \"{\");\n"
+                     "    sstr_append_of_if(out, \"\\n\", 1, indent);\n"
+                     "    curindent += indent;\n");
 
-    sstr_append_cstr(source, "    sstr_append_cstr(out, \"{\");\n");
     struct struct_field* field = st->fields;
     for (; field; field = field->next) {
+        sstr_append_cstr(source, "    sstr_append_indent(out, curindent);\n");
         sstr_printf_append(source,
                            "    sstr_append_cstr(out, \"\\\"%S\\\":\");\n",
                            field->name);
 
         if (field->is_array) {
-            sstr_printf_append(
-                source,
-                "    json_marshal_array_%S(obj->%S, obj->%S_len, out);\n",
-                field->type_name, field->name, field->name);
+            sstr_printf_append(source,
+                               "    json_marshal_array_indent_%S(obj->%S, "
+                               "obj->%S_len, indent, curindent, out);\n",
+                               field->type_name, field->name, field->name);
             if (field->next != NULL) {
                 sstr_append_cstr(source, "    sstr_append_cstr(out, \",\");\n");
             }
+            sstr_append_cstr(
+                source, "    sstr_append_of_if(out, \"\\n\", 1, indent);\n");
             continue;
         }
         switch (field->type) {
@@ -244,7 +264,8 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                 break;
             case FIELD_TYPE_STRUCT:
                 sstr_printf_append(source,
-                                   "    json_marshal_%S(&obj->%S, out);\n",
+                                   "    json_marshal_indent_%S(&obj->%S, "
+                                   "indent, curindent, out);\n",
                                    field->type_name, field->name);
                 break;
         }
@@ -253,104 +274,50 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
         } else {
             sstr_append_cstr(source, "    sstr_append_cstr(out, \",\");\n");
         }
+        sstr_append_cstr(source,
+                         "    sstr_append_of_if(out, \"\\n\", 1, indent);\n");
     }
-    sstr_append_cstr(source, "    sstr_append_of(out, \"}\", 1);\n");
-    sstr_append_cstr(source, "    return 0;\n}\n\n");
+    sstr_append_cstr(source, "    curindent -= indent;\n");
+
+    sstr_append_cstr(source,
+                     "    sstr_append_indent(out, curindent);\n"
+                     "    sstr_append_of(out, \"}\", 1);\n"
+                     "    return 0;\n}\n\n");
 }
 
 static void gen_code_struct_marshal_array(struct struct_container* st,
                                           sstr_t source) {
+    sstr_printf_append(source,
+                       "int json_marshal_array_indent_%S(struct %S* obj, int "
+                       "len, int indent, int curindent, sstr_t out) {\n",
+                       st->name, st->name);
+
+    sstr_append_cstr(
+        source,
+        "    int i;\n"
+        "    sstr_append_of(out, \"[\", 1);\n"
+        "    sstr_append_of_if(out, \"\\n\", 1, indent);\n"
+        "    curindent += indent;\n"
+        "    for (i = 0; i < len; i++) {\n");
     sstr_printf_append(
         source,
-        "int json_marshal_array_%S(struct %S* obj, int len, sstr_t out) {\n",
-        st->name, st->name);
-    //
-    sstr_append_cstr(source, "    int i;\n");
-    sstr_append_cstr(source, "    sstr_append_of(out, \"[\", 1);\n");
-    sstr_append_cstr(source, "    for (i = 0; i < len; i++) {\n");
-    sstr_append_cstr(source, "        if (i != 0) {\n");
-    sstr_append_cstr(source, "            sstr_append_of(out, \",\", 1);\n");
-    sstr_append_cstr(source, "        }\n");
-    sstr_printf_append(source, "        json_marshal_%S(&obj[i], out);\n",
-                       st->name);
-    sstr_append_cstr(source, "    }\n");
-    sstr_append_cstr(source, "    sstr_append_of(out, \"]\", 1);\n");
-    sstr_append_cstr(source, "\n    return 0;\n}\n\n");
+        "        json_marshal_indent_%S(&obj[i], indent, curindent, out);\n",
+        st->name);
+    sstr_append_cstr(source,
+                     "        if (i < len - 1) {\n"
+                     "            sstr_append_cstr(out, \",\");\n"
+                     "        }\n"
+                     "        sstr_append_of_if(out, \"\\n\", 1, indent);\n"
+                     "    }\n"
+                     "    curindent -= indent;\n"
+                     "    sstr_append_indent(out, curindent);\n"
+                     "    sstr_append_of(out, \"]\", 1);\n"
+                     "\n    return 0;\n}\n\n");
 }
 
 static void gen_code_scalar_marshal_array(sstr_t source) {
-    sstr_append_cstr(
-        source,
-        "int json_marshal_array_int(int*obj, int len, sstr_t out) {\n"
-        "    int i;\n"
-        "    sstr_append_of(out, \"[\", 1);\n"
-        "    for (i = 0; i < len; i++) {\n"
-        "        if (i != 0) {\n"
-        "            sstr_append_of(out, \",\", 1);\n"
-        "        }\n"
-        "        sstr_printf_append(out, \"%d\", obj[i]);\n"
-        "    }\n"
-        "    sstr_append_of(out, \"]\", 1);\n"
-        "    return 0;\n"
-        "}\n\n");
-    sstr_append_cstr(
-        source,
-        "int json_marshal_array_long(long*obj, int len, sstr_t out) {\n"
-        "    int i;\n"
-        "    sstr_append_of(out, \"[\", 1);\n"
-        "    for (i = 0; i < len; i++) {\n"
-        "        if (i != 0) {\n"
-        "            sstr_append_of(out, \",\", 1);\n"
-        "        }\n"
-        "        sstr_printf_append(out, \"%l\", obj[i]);\n"
-        "    }\n"
-        "    sstr_append_of(out, \"]\", 1);\n"
-        "    return 0;\n"
-        "}\n\n");
-    sstr_append_cstr(
-        source,
-        "int json_marshal_array_float(float*obj, int len, sstr_t out) {\n"
-        "    int i;\n"
-        "    sstr_append_of(out, \"[\", 1);\n"
-        "    for (i = 0; i < len; i++) {\n"
-        "        if (i != 0) {\n"
-        "            sstr_append_of(out, \",\", 1);\n"
-        "        }\n"
-        "        sstr_printf_append(out, \"%f\", (double)obj[i]);\n"
-        "    }\n"
-        "    sstr_append_of(out, \"]\", 1);\n"
-        "    return 0;\n"
-        "}\n\n");
-    sstr_append_cstr(
-        source,
-        "int json_marshal_array_double(double*obj, int len, sstr_t out) {\n"
-        "    int i;\n"
-        "    sstr_append_of(out, \"[\", 1);\n"
-        "    for (i = 0; i < len; i++) {\n"
-        "        if (i != 0) {\n"
-        "            sstr_append_of(out, \",\", 1);\n"
-        "        }\n"
-        "        sstr_printf_append(out, \"%f\", obj[i]);\n"
-        "    }\n"
-        "    sstr_append_of(out, \"]\", 1);\n"
-        "    return 0;\n"
-        "}\n\n");
-    sstr_append_cstr(
-        source,
-        "int json_marshal_array_sstr_t(sstr_t*obj, int len, sstr_t out) {\n"
-        "    int i;\n"
-        "    sstr_append_of(out, \"[\", 1);\n"
-        "    for (i = 0; i < len; i++) {\n"
-        "        if (i != 0) {\n"
-        "            sstr_append_of(out, \",\", 1);\n"
-        "        }\n"
-        "        sstr_append_cstr(out, \"\\\"\");\n"
-        "        sstr_json_escape_string_append(out, obj[i]);\n"
-        "        sstr_append_cstr(out, \"\\\"\");\n"
-        "    }\n"
-        "    sstr_append_of(out, \"]\", 1);\n"
-        "    return 0;\n"
-        "}\n\n");
+    // NOTE: move to json_parse.h
+    (void)source;
 }
 
 // init functions for a single struct
@@ -675,18 +642,41 @@ int gencode_head_guard_begin(sstr_t head) {
     sstr_append_cstr(head, "#endif\n\n");
     sstr_append_cstr(
         head,
-        "int json_marshal_array_int(int*obj, int len, sstr_t out);\n"
-        "int json_marshal_array_long(long*obj, int len, sstr_t out);\n"
-        "int json_marshal_array_float(float*obj, int len, sstr_t out);\n"
-        "int json_marshal_array_double(double*obj, int len, sstr_t out);\n"
-        "int json_marshal_array_sstr_t(sstr_t*obj, int len, sstr_t out);\n\n"
-        "int json_unmarshal_array_int(sstr_t content, int** ptr, int* len);\n"
-        "int json_unmarshal_array_long(sstr_t content, long** ptr, int* len);\n"
-        "int json_unmarshal_array_double(sstr_t content, double** ptr, int* "
+        "int json_marshal_array_indent_int(int*obj, int len, int indent, int "
+        "curindent, sstr_t out);\n"
+        "int json_marshal_array_indent_long(long*obj, int len, int indent, int "
+        "curindent, sstr_t out);\n"
+        "int json_marshal_array_indent_float(float*obj, int len, int indent, "
+        "int curindent, sstr_t out);\n"
+        "int json_marshal_array_indent_double(double*obj, int len, int indent, "
+        "int curindent, sstr_t "
+        "out);\n"
+        "int json_marshal_array_indent_sstr_t(sstr_t*obj, int len, int indent, "
+        "int curindent, sstr_t "
+        "out);\n\n"
+        "#define json_marshal_array_int(obj, len, out) "
+        "json_marshal_array_indent_int(obj, len, 0, 0, out)\n"
+        "#define json_marshal_array_long(obj, len, out) "
+        "json_marshal_array_indent_long(obj, len, 0, 0, out)\n"
+        "#define json_marshal_array_float(obj, len, out) "
+        "json_marshal_array_indent_float(obj, len, 0, 0, out)\n"
+        "#define json_marshal_array_double(obj, len, out) "
+        "json_marshal_array_indent_double(obj, len, 0, 0, out)\n"
+        "#define json_marshal_array_sstr_t(obj, len, out) "
+        "json_marshal_array_indent_sstr_t(obj, len, 0, 0, out)\n\n"
+
+        "int json_unmarshal_array_int(sstr_t content, int** ptr, int* "
         "len);\n"
-        "int json_unmarshal_array_float(sstr_t content, float** ptr, int* "
+        "int json_unmarshal_array_long(sstr_t content, long** ptr, int* "
         "len);\n"
-        "int json_unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, int* "
+        "int json_unmarshal_array_double(sstr_t content, double** ptr, "
+        "int* "
+        "len);\n"
+        "int json_unmarshal_array_float(sstr_t content, float** ptr, "
+        "int* "
+        "len);\n"
+        "int json_unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, "
+        "int* "
         "len);\n\n");
 
     return 0;

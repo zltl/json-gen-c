@@ -64,3 +64,105 @@ static int json_unmarshal_array_internal_double(sstr_t content,
                                                 struct json_pos* pos,
                                                 double** ptr, int* ptrlen,
                                                 sstr_t txt);
+
+int json_marshal_array_indent_int(int* obj, int len, int indent, int curindent,
+                                  sstr_t out) {
+    int i;
+    sstr_append_of(out, "[", 1);
+    sstr_append_of_if(out, "\n", 1, indent);
+    curindent += indent;
+    for (i = 0; i < len; i++) {
+        sstr_append_indent(out, curindent);
+        sstr_printf_append(out, "%d", obj[i]);
+        if (i != len - 1) {
+            sstr_append_of(out, ",", 1);
+        }
+        sstr_append_of_if(out, "\n", 1, indent);
+    }
+    curindent -= indent;
+    sstr_append_indent(out, curindent);
+    sstr_append_of(out, "]", 1);
+    return 0;
+}
+
+int json_marshal_array_indent_long(long* obj, int len, int indent,
+                                   int curindent, sstr_t out) {
+    int i;
+    sstr_append_of(out, "[", 1);
+    sstr_append_of_if(out, "\n", 1, indent);
+    curindent += indent;
+    for (i = 0; i < len; i++) {
+        sstr_append_indent(out, curindent);
+        sstr_printf_append(out, "%l", obj[i]);
+        if (i != len - 1) {
+            sstr_append_of(out, ",", 1);
+        }
+        sstr_append_of_if(out, "\n", 1, indent);
+    }
+    curindent -= indent;
+    sstr_append_indent(out, curindent);
+    sstr_append_of(out, "]", 1);
+    return 0;
+}
+
+int json_marshal_array_indent_float(float* obj, int len, int indent,
+                                    int curindent, sstr_t out) {
+    int i;
+    sstr_append_of(out, "[", 1);
+    sstr_append_of_if(out, "\n", 1, indent);
+    curindent += indent;
+    for (i = 0; i < len; i++) {
+        sstr_append_indent(out, curindent);
+        sstr_printf_append(out, "%f", (double)obj[i]);
+        if (i != len - 1) {
+            sstr_append_of(out, ",", 1);
+        }
+        sstr_append_of_if(out, "\n", 1, indent);
+    }
+    curindent -= indent;
+    sstr_append_indent(out, curindent);
+    sstr_append_of(out, "]", 1);
+    return 0;
+}
+
+int json_marshal_array_indent_double(double* obj, int len, int indent,
+                                     int curindent, sstr_t out) {
+    int i;
+    sstr_append_of(out, "[", 1);
+    sstr_append_of_if(out, "\n", 1, indent);
+    curindent += indent;
+    for (i = 0; i < len; i++) {
+        sstr_append_indent(out, curindent);
+        sstr_printf_append(out, "%f", obj[i]);
+        if (i != len - 1) {
+            sstr_append_of(out, ",", 1);
+        }
+        sstr_append_of_if(out, "\n", 1, indent);
+    }
+    curindent -= indent;
+    sstr_append_indent(out, curindent);
+    sstr_append_of(out, "]", 1);
+    return 0;
+}
+
+int json_marshal_array_indent_sstr_t(sstr_t* obj, int len, int indent,
+                                     int curindent, sstr_t out) {
+    int i;
+    sstr_append_of(out, "[", 1);
+    sstr_append_of_if(out, "\n", 1, indent);
+    curindent += indent;
+    for (i = 0; i < len; i++) {
+        sstr_append_indent(out, curindent);
+        sstr_append_cstr(out, "\"");
+        sstr_json_escape_string_append(out, obj[i]);
+        sstr_append_cstr(out, "\"");
+        if (i != len - 1) {
+            sstr_append_of(out, ",", 1);
+        }
+        sstr_append_of_if(out, "\n", 1, indent);
+    }
+    curindent -= indent;
+    sstr_append_indent(out, curindent);
+    sstr_append_of(out, "]", 1);
+    return 0;
+}

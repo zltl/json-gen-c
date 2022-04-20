@@ -1,9 +1,9 @@
 /**
- * @file utils/sstr.c
+ * @file sstr.c
  * @brief Implementation of the sstr.h header file.
  */
 
-#include "utils/sstr.h"
+#include "sstr.h"
 
 #include <malloc.h>
 #include <stdarg.h>
@@ -138,11 +138,31 @@ void sstr_append_zero(sstr_t s, size_t length) {
     }
 }
 
+void sstr_append_indent(sstr_t s, size_t indent) {
+    if (indent == 0) {
+        return;
+    }
+    size_t cur_len = sstr_length(s);
+    sstr_append_zero(s, indent);
+    for (size_t i = 0; i < indent; i++) {
+        STR_PTR(s)[cur_len + i] = ' ';
+    }
+}
+
 void sstr_append_of(sstr_t s, const void* data, size_t length) {
     size_t oldlen = sstr_length(s);
     sstr_append_zero(s, length);
     memcpy(STR_PTR(s) + oldlen, data, length);
     STR_PTR(s)[sstr_length(s)] = '\0';
+}
+
+void sstr_append_of_if(sstr_t s, const void* data, size_t length, int cond) {
+    if (cond) {
+        size_t oldlen = sstr_length(s);
+        sstr_append_zero(s, length);
+        memcpy(STR_PTR(s) + oldlen, data, length);
+        STR_PTR(s)[sstr_length(s)] = '\0';
+    }
 }
 
 void sstr_append(sstr_t dst, sstr_t src) {
@@ -151,6 +171,10 @@ void sstr_append(sstr_t dst, sstr_t src) {
 
 void sstr_append_cstr(sstr_t dst, const char* src) {
     sstr_append_of(dst, src, strlen(src));
+}
+
+void sstr_append_cstr_if(sstr_t dst, const char* src, int cond) {
+    sstr_append_of_if(dst, src, strlen(src), cond);
 }
 
 sstr_t sstr_dup(sstr_t s) { return sstr_of(STR_PTR(s), sstr_length(s)); }
