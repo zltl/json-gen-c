@@ -426,7 +426,7 @@ sstr_t sstr_vslprintf_append(sstr_t buf, const char* fmt, va_list args) {
                         ptmp = sstr_sprintf_num(tmp, tmp + sizeof(tmp), frac,
                                                 '0', 0, frac_width);
                         if (frac_width_set == 0) {
-                            while (*(ptmp - 1) == '0' && ptmp > tmp) {
+                            while (ptmp > tmp && *(ptmp - 1) == '0') {
                                 ptmp--;
                             }
                         }
