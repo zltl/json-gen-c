@@ -13,6 +13,16 @@
 #include "utils/io.h"
 #include "utils/sstr.h"
 
+/*
+    STRUCT_LIST = STRUCT STRUCT_LIST
+    STRUCT = "struct" NAME "{" FIELD_LIST "}" | INCLUDE | empty
+    FIELD_LIST = FIELD FIELD_LIST
+    FIELDS = NAME NAME ";" | NAME NAME "[]" ";"
+    INCLUDE = "#include <" NAME ">" | "#include \"" NAME "\""
+    
+    NAME = [a-zA-Z_][a-zA-Z0-9_]*
+*/
+
 static struct struct_field* struct_field_new(sstr_t name, int type,
                                              sstr_t type_name) {
     struct struct_field* field =

@@ -891,11 +891,14 @@ int json_unmarshal_array_int(sstr_t content, int** ptr, int* len) {
     pos.offset = 0;
     sstr_t txt = sstr_new();
     int r = json_unmarshal_array_internal_int(content, &pos, ptr, len, txt);
-#ifdef JSON_DEBUG
     if (r != 0) {
+#ifdef JSON_DEBUG
         printf("ERROR: %s\n", sstr_cstr(txt));
-    }
 #endif
+        free(*ptr);
+        *ptr = NULL;
+        *len = 0;
+    }
     sstr_free(txt);
     return r;
 }
@@ -907,11 +910,16 @@ int json_unmarshal_array_long(sstr_t content, long** ptr, int* len) {
     pos.offset = 0;
     sstr_t txt = sstr_new();
     int r = json_unmarshal_array_internal_long(content, &pos, ptr, len, txt);
-#ifdef JSON_DEBUG
+
     if (r != 0) {
+#ifdef JSON_DEBUG
         printf("ERROR: %s\n", sstr_cstr(txt));
-    }
 #endif
+        free(*ptr);
+        *ptr = NULL;
+        *len = 0;
+    }
+
     sstr_free(txt);
     return r;
 }
@@ -923,11 +931,14 @@ int json_unmarshal_array_float(sstr_t content, float** ptr, int* len) {
     pos.offset = 0;
     sstr_t txt = sstr_new();
     int r = json_unmarshal_array_internal_float(content, &pos, ptr, len, txt);
-#ifdef JSON_DEBUG
     if (r != 0) {
+#ifdef JSON_DEBUG
         printf("ERROR: %s\n", sstr_cstr(txt));
-    }
 #endif
+        free(*ptr);
+        *ptr = NULL;
+        *len = 0;
+    }
     sstr_free(txt);
     return r;
 }
@@ -939,11 +950,14 @@ int json_unmarshal_array_double(sstr_t content, double** ptr, int* len) {
     pos.offset = 0;
     sstr_t txt = sstr_new();
     int r = json_unmarshal_array_internal_double(content, &pos, ptr, len, txt);
-#ifdef JSON_DEBUG
     if (r != 0) {
+#ifdef JSON_DEBUG
         printf("ERROR: %s\n", sstr_cstr(txt));
-    }
 #endif
+        free(*ptr);
+        *ptr = NULL;
+        *len = 0;
+    }
     sstr_free(txt);
     return r;
 }
@@ -955,11 +969,18 @@ int json_unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, int* len) {
     pos.offset = 0;
     sstr_t txt = sstr_new();
     int r = json_unmarshal_array_internal_sstr_t(content, &pos, ptr, len, txt);
-#ifdef JSON_DEBUG
     if (r != 0) {
+#ifdef JSON_DEBUG
         printf("ERROR: %s\n", sstr_cstr(txt));
-    }
 #endif
+        int i;
+        for (i = 0; i < *len; ++i) {
+            sstr_free((*ptr)[i]);
+        }
+        free(*ptr);
+        *ptr = NULL;
+        *len = 0;
+    }
     sstr_free(txt);
     return r;
 }

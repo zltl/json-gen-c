@@ -223,11 +223,13 @@ static void gen_code_struct_unmarshal_struct(struct struct_container* st,
         "    if (r < 0) {\n"
         "#ifdef JSON_DEBUG\n"
         "        printf(\"ERROR: %s\", sstr_cstr(txt));\n"
-        "#endif\n"
-        "    }\n"
-        "    sstr_free(txt);\n"
-        "    return r;\n"
-        "}\n\n");
+        "#endif\n");
+    sstr_printf_append(source, "        %S_clear(obj);\n", st->name);
+    sstr_append_cstr(source,
+                     "    }\n"
+                     "    sstr_free(txt);\n"
+                     "    return r;\n"
+                     "}\n\n");
 }
 
 static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
@@ -251,6 +253,20 @@ static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
                      "    ar_param.field_name=\"\";\n"
                      "    int r = json_unmarshal_array_internal(in, &pos, "
                      "&ar_param, len, txt);\n");
+    sstr_printf_append(source,
+                       "    if (r < 0) {\n"
+                       "#ifdef JSON_DEBUG\n"
+                       "        printf(\"ERROR: %%s\", sstr_cstr(txt));\n"
+                       "#endif\n"
+                       "        int i;\n"
+                       "        for (i = 0; i < *len; ++i) {\n"
+                       "            %S_clear(&(*obj)[i]);\n"
+                       "        }\n"
+                       "    free(*obj);\n"
+                       "    *obj = NULL;\n"
+                       "    *len = 0;\n"
+                       "    }\n", st->name);
+
     sstr_append_cstr(source, "    sstr_free(txt);\n");
     sstr_append_cstr(source, "    return r;\n");
     sstr_append_cstr(source, "}\n\n");
