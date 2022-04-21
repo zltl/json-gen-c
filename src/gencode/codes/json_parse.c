@@ -113,8 +113,6 @@ static struct json_field_offset_item* json_field_offset_item_find(
 /// print tokens, for debug
 static char* ptoken(int type, sstr_t txt) {
     switch (type) {
-        case JSON_TOKEN_QUOTE:
-            return "\"";
         case JSON_TOKEN_LEFT_BRACKET:
             return "[";
         case JSON_TOKEN_RIGHT_BRACKET:
@@ -127,15 +125,14 @@ static char* ptoken(int type, sstr_t txt) {
             return ",";
         case JSON_TOKEN_COLON:
             return ":";
-        case JSON_TOKEN_BOOL_TRUE:
+        case JSON_TOKEN_TRUE:
             return "true";
-        case JSON_TOKEN_BOOL_FALSE:
+        case JSON_TOKEN_FALSE:
             return "false";
         case JSON_TOKEN_NULL:
             return "null";
-        case JSON_TOKEN_IDENTIFY:
         case JSON_TOKEN_STRING:
-        case JSON_TOKEN_INTEGER:
+        case JSON_TOKEN_INT:
         case JSON_TOKEN_FLOAT:
             return sstr_cstr(txt);
         case JSON_TOKEN_EOF:
@@ -299,17 +296,11 @@ static int json_parse_string_token(sstr_t content, struct json_pos* pos,
     long len = sstr_length(content);
     long i = pos->offset;
     char* data = sstr_cstr(content);
-    if (i >= len) {
-        return JSON_TOKEN_EOF;
-    }
-    if (data[i] != '\"') {
-        sstr_t e = PERROR(pos, "expected '\"', but got '%s'", data[i]);
-        sstr_append(txt, e);
-        sstr_free(e);
-        return JSON_ERROR;
-    }
+
+    // data[i] = "
     i++;
     pos->col++;
+
     sstr_clear(txt);
     while (i < len && data[i] != '\"') {
         if (data[i] == '\\') {
@@ -330,34 +321,42 @@ static int json_parse_string_token(sstr_t content, struct json_pos* pos,
                 case 'b':
                     sstr_append_of(txt, "\b", 1);
                     i++;
+                    pos->col++;
                     break;
                 case 'f':
                     sstr_append_of(txt, "\f", 1);
                     i++;
+                    pos->col++;
                     break;
                 case 'n':
                     sstr_append_of(txt, "\n", 1);
                     i++;
+                    pos->col++;
                     break;
                 case 'r':
                     sstr_append_of(txt, "\r", 1);
                     i++;
+                    pos->col++;
                     break;
                 case 't':
                     sstr_append_of(txt, "\t", 1);
                     i++;
+                    pos->col++;
                     break;
                 case '\"':
                     sstr_append_of(txt, "\"", 1);
                     i++;
+                    pos->col++;
                     break;
                 case '\\':
                     sstr_append_of(txt, "\\", 1);
                     i++;
+                    pos->col++;
                     break;
                 case '/':
                     sstr_append_of(txt, "/", 1);
                     i++;
+                    pos->col++;
                     break;
                 /* UTF-16 literal */
                 case 'u': {
@@ -384,6 +383,7 @@ static int json_parse_string_token(sstr_t content, struct json_pos* pos,
                 }
             }
         } else {
+            // TODO: advance more chars if possible
             sstr_append_of(txt, data + i, 1);
             pos->col++;
             i++;
@@ -397,25 +397,79 @@ static int json_parse_string_token(sstr_t content, struct json_pos* pos,
         return JSON_ERROR;
     }
     pos->offset = i + 1;
+    pos->col++;
 
     return JSON_TOKEN_STRING;
 }
 
-/*
-  "string": return string JSON_TOKEN_STRING
-  [0-9]+  : return JSON_TOKEN_INTEGER
-  [0-9]+\.[0-9]+ : return JSON_TOKEN_FLOAT
-  true: return JSON_TOKEN_TRUE
-  false: return JSON_TOKEN_FALSE
-  null: return JSON_TOKEN_NULL
-  [: return [
-  ]: return ]
-  {: return {
-  }: return }
-  :: return :
-  ,: return ,
+static int json_skip_space_comments(sstr_t content, struct json_pos* pos) {
+    long len = sstr_length(content);
+    long i = pos->offset;
+    char* data = sstr_cstr(content);
 
+    int skiped = 0;
+
+    do {
+        skiped = 0;
+        // trim spaces
+        while (i < len && isspace(data[i])) {
+            i++;
+            pos->col++;
+            if (data[i] == '\n') {  // new line
+                pos->line++;
+                pos->col = 0;
+            }
+            pos->offset = i;
+            skiped = 1;
+        }
+        // skip one line comment
+        if (i + 1 < len && data[i] == '/' && data[i + 1] == '/') {
+            i += 2;
+            while (i < len && data[i] != '\n') {
+                i++;
+            }
+            pos->col = 0;
+            pos->line++;
+            pos->offset = i;
+            skiped = 1;
+        }
+        // skip multiple line comments
+        if (i + 1 < len && data[i] == '/' && data[i + 1] == '*') {
+            i += 2;
+            pos->col += 2;
+            while (i + 1 < len && data[i] != '*' && data[i + 1] != '/') {
+                i++;
+                pos->col++;
+                if (data[i] == '\n') {  // new line
+                    pos->line++;
+                    pos->col = 0;
+                }
+            }
+            i += 2;
+            pos->col += 2;
+            pos->offset = i;
+            skiped = 1;
+        }
+    } while (skiped);
+
+    return 0;
+}
+
+/*
+JSON_TOKEN_STRING = "([^"] | \")*"
+JSON_TOKEN_INT = [0-9]+
+JSON_TOKEN_FLOAT = [0-9]*\.[0-9]+
+JSON_TOKEN_TRUE = true
+JSON_TOKEN_FALSE = false
+JSON_TOKEN_NULL = null
+JSON_TOKEN_COMMA = ,
+JSON_TOKEN_COLON = :
+JSON_TOKEN_LEFT_BRACE = {
+JSON_TOKEN_RIGHT_BRACE = }
+JSON_TOKEN_LEFT_BRACKET = [
+JSON_TOKEN_RIGHT_BRACKET = ]
 */
+#include <stdio.h>
 static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
     long len = sstr_length(content);
     long i = pos->offset;
@@ -426,136 +480,77 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
     if (i >= len) {
         return JSON_TOKEN_EOF;
     }
+    json_skip_space_comments(content, pos);
+    i = pos->offset;
+    if (i >= len) {
+        return JSON_TOKEN_EOF;
+    }
 
-    while (i < len) {
-        // trim spaces
-        while (i < len && (data[i] == ' ' || data[i] == '\t' ||
-                           data[i] == '\r' || data[i] == '\n')) {
+    int ch = data[i];
+    switch (ch) {
+        case '\"':
+            return json_parse_string_token(content, pos, txt);
+        case '[':
+        case ']':
+        case '{':
+        case '}':
+        case ':':
+        case ',': {
             i++;
             pos->col++;
-            if (data[i] == '\n') {
-                pos->line++;
-                pos->col = 0;
-            }
-        }
-
-        // skip one line comment
-        if (i + 1 < len && data[i] == '/' && data[i + 1] == '/') {
-            i += 2;
-            while (i < len && data[i] != '\n') {
-                i++;
-                pos->col++;
-            }
-            pos->col = 0;
-            pos->line++;
             pos->offset = i;
-            continue;
+            return ch;
         }
-        // multiple line comment
-        else if (i + 1 < len && data[i] == '/' && data[i + 1] == '*') {
-            i += 2;
-            while (i + 1 < len && data[i] != '*' && data[i + 1] != '/') {
-                i++;
-                pos->col++;
-                if (data[i] == '\n') {
-                    pos->line++;
-                    pos->col = 0;
-                }
-            }
-            i += 2;
-            pos->offset = i;
-            continue;
-        }
-
-        // parse tokens
-        switch (data[i]) {
-            case '\"':  // string
-                pos->offset = i;
-                return json_parse_string_token(content, pos, txt);
-            case '[':
-                i++;
-                pos->col++;
-                pos->offset = i;
-                return JSON_TOKEN_LEFT_BRACKET;
-            case '{':
-                i++;
-                pos->col++;
-                pos->offset = i;
-                return JSON_TOKEN_LEFT_BRACE;
-            case ']':
-                i++;
-                pos->col++;
-                pos->offset = i;
-                return JSON_TOKEN_RIGHT_BRACKET;
-            case '}':
-                i++;
-                pos->col++;
-                pos->offset = i;
-                return JSON_TOKEN_RIGHT_BRACE;
-            case ':':
-                i++;
-                pos->col++;
-                pos->offset = i;
-                return JSON_TOKEN_COLON;
-            case ',':
-                i++;
-                pos->col++;
-                pos->offset = i;
-                return JSON_TOKEN_COMMA;
-            default:
-                pos->offset = i;
-                break;  //  identify, integer, float, bool, null
-        }               //                  ^
-        //                                  |
-        //                                 ---
-        int tk = JSON_TOKEN_INTEGER;
-        int start_pos = i;
-        if (data[i] == '-') {
-            sstr_append_of(txt, data + i, 1);
-            i++;
-            start_pos = i;
-            pos->col++;
-        }
-        while (i < len &&
-               (isalnum(data[i]) || data[i] == '_' || data[i] == '.')) {
-            if (data[i] == '.' && tk == JSON_TOKEN_INTEGER) {
-                tk = JSON_TOKEN_FLOAT;
-            }
-            if (!isdigit(data[i]) && data[i] != '.') {
-                tk = JSON_TOKEN_IDENTIFY;
-            }
+        default:  // int, float, bool, null
+            break;
+    }
+    // parse number
+    int tk = JSON_TOKEN_INT;
+    sstr_clear(txt);
+    int start_pos = i;
+    if (isdigit(ch) || ch == '-' || ch == '.') {
+        if (ch != '.') {
             i++;
             pos->col++;
+            while (i < len && isdigit(data[i])) {
+                i++;
+                pos->col++;
+            }
         }
-        if (tk == JSON_TOKEN_INTEGER || tk == JSON_TOKEN_FLOAT) {
-            sstr_append_of(txt, data + start_pos, i - start_pos);
-            pos->offset = i;
-            return tk;
+        if (i < len && data[i] == '.') {
+            tk = JSON_TOKEN_FLOAT;
+            i++;
+            pos->col++;
+            while (i < len && isdigit(data[i])) {
+                i++;
+                pos->col++;
+            }
         }
-
-        if (tk == JSON_TOKEN_IDENTIFY) {
-            sstr_append_of(txt, data + start_pos, i - start_pos);
-            pos->offset = i;
-        }
-
-        if (sstr_compare_c(txt, "true") == 0) {
-            tk = JSON_TOKEN_BOOL_TRUE;
-        } else if (sstr_compare_c(txt, "false") == 0) {
-            tk = JSON_TOKEN_BOOL_FALSE;
-        } else if (sstr_compare_c(txt, "null") == 0) {
-            tk = JSON_TOKEN_NULL;
-        } else {
-            sstr_t e = PERROR(pos, "unexpected identify %s", sstr_cstr(txt));
-            sstr_append(txt, e);
-            sstr_free(e);
-            pos->offset = i;
-            return JSON_ERROR;
-        }
+        sstr_append_of(txt, data + start_pos, i - start_pos);
         pos->offset = i;
         return tk;
     }
+    // parse true, false, null
+    while (i < len && isalpha(data[i])) {
+        i++;
+        pos->col++;
+    }
+    sstr_append_of(txt, data + start_pos, i - start_pos);
     pos->offset = i;
-    return JSON_TOKEN_EOF;
+    if (sstr_compare_c(txt, "true") == 0) {
+        return JSON_TOKEN_TRUE;
+    }
+    if (sstr_compare_c(txt, "false") == 0) {
+        return JSON_TOKEN_FALSE;
+    }
+    if (sstr_compare_c(txt, "null") == 0) {
+        return JSON_TOKEN_NULL;
+    }
+
+    sstr_t e = PERROR(pos, "unexpected identify %s", sstr_cstr(txt));
+    sstr_append(txt, e);
+    sstr_free(e);
+    return JSON_ERROR;
 }
 
 // parse integer, set integer value to *val, put error string to txt.
@@ -563,11 +558,11 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
 static int json_unmarshal_scalar_int(sstr_t content, struct json_pos* pos,
                                      int* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
-    if (tk == JSON_TOKEN_BOOL_FALSE) {
+    if (tk == JSON_TOKEN_FALSE) {
         *val = 0;
-    } else if (tk == JSON_TOKEN_BOOL_TRUE) {
+    } else if (tk == JSON_TOKEN_TRUE) {
         *val = 1;
-    } else if (tk != JSON_TOKEN_INTEGER) {
+    } else if (tk != JSON_TOKEN_INT) {
         sstr_t e =
             PERROR(pos, "expected integer but got '%s'", ptoken(tk, txt));
         sstr_append(txt, e);
@@ -583,7 +578,11 @@ static int json_unmarshal_scalar_int(sstr_t content, struct json_pos* pos,
 static int json_unmarshal_scalar_long(sstr_t content, struct json_pos* pos,
                                       long* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
-    if (tk != JSON_TOKEN_INTEGER) {
+    if (tk == JSON_TOKEN_FALSE) {
+        *val = 0;
+    } else if (tk == JSON_TOKEN_TRUE) {
+        *val = 1;
+    } else if (tk != JSON_TOKEN_INT) {
         sstr_t e =
             PERROR(pos, "expected integer but got '%s'", ptoken(tk, txt));
         sstr_append(txt, e);
@@ -599,7 +598,7 @@ static int json_unmarshal_scalar_long(sstr_t content, struct json_pos* pos,
 static int json_unmarshal_scalar_float(sstr_t content, struct json_pos* pos,
                                        float* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
-    if (tk != JSON_TOKEN_FLOAT && tk != JSON_TOKEN_INTEGER) {
+    if (tk != JSON_TOKEN_FLOAT && tk != JSON_TOKEN_INT) {
         sstr_t e = PERROR(pos, "expected floating number but got '%s'",
                           ptoken(tk, txt));
         sstr_append(txt, e);
@@ -616,7 +615,7 @@ static int json_unmarshal_scalar_float(sstr_t content, struct json_pos* pos,
 static int json_unmarshal_scalar_double(sstr_t content, struct json_pos* pos,
                                         double* val, sstr_t txt) {
     int tk = json_next_token(content, pos, txt);
-    if (tk != JSON_TOKEN_FLOAT && tk != JSON_TOKEN_INTEGER) {
+    if (tk != JSON_TOKEN_FLOAT && tk != JSON_TOKEN_INT) {
         sstr_t e = PERROR(pos, "expected floating number but got '%s'",
                           ptoken(tk, txt));
         sstr_append(txt, e);
@@ -1005,21 +1004,19 @@ static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
         sub_param.field_name = param->field_name;
 
         int r = json_unmarshal_struct_internal(content, pos, &sub_param, txt);
-        if (r < 0) {
-            free(ptr);
-            return r;
-        }
-        if (r == 1) {
-            free(ptr);
-            return 0;  // finished
-        }
-
         void* pptr = realloc(*(void**)param->instance_ptr,
                              (*len + 1) * field->type_size);
         memcpy(pptr + (*len * field->type_size), ptr, field->type_size);
         free(ptr);
         *(void**)param->instance_ptr = pptr;
         *len = *len + 1;
+
+        if (r < 0) {
+            return r;
+        }
+        if (r == 1) {
+            return 0;  // finished
+        }
 
         int tk = json_next_token(content, pos, txt);
         if (tk == JSON_TOKEN_RIGHT_BRACKET) {

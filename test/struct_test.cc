@@ -87,7 +87,9 @@ TEST(struct_marshal, array) {
     r = json_unmarshal_array_TestStruct(not_json, &c, &c_len);
     ASSERT_NE(r, 0);
     sstr_free(not_json);
-    TestStruct_clear(c);
+    for (int i = 0; i < c_len; ++i) {
+        TestStruct_clear(&c[i]);
+    }
     free(c);
 
     sstr_free(out_json);
