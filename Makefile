@@ -20,8 +20,13 @@ ifneq ($(JSON_SANITIZE),)
 	SANITIZER_FLAGS = -fsanitize=address -lasan
 endif
 
-CFLAGS += -Wall -Wextra -Werror -std=c11 -ggdb -Wno-unused-result -I$(ROOT_DIR)/src $(SANITIZER_FLAGS) $(DEBUG_FLAGS)
-CXXFLAGS += -Wall -Wextra -Werror -std=c++17 -ggdb -Wno-unused-result -I$(ROOT_DIR)/src $(SANITIZER_FLAGS) $(DEBUG_FLAGS)
+COMMON_FLAGS += -Wall -Wextra -Werror -ggdb -Wno-unused-result \
+	-I$(ROOT_DIR)/src \
+	-I/usr/include \
+	$(SANITIZER_FLAGS) $(DEBUG_FLAGS) 
+
+CFLAGS += -std=c11 $(COMMON_FLAGS)
+CXXFLAGS += -std=c++17 $(COMMON_FLAGS)
 LDFLAGS ?=
 
 export
