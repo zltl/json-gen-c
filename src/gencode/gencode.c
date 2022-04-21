@@ -265,7 +265,8 @@ static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
                        "    free(*obj);\n"
                        "    *obj = NULL;\n"
                        "    *len = 0;\n"
-                       "    }\n", st->name);
+                       "    }\n",
+                       st->name);
 
     sstr_append_cstr(source, "    sstr_free(txt);\n");
     sstr_append_cstr(source, "    return r;\n");
@@ -577,8 +578,8 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
     struct struct_field* field = st->fields;
 
     sstr_printf_append(param->source,
-                       "    {0, sizeof(struct %S), %d, \"\", \"\", \"%S\", 0, "
-                       "%S_clear},\n",
+                       "    {0, sizeof(struct %S), %d, \"\", \"\", \"%S\", 0"
+                       "},\n",
                        st->name, FIELD_TYPE_STRUCT, st->name, st->name,
                        st->name);
     sstr_t empty_s = sstr_new();
@@ -591,7 +592,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             sstr_printf_append(param->source,
                                "    {offsetof(struct %S, %S), sizeof(struct "
                                "%S), %d, \"%S\", \"%S\", "
-                               "\"%S\", %d, NULL},\n",
+                               "\"%S\", %d},\n",
                                st->name, field->name, field->type_name,
                                field->type, field->type_name, field->name,
                                st->name, field->is_array);
@@ -600,7 +601,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             sstr_printf_append(
                 param->source,
                 "    {offsetof(struct %S, %S), sizeof(%S), %d, \"%S\", \"%S\", "
-                "\"%S\", %d, NULL},\n",
+                "\"%S\", %d},\n",
                 st->name, field->name, field->type_name, field->type,
                 field->type_name, field->name, st->name, field->is_array);
             gen_hash_arr(st->name, field->name, param);
@@ -609,7 +610,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             sstr_printf_append(param->source,
                                "    {offsetof(struct %S, %S_len), sizeof(int), "
                                "%d, \"int\", \"%S_len\", "
-                               "\"%S\", %d, NULL},\n",
+                               "\"%S\", %d},\n",
                                st->name, field->name, FIELD_TYPE_INT,
                                field->name, st->name, 0);
             sstr_t tmp = sstr_dup(field->name);
@@ -648,7 +649,6 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
     sstr_printf_append(source, "#define JSON_FIELD_OFFSET_ITEM_SIZE %d\n",
                        total_fields + struct_map->size + 1);
     sstr_append_cstr(source,
-                     "typedef void (*clear_st_fn_t)(void*);\n"
                      "struct json_field_offset_item {\n"
                      "    int offset;\n"
                      "    int type_size;\n"
@@ -657,7 +657,6 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
                      "    char* field_name;\n"
                      "    char* struct_name;\n"
                      "    int is_array;\n"
-                     "    void* clear_st_fn;"
                      "};\n\n");
     sstr_printf_append(
         source,
@@ -672,7 +671,7 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
     param.hash_arr = (int*)malloc(sizeof(int) * param.hash_size);
     memset(param.hash_arr, -1, sizeof(int) * param.hash_size);
     hash_map_for_each(struct_map, gen_fields_list_fn, &param);
-    sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0, NULL}};\n");
+    sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0}};\n");
 
     sstr_printf_append(
         source, "int json_entry_hash_size = %d;\nint json_entry_hash[%d] = {",
