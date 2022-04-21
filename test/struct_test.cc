@@ -79,5 +79,16 @@ TEST(struct_marshal, array) {
         TestStruct_clear(&b[i]);
     }
     free(b);
+
+    // test for error
+    sstr_t not_json = sstr_substr(out_json, 0, sstr_length(out_json) - sstr_length(out_json)/3);
+    struct TestStruct *c = NULL;
+    int c_len = 0;
+    r = json_unmarshal_array_TestStruct(not_json, &c, &c_len);
+    ASSERT_NE(r, 0);
+    sstr_free(not_json);
+    TestStruct_clear(c);
+    free(c);
+
     sstr_free(out_json);
 }
