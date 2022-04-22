@@ -383,10 +383,13 @@ static int json_parse_string_token(sstr_t content, struct json_pos* pos,
                 }
             }
         } else {
-            // TODO: advance more chars if possible
-            sstr_append_of(txt, data + i, 1);
-            pos->col++;
-            i++;
+            int j = i;
+            while (j < len && data[j] != '"' && data[j] != '\\') {
+                j++;
+            }
+            sstr_append_of(txt, data + i, j - i);
+            pos->col += j - i;
+            i = j;
         }
     }
     if (data[i] != '\"') {
