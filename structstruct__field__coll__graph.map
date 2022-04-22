@@ -1,4 +1,3 @@
 <map id="struct_field" name="struct_field">
-<area shape="rect" id="node1" title="structure to store field list of parsed structs. A struct may have multiple field,..." alt="" coords="7,109,102,136"/>
-<area shape="rect" id="node2" href="$structsstr__wrap__s.html" title=" " alt="" coords="5,5,104,32"/>
+<area shape="rect" id="node1" title="structure to store field list of parsed structs. A struct may have multiple field,..." alt="" coords="5,5,100,32"/>
 </map>
