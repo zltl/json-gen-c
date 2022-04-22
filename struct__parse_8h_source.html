@@ -102,20 +102,20 @@ $(document).ready(function(){initNavTree('struct__parse_8h_source.html',''); ini
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
 <div class="line"><a name="l00048"></a><span class="lineno"><a class="line" href="structstruct__field.html">   48</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structstruct__field.html">struct_field</a> {</div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="comment">// field name</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <a class="code" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> name;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <a class="code" href="structsstr__wrap__s.html">sstr_t</a> name;</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="comment">// field type id</span></div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keywordtype">int</span> type;</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="comment">// 1 if the field is an array, 0 otherwise</span></div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keywordtype">int</span> is_array;</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="comment">// the name of field type</span></div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <a class="code" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> type_name;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <a class="code" href="structsstr__wrap__s.html">sstr_t</a> type_name;</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="comment">// linked list pointer to next field, NULL if this is the last field</span></div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keyword">struct </span><a class="code" href="structstruct__field.html">struct_field</a>* next;</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;};</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
 <div class="line"><a name="l00065"></a><span class="lineno"><a class="line" href="structstruct__container.html">   65</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structstruct__container.html">struct_container</a> {</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="comment">// struct name</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <a class="code" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> name;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <a class="code" href="structsstr__wrap__s.html">sstr_t</a> name;</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="comment">// field list</span></div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keyword">struct </span><a class="code" href="structstruct__field.html">struct_field</a>* fields;</div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;};</div>
@@ -152,14 +152,14 @@ $(document).ready(function(){initNavTree('struct__parse_8h_source.html',''); ini
 <div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
 <div class="line"><a name="l00113"></a><span class="lineno"><a class="line" href="structstruct__token.html">  113</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structstruct__token.html">struct_token</a> {</div>
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <span class="keywordtype">int</span> type;</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <a class="code" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> txt;</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <a class="code" href="structsstr__wrap__s.html">sstr_t</a> txt;</div>
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;};</div>
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
 <div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="keyword">struct </span><a class="code" href="structstruct__parser.html">struct_parser</a>* <a class="code" href="struct__parse_8h.html#a04612dcb9af8ec46e04858feab9a5da7">struct_parser_new</a>();</div>
 <div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160; </div>
 <div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="keywordtype">void</span> <a class="code" href="struct__parse_8h.html#ab6f19e3dd49d297bb304a5cd00457781">struct_parser_free</a>(<span class="keyword">struct</span> <a class="code" href="structstruct__parser.html">struct_parser</a>* parser);</div>
 <div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160; </div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="keywordtype">int</span> <a class="code" href="struct__parse_8h.html#a3b1cfbb20875351e5264df1490a76818">struct_parser_parse</a>(<span class="keyword">struct</span> <a class="code" href="structstruct__parser.html">struct_parser</a>* parser, <a class="code" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> content);</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="keywordtype">int</span> <a class="code" href="struct__parse_8h.html#a3b1cfbb20875351e5264df1490a76818">struct_parser_parse</a>(<span class="keyword">struct</span> <a class="code" href="structstruct__parser.html">struct_parser</a>* parser, <a class="code" href="structsstr__wrap__s.html">sstr_t</a> content);</div>
 <div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160; </div>
 <div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
 <div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;}</div>
@@ -168,7 +168,6 @@ $(document).ready(function(){initNavTree('struct__parse_8h_source.html',''); ini
 <div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;<span class="preprocessor">#endif  // STRUCT_PARSE_H_</span></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
-<div class="ttc" id="asstr_8h_html_a8d28a1ce0ac6dd8b8e50af6f78e735e7"><div class="ttname"><a href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a></div><div class="ttdeci">void * sstr_t</div><div class="ttdoc">sstr_t are objects that represent sequences of characters.</div><div class="ttdef"><b>Definition:</b> sstr.h:48</div></div>
 <div class="ttc" id="astructstruct__parser_html"><div class="ttname"><a href="structstruct__parser.html">struct_parser</a></div><div class="ttdoc">parser context</div><div class="ttdef"><b>Definition:</b> struct_parse.h:85</div></div>
 <div class="ttc" id="astruct__parse_8h_html_a04612dcb9af8ec46e04858feab9a5da7"><div class="ttname"><a href="struct__parse_8h.html#a04612dcb9af8ec46e04858feab9a5da7">struct_parser_new</a></div><div class="ttdeci">struct struct_parser * struct_parser_new()</div><div class="ttdoc">create and init a struct_parser instance.</div><div class="ttdef"><b>Definition:</b> struct_parse.c:103</div></div>
 <div class="ttc" id="astruct__parse_8h_html_a3b1cfbb20875351e5264df1490a76818"><div class="ttname"><a href="struct__parse_8h.html#a3b1cfbb20875351e5264df1490a76818">struct_parser_parse</a></div><div class="ttdeci">int struct_parser_parse(struct struct_parser *parser, sstr_t content)</div><div class="ttdoc">parse a struct definition file, and store the parsed structs in struct_parser.</div><div class="ttdef"><b>Definition:</b> struct_parse.c:606</div></div>
@@ -179,6 +178,7 @@ $(document).ready(function(){initNavTree('struct__parse_8h_source.html',''); ini
 <div class="ttc" id="astructstruct__token_html"><div class="ttname"><a href="structstruct__token.html">struct_token</a></div><div class="ttdoc">token</div><div class="ttdef"><b>Definition:</b> struct_parse.h:113</div></div>
 <div class="ttc" id="astruct__parse_8h_html_ab6f19e3dd49d297bb304a5cd00457781"><div class="ttname"><a href="struct__parse_8h.html#ab6f19e3dd49d297bb304a5cd00457781">struct_parser_free</a></div><div class="ttdeci">void struct_parser_free(struct struct_parser *parser)</div><div class="ttdoc">free a struct_parser instance.</div><div class="ttdef"><b>Definition:</b> struct_parse.c:124</div></div>
 <div class="ttc" id="astructpos_html"><div class="ttname"><a href="structpos.html">pos</a></div><div class="ttdoc">position of string</div><div class="ttdef"><b>Definition:</b> struct_parse.h:75</div></div>
+<div class="ttc" id="astructsstr__wrap__s_html"><div class="ttname"><a href="structsstr__wrap__s.html">sstr_wrap_s</a></div><div class="ttdef"><b>Definition:</b> sstr.h:45</div></div>
 <div class="ttc" id="astructstruct__container_html"><div class="ttname"><a href="structstruct__container.html">struct_container</a></div><div class="ttdoc">structure to store parsed structs. A struct may have multiple fields, we put fields in a linked list.</div><div class="ttdef"><b>Definition:</b> struct_parse.h:65</div></div>
 <!-- HTML footer for doxygen 1.8.17-->
 <!-- start footer part -->

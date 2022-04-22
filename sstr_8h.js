@@ -1,6 +1,8 @@
 var sstr_8h =
 [
-    [ "sstr_t", "sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7", null ],
+    [ "sstr_wrap_s", "structsstr__wrap__s.html", "structsstr__wrap__s" ],
+    [ "sstr_length", "sstr_8h.html#a7f83884713d44719070e83e62639716c", null ],
+    [ "sstr_t", "sstr_8h.html#ad5fce495f2caa42552a7633a86169807", null ],
     [ "sstr", "sstr_8h.html#aa3b3c1563041f1323542f3e84f7817b1", null ],
     [ "sstr_append", "sstr_8h.html#ad8eb5ed3acc6d1f90c5097ab2f62672f", null ],
     [ "sstr_append_cstr", "sstr_8h.html#aa0985a798ff952a68046fb594d2f3d27", null ],
@@ -16,7 +18,6 @@ var sstr_8h =
     [ "sstr_dup", "sstr_8h.html#a87e2708071bfb86f3961788466c9192f", null ],
     [ "sstr_free", "sstr_8h.html#ae99d652d5a9d25fc79343d2ac18cb0e5", null ],
     [ "sstr_json_escape_string_append", "sstr_8h.html#a7b300c1b39752d5cddd73689320040b6", null ],
-    [ "sstr_length", "sstr_8h.html#a196f7aa3191fda9c118547caddd7b682", null ],
     [ "sstr_new", "sstr_8h.html#ae04c530ce9fbdb9b517ca74ab5f3edbc", null ],
     [ "sstr_of", "sstr_8h.html#ad61027cdd29e89a0a946740cc04fcba2", null ],
     [ "sstr_printf", "sstr_8h.html#ab2d845cc91a348545e8f6b375437de6b", null ],

@@ -9,6 +9,7 @@ var annotated_dup =
     [ "options", "structoptions.html", "structoptions" ],
     [ "pos", "structpos.html", "structpos" ],
     [ "sstr_s", "structsstr__s.html", "structsstr__s" ],
+    [ "sstr_wrap_s", "structsstr__wrap__s.html", "structsstr__wrap__s" ],
     [ "struct_container", "structstruct__container.html", "structstruct__container" ],
     [ "struct_field", "structstruct__field.html", "structstruct__field" ],
     [ "struct_parser", "structstruct__parser.html", "structstruct__parser" ],
