@@ -18,7 +18,7 @@
 #define CAP_ADD_DELTA 256
 
 struct sstr_s {
-    size_t length;
+    size_t length;  // MUST FIRST! see sstr.h sstr_length macro
     char short_str[SHORT_STR_CAPACITY + 1];
     char* long_str;
     size_t long_str_cap;
