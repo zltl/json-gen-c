@@ -1134,7 +1134,6 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
             return -1;
         }
 
-        // TODO: get field items
         if (fi->is_array) {
             sstr_t field_len_name = sstr(fi->field_name);
             sstr_append_cstr(field_len_name, "_len");

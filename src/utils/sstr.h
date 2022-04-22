@@ -42,10 +42,16 @@
 extern "C" {
 #endif
 
+struct sstr_wrap_s {
+    size_t length;
+
+    char __fill_spaces[48];
+};
+
 /**
  * @brief sstr_t are objects that represent sequences of characters.
  */
-typedef void* sstr_t;
+typedef struct sstr_wrap_s* sstr_t;
 
 /**
  * @brief Create an empty sstr_t.
@@ -109,7 +115,7 @@ char* sstr_cstr(sstr_t s);
  * @param s sstr_t instance to get length of.
  * @return size_t The number of bytes of \a s.
  */
-size_t sstr_length(sstr_t s);
+#define sstr_length(s) (s->length)
 
 /**
  * @brief Compare \a a and \a b

@@ -31,7 +31,7 @@ struct sstr_s {
 sstr_t sstr_new() {
     STR* s = (STR*)malloc(sizeof(STR));
     memset(s, 0, sizeof(STR));
-    return s;
+    return (sstr_t)s;
 }
 
 void sstr_free(sstr_t s) {
@@ -56,14 +56,14 @@ sstr_t sstr_of(const void* data, size_t length) {
     }
     s->length = length;
     STR_PTR(s)[length] = 0;
-    return s;
+    return (sstr_t)s;
 }
 
 sstr_t sstr(const char* cstr) { return sstr_of(cstr, strlen(cstr)); }
 
 char* sstr_cstr(sstr_t s) { return STR_PTR(s); }
 
-size_t sstr_length(sstr_t s) { return ((STR*)s)->length; }
+// size_t sstr_length(sstr_t s) { return ((STR*)s)->length; }
 
 int sstr_compare(sstr_t a, sstr_t b) {
     if (a == NULL && b == NULL) {
@@ -317,7 +317,7 @@ sstr_t sstr_vslprintf_append(sstr_t buf, const char* fmt, va_list args) {
                         p = (unsigned char*)"NULL";
                         sstr_append_of(buf, p, 4);
                     } else {
-                        sstr_append(buf, S);
+                        sstr_append(buf, (sstr_t)S);
                     }
 
                     fmt++;
