@@ -311,45 +311,32 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
         }
         switch (field->type) {
             case FIELD_TYPE_BOOL:
-                sstr_printf_append(source,
-                                   "    sprintf(tmp_cstr, \"%%d\", obj->%S);\n",
-                                   field->name);
                 sstr_printf_append(source, "    if (obj->%S) {\n", field->name);
                 sstr_append_cstr(source,
-                                 "        sstr_append_cstr(out, \"true\");\n");
-                sstr_append_cstr(source, "    } else {\n");
-                sstr_append_cstr(source,
-                                 "        sstr_append_cstr(out, \"false\");\n");
-                sstr_append_cstr(source, "    }\n");
+                                 "        sstr_append_cstr(out, \"true\");\n"
+                                 "    } else {\n"
+                                 "        sstr_append_cstr(out, \"false\");\n"
+                                 "    }\n");
                 break;
             case FIELD_TYPE_INT:
                 sstr_printf_append(source,
-                                   "    sprintf(tmp_cstr, \"%%d\", obj->%S);\n",
+                                   "    sstr_append_int_str(out, obj->%S);\n",
                                    field->name);
-                sstr_append_cstr(source,
-                                 "    sstr_append_cstr(out, tmp_cstr);\n");
                 break;
             case FIELD_TYPE_LONG:
-                sstr_printf_append(
-                    source, "    sprintf(tmp_cstr, \"%%ld\", obj->%S);\n",
-                    field->name);
-                sstr_append_cstr(source,
-                                 "    sstr_append_cstr(out, tmp_cstr);\n");
+                sstr_printf_append(source,
+                                   "    sstr_append_long_str(out, obj->%S);\n",
+                                   field->name);
                 break;
             case FIELD_TYPE_FLOAT:
                 sstr_printf_append(source,
-                                   "    sprintf(tmp_cstr, \"%%f\", obj->%S);\n",
+                                   "    sstr_append_float_str(out, obj->%S, 6);\n",
                                    field->name);
-                sstr_append_cstr(source,
-                                 "    sstr_append_cstr(out, tmp_cstr);\n");
-
                 break;
             case FIELD_TYPE_DOUBLE:
                 sstr_printf_append(
-                    source, "    sprintf(tmp_cstr, \"%%lf\", obj->%S);\n",
+                    source, "    sstr_append_double_str(out, obj->%S, 6);\n",
                     field->name);
-                sstr_append_cstr(source,
-                                 "    sstr_append_cstr(out, tmp_cstr);\n");
                 break;
             case FIELD_TYPE_SSTR:
                 sstr_printf_append(

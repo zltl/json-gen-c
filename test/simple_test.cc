@@ -345,7 +345,7 @@ cd
             R"(["first element","second element","third element","\ndk\ncd\n你好","fifth element"])");
         sstr_t out = sstr_new();
         json_marshal_array_sstr_t(a, len, out);
-        ASSERT_TRUE(sstr_compare(exp_out, out) == 0);
+        ASSERT_TRUE(sstr_compare(exp_out, out) == 0) << sstr_cstr(exp_out) << "\n" << sstr_cstr(out);
         sstr_free(exp_out);
         sstr_free(out);
         for (int i = 0; i < len; ++i) {

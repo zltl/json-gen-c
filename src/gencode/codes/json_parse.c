@@ -405,7 +405,7 @@ static int json_parse_string_token(sstr_t content, struct json_pos* pos,
     return JSON_TOKEN_STRING;
 }
 
-static int json_skip_space_comments(sstr_t content, struct json_pos* pos) {
+static inline int json_skip_space_comments(sstr_t content, struct json_pos* pos) {
     long len = sstr_length(content);
     long i = pos->offset;
     char* data = sstr_cstr(content);
