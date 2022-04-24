@@ -225,7 +225,8 @@ static inline void sstr_append_of(sstr_t s, const void* data, size_t length) {
  * @param dst destination sstr_t.
  * @param src source sstr_t.
  */
-void sstr_append(sstr_t dst, sstr_t src);
+#define sstr_append(dst, src) \
+    sstr_append_of(dst, __SSTR_PTR(src), sstr_length(src))
 
 /**
  * @brief Extends the sstr_t by appending additional characters contained in \a
@@ -234,11 +235,34 @@ void sstr_append(sstr_t dst, sstr_t src);
  * @param dst destination sstr_t.
  * @param src source C-style string.
  */
-void sstr_append_cstr(sstr_t dst, const char* src);
+#define sstr_append_cstr(dst, src) sstr_append_of(dst, src, strlen(src))
 
-void sstr_append_of_if(sstr_t s, const void* data, size_t length, int cond);
+/**
+ * @brief Append if cond is true, otherwise do nothing.
+ *
+ * @param s the sstr_t to append to.
+ * @param data data to append.
+ * @param length length of \a data.
+ * @param cond condition
+ */
+static inline void sstr_append_of_if(sstr_t s, const void* data, size_t length,
+                                     int cond) {
+    if (cond) {
+        size_t oldlen = sstr_length(s);
+        sstr_append_zero(s, length);
+        memcpy(__SSTR_PTR(s) + oldlen, data, length);
+        __SSTR_PTR(s)[sstr_length(s)] = '\0';
+    }
+}
 
-void sstr_append_cstr_if(sstr_t dst, const char* src, int cond);
+/**
+ * @brief Append C style string if cond is true, otherwise do nothing.
+ * @param dst destination sstr_t to append to.
+ * @param src source C-style string to append
+ * @param cond condition
+ */
+#define sstr_append_cstr_if(dst, src, cond) \
+    sstr_append_of_if(dst, src, strlen(src), cond)
 
 /**
  * @brief Duplicate \a s and return.
@@ -246,7 +270,7 @@ void sstr_append_cstr_if(sstr_t dst, const char* src, int cond);
  * @param s sstr_t to duplicate.
  * @return sstr_t  duplicate of \a s.
  */
-sstr_t sstr_dup(sstr_t s);
+#define sstr_dup(s) sstr_of(__SSTR_PTR(s), sstr_length(s))
 
 /**
  * @brief Get substring of \a s starting at \a index with \a length bytes.
@@ -263,7 +287,18 @@ sstr_t sstr_substr(sstr_t s, size_t index, size_t len);
  *
  * @param s sstr_t instance to clear.
  */
-void sstr_clear(sstr_t s);
+
+static inline void sstr_clear(sstr_t s) {
+    __SSTR* ss = (__SSTR*)s;
+    if (__SSTR_SHORT_P(ss)) {
+    } else {
+        free(ss->long_str);
+        ss->long_str = NULL;
+        ss->long_str_cap = 0;
+    }
+    ss->length = 0;
+    ss->short_str[0] = 0;
+}
 
 /**
  * @brief Printf implement.

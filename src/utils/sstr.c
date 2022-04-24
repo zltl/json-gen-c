@@ -97,29 +97,6 @@ void sstr_append_indent(sstr_t s, size_t indent) {
     }
 }
 
-void sstr_append_of_if(sstr_t s, const void* data, size_t length, int cond) {
-    if (cond) {
-        size_t oldlen = sstr_length(s);
-        sstr_append_zero(s, length);
-        memcpy(__SSTR_PTR(s) + oldlen, data, length);
-        __SSTR_PTR(s)[sstr_length(s)] = '\0';
-    }
-}
-
-void sstr_append(sstr_t dst, sstr_t src) {
-    sstr_append_of(dst, __SSTR_PTR(src), sstr_length(src));
-}
-
-void sstr_append_cstr(sstr_t dst, const char* src) {
-    sstr_append_of(dst, src, strlen(src));
-}
-
-void sstr_append_cstr_if(sstr_t dst, const char* src, int cond) {
-    sstr_append_of_if(dst, src, strlen(src), cond);
-}
-
-sstr_t sstr_dup(sstr_t s) { return sstr_of(__SSTR_PTR(s), sstr_length(s)); }
-
 sstr_t sstr_substr(sstr_t s, size_t index, size_t len) {
     size_t minlen = len;
     size_t str_len = sstr_length(s);
@@ -130,18 +107,6 @@ sstr_t sstr_substr(sstr_t s, size_t index, size_t len) {
         minlen = str_len - index;
     }
     return sstr_of(__SSTR_PTR(s) + index, minlen);
-}
-
-void sstr_clear(sstr_t s) {
-    __SSTR* ss = (__SSTR*)s;
-    if (__SSTR_SHORT_P(ss)) {
-    } else {
-        free(ss->long_str);
-        ss->long_str = NULL;
-        ss->long_str_cap = 0;
-    }
-    ss->length = 0;
-    ss->short_str[0] = 0;
 }
 
 static unsigned char* sstr_sprintf_num(unsigned char* buf, unsigned char* last,
