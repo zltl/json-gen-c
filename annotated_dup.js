@@ -1,6 +1,6 @@
 var annotated_dup =
 [
-    [ "__sstr_wrap_s", "struct____sstr__wrap__s.html", "struct____sstr__wrap__s" ],
+    [ "__sstr_s", "struct____sstr__s.html", "struct____sstr__s" ],
     [ "do_each_struct_gen_code_param", "structdo__each__struct__gen__code__param.html", "structdo__each__struct__gen__code__param" ],
     [ "gen_fields_list_fn_param", "structgen__fields__list__fn__param.html", "structgen__fields__list__fn__param" ],
     [ "hash_map", "structhash__map.html", "structhash__map" ],
@@ -9,7 +9,6 @@ var annotated_dup =
     [ "json_pos", "structjson__pos.html", "structjson__pos" ],
     [ "options", "structoptions.html", "structoptions" ],
     [ "pos", "structpos.html", "structpos" ],
-    [ "sstr_s", "structsstr__s.html", "structsstr__s" ],
     [ "struct_container", "structstruct__container.html", "structstruct__container" ],
     [ "struct_field", "structstruct__field.html", "structstruct__field" ],
     [ "struct_parser", "structstruct__parser.html", "structstruct__parser" ],
