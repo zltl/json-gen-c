@@ -124,12 +124,12 @@ To Serialize Structs to JSON</h3>
 <div class="line">A_init(&amp;a);</div>
 <div class="line"><span class="comment">// set values to a ...</span></div>
 <div class="line"><span class="comment">// ...</span></div>
-<div class="line"><a class="code" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> json_str = sstr_new();</div>
+<div class="line"><a class="code" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> json_str = <a class="code" href="sstr_8c.html#ae04c530ce9fbdb9b517ca74ab5f3edbc">sstr_new</a>();</div>
 <div class="line">json_marshal_A(&amp;a, json_str);</div>
 <div class="line"> </div>
-<div class="line">printf(<span class="stringliteral">&quot;marshal a to json&gt; %s\n&quot;</span>, <a class="code" href="sstr_8h.html#a9a9649fd131f9d2f3fde584a46e3bdbe">sstr_cstr</a>(json_str));</div>
+<div class="line">printf(<span class="stringliteral">&quot;marshal a to json&gt; %s\n&quot;</span>, <a class="code" href="sstr_8c.html#a82ec436753ebe2424b3248ef2bad0dd3">sstr_cstr</a>(json_str));</div>
 <div class="line"> </div>
-<div class="line">sstr_free(json_str);</div>
+<div class="line"><a class="code" href="sstr_8c.html#ae99d652d5a9d25fc79343d2ac18cb0e5">sstr_free</a>(json_str);</div>
 <div class="line">A_clear(&amp;a);</div>
 </div><!-- fragment --><h3><a class="anchor" id="autotoc_md7"></a>
 To Serialize Array of Structs to JSON</h3>
@@ -139,10 +139,10 @@ To Serialize Array of Structs to JSON</h3>
 <div class="line">    <span class="comment">// set values to a[i] ...</span></div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line"><a class="code" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> json_str = sstr_new();</div>
+<div class="line"><a class="code" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> json_str = <a class="code" href="sstr_8c.html#ae04c530ce9fbdb9b517ca74ab5f3edbc">sstr_new</a>();</div>
 <div class="line">json_marshal_array_A(a, 3, json_str);</div>
 <div class="line"> </div>
-<div class="line">printf(<span class="stringliteral">&quot;marshal a[] to json&gt; %s\n&quot;</span>, <a class="code" href="sstr_8h.html#a9a9649fd131f9d2f3fde584a46e3bdbe">sstr_cstr</a>(json_str));</div>
+<div class="line">printf(<span class="stringliteral">&quot;marshal a[] to json&gt; %s\n&quot;</span>, <a class="code" href="sstr_8c.html#a82ec436753ebe2424b3248ef2bad0dd3">sstr_cstr</a>(json_str));</div>
 <div class="line"> </div>
 <div class="line"><span class="keywordflow">for</span> (i = 0; i &lt; 3; ++i) {</div>
 <div class="line">    A_clear(&amp;a[i]);</div>
@@ -221,8 +221,10 @@ License</h1>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 </div><!-- doc-content -->
-<div class="ttc" id="asstr_8h_html_a8d28a1ce0ac6dd8b8e50af6f78e735e7"><div class="ttname"><a href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a></div><div class="ttdeci">void * sstr_t</div><div class="ttdoc">sstr_t are objects that represent sequences of characters.</div><div class="ttdef"><b>Definition:</b> sstr.h:50</div></div>
-<div class="ttc" id="asstr_8h_html_a9a9649fd131f9d2f3fde584a46e3bdbe"><div class="ttname"><a href="sstr_8h.html#a9a9649fd131f9d2f3fde584a46e3bdbe">sstr_cstr</a></div><div class="ttdeci">#define sstr_cstr(s)</div><div class="ttdoc">Return C-style string representation of s.</div><div class="ttdef"><b>Definition:</b> sstr.h:145</div></div>
+<div class="ttc" id="asstr_8h_html_a8d28a1ce0ac6dd8b8e50af6f78e735e7"><div class="ttname"><a href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a></div><div class="ttdeci">void * sstr_t</div><div class="ttdoc">sstr_t are objects that represent sequences of characters.</div><div class="ttdef"><b>Definition:</b> sstr.h:73</div></div>
+<div class="ttc" id="asstr_8c_html_ae99d652d5a9d25fc79343d2ac18cb0e5"><div class="ttname"><a href="sstr_8c.html#ae99d652d5a9d25fc79343d2ac18cb0e5">sstr_free</a></div><div class="ttdeci">void sstr_free(sstr_t s)</div><div class="ttdoc">delete a sstr_t.</div><div class="ttdef"><b>Definition:</b> sstr.c:47</div></div>
+<div class="ttc" id="asstr_8c_html_ae04c530ce9fbdb9b517ca74ab5f3edbc"><div class="ttname"><a href="sstr_8c.html#ae04c530ce9fbdb9b517ca74ab5f3edbc">sstr_new</a></div><div class="ttdeci">sstr_t sstr_new()</div><div class="ttdoc">Create an empty sstr_t.</div><div class="ttdef"><b>Definition:</b> sstr.c:41</div></div>
+<div class="ttc" id="asstr_8c_html_a82ec436753ebe2424b3248ef2bad0dd3"><div class="ttname"><a href="sstr_8c.html#a82ec436753ebe2424b3248ef2bad0dd3">sstr_cstr</a></div><div class="ttdeci">char * sstr_cstr(sstr_t s)</div><div class="ttdoc">Return C-style string representation of s.</div><div class="ttdef"><b>Definition:</b> sstr.c:85</div></div>
 <!-- HTML footer for doxygen 1.8.17-->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

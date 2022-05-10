@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>json-gen-c: __sstr_s Struct Reference</title>
+<title>json-gen-c: sstr_s Struct Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -58,33 +58,51 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
-$(document).ready(function(){initNavTree('struct____sstr__s.html',''); initResizable(); });
+$(document).ready(function(){initNavTree('structsstr__s.html',''); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
 <div class="header">
   <div class="summary">
 <a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="struct____sstr__s-members.html">List of all members</a>  </div>
+<a href="structsstr__s-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">__sstr_s Struct Reference</div>  </div>
+<div class="title">sstr_s Struct Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:aa28133ed3acdc85a9e52c008db49bcff"><td class="memItemLeft" align="right" valign="top"><a id="aa28133ed3acdc85a9e52c008db49bcff"></a>
+<tr class="memitem:ae7055ecebcc1460e05db04e91d02124d"><td class="memItemLeft" align="right" valign="top"><a id="ae7055ecebcc1460e05db04e91d02124d"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><b>length</b></td></tr>
-<tr class="separator:aa28133ed3acdc85a9e52c008db49bcff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2b8b1626c5c4bf9e23955793ed71f6e2"><td class="memItemLeft" align="right" valign="top"><a id="a2b8b1626c5c4bf9e23955793ed71f6e2"></a>
-char&#160;</td><td class="memItemRight" valign="bottom"><b>short_str</b> [SHORT_STR_CAPACITY+1]</td></tr>
-<tr class="separator:a2b8b1626c5c4bf9e23955793ed71f6e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c195fe0e45dac2487896aeaba040472"><td class="memItemLeft" align="right" valign="top"><a id="a2c195fe0e45dac2487896aeaba040472"></a>
-char *&#160;</td><td class="memItemRight" valign="bottom"><b>long_str</b></td></tr>
-<tr class="separator:a2c195fe0e45dac2487896aeaba040472"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ffcfedf2ecb90e5b5f1f821e46c4722"><td class="memItemLeft" align="right" valign="top"><a id="a4ffcfedf2ecb90e5b5f1f821e46c4722"></a>
-size_t&#160;</td><td class="memItemRight" valign="bottom"><b>long_str_cap</b></td></tr>
-<tr class="separator:a4ffcfedf2ecb90e5b5f1f821e46c4722"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:ae7055ecebcc1460e05db04e91d02124d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a376d4548b99a074bc9c82d58316ddb68"><td class="memItemLeft" align="right" valign="top"><a id="a376d4548b99a074bc9c82d58316ddb68"></a>
+char&#160;</td><td class="memItemRight" valign="bottom"><b>type</b></td></tr>
+<tr class="separator:a376d4548b99a074bc9c82d58316ddb68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ef4921b03ee31050b46cfe16c3178b9"><td class="memItemLeft" ><a id="a1ef4921b03ee31050b46cfe16c3178b9"></a>
+union {</td></tr>
+<tr class="memitem:ae92a9f30b960268457eec79fd47cbba7"><td class="memItemLeft" >
+&#160;&#160;&#160;char&#160;&#160;&#160;<b>short_str</b> [SHORT_STR_CAPACITY+1]</td></tr>
+<tr class="separator:ae92a9f30b960268457eec79fd47cbba7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76f71bcf104e631337e04f6c47075df5"><td class="memItemLeft" >
+&#160;&#160;&#160;struct {</td></tr>
+<tr class="memitem:a9ab7f7e0e50caa35d4a76b2f6628564b"><td class="memItemLeft" >
+&#160;&#160;&#160;&#160;&#160;&#160;size_t&#160;&#160;&#160;<b>capacity</b></td></tr>
+<tr class="separator:a9ab7f7e0e50caa35d4a76b2f6628564b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8bd0f94bfb529f630fef4c1543e56ded"><td class="memItemLeft" >
+&#160;&#160;&#160;&#160;&#160;&#160;char *&#160;&#160;&#160;<b>data</b></td></tr>
+<tr class="separator:a8bd0f94bfb529f630fef4c1543e56ded"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76f71bcf104e631337e04f6c47075df5"><td class="memItemLeft" valign="top">&#160;&#160;&#160;}&#160;&#160;&#160;<b>long_str</b></td></tr>
+<tr class="separator:a76f71bcf104e631337e04f6c47075df5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2499a4d22946f4549c66d76866d716c"><td class="memItemLeft" >
+&#160;&#160;&#160;struct {</td></tr>
+<tr class="memitem:ae43b8d6a8bda88e106bda564b0adb911"><td class="memItemLeft" >
+&#160;&#160;&#160;&#160;&#160;&#160;char *&#160;&#160;&#160;<b>data</b></td></tr>
+<tr class="separator:ae43b8d6a8bda88e106bda564b0adb911"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2499a4d22946f4549c66d76866d716c"><td class="memItemLeft" valign="top">&#160;&#160;&#160;}&#160;&#160;&#160;<b>ref_str</b></td></tr>
+<tr class="separator:af2499a4d22946f4549c66d76866d716c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ef4921b03ee31050b46cfe16c3178b9"><td class="memItemLeft" valign="top">}&#160;</td><td class="memItemRight" valign="bottom"><b>un</b></td></tr>
+<tr class="separator:a1ef4921b03ee31050b46cfe16c3178b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>src/utils/<a class="el" href="sstr_8h_source.html">sstr.h</a></li>
@@ -95,7 +113,7 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><b>long_str_cap</b></t
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="struct____sstr__s.html">__sstr_s</a></li>
+    <li class="navelem"><a class="el" href="structsstr__s.html">sstr_s</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.17 </li>
