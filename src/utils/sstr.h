@@ -35,67 +35,56 @@
 #ifndef SSTR_H_
 #define SSTR_H_
 
-#include <malloc.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define SHORT_STR_CAPACITY 25
+#define CAP_ADD_DELTA 256
+
+struct sstr_s {
+    size_t length;  // MUST FIRST, see sstr_length at sstr.h
+    char type;
+    union {
+        // short string store datas in short_str
+        char short_str[SHORT_STR_CAPACITY + 1];
+        // long string allocate a buffer and store datas in long_str
+        struct {
+            size_t capacity;
+            char* data;
+        } long_str;
+        // reference to a memory buffer
+        struct {
+            char* data;
+        } ref_str;
+    } un;
+};
+
+#define SSTR_TYPE_SHORT 0
+#define SSTR_TYPE_LONG 1
+#define SSTR_TYPE_REF 2
 
 /**
  * @brief sstr_t are objects that represent sequences of characters.
  */
 typedef void* sstr_t;
 
-#define SHORT_STR_CAPACITY 25
-#define CAP_ADD_DELTA 256
-#define FLOAT_PRE_DIGITS 6
-
-// the real struct of sstr_t, don't use it external.
-struct __sstr_s {
-    // length of chars stored in this struct
-    size_t length;
-    // if length of string less then SHORT_STR_CAPACITY, store them in
-    // short_str, and put a null character at the end of short_str.
-    char short_str[SHORT_STR_CAPACITY + 1];
-    // if length of string greater then SHORT_STR_CAPACITY, store them in
-    // long_str, and put a null character at the end of long_str.
-    // long_str is allocated by malloc.
-    char* long_str;
-    // The capacity of long_str.
-    size_t long_str_cap;
-};
-
-#define __SSTR struct __sstr_s
-#define __SSTR_SHORT_P(s) (((__SSTR*)s)->length <= SHORT_STR_CAPACITY)
-#define __SSTR_PTR(s) \
-    (__SSTR_SHORT_P(s) ? ((__SSTR*)s)->short_str : ((__SSTR*)s)->long_str)
-
 /**
  * @brief Create an empty sstr_t.
  *
  * @return sstr_t
  */
-static inline sstr_t sstr_new() {
-    __SSTR* s = (__SSTR*)malloc(sizeof(__SSTR));
-    memset(s, 0, sizeof(__SSTR));
-    return (sstr_t)s;
-}
+sstr_t sstr_new();
 
 /**
  * @brief delete a sstr_t.
  *
  * @param s sstr_t instance to delete.
  */
-static inline void sstr_free(sstr_t s) {
-    __SSTR* ss = (__SSTR*)s;
-    if (ss) {
-        free(ss->long_str);
-    }
-    free(s);
-}
+void sstr_free(sstr_t s);
 
 /**
  * @brief Create a sstr_t from \a data with \a length bytes.
@@ -106,19 +95,20 @@ static inline void sstr_free(sstr_t s) {
  * @param length length of \a data.
  * @return sstr_t containing data copied from \a data.
  */
-static inline sstr_t sstr_of(const void* data, size_t length) {
-    __SSTR* s = (__SSTR*)sstr_new();
-    if (length <= SHORT_STR_CAPACITY) {
-        memcpy(s->short_str, data, length);
-    } else {
-        s->long_str = (char*)malloc(length + 1);
-        memcpy(s->long_str, data, length);
-        s->long_str_cap = length;
-    }
-    s->length = length;
-    __SSTR_PTR(s)[length] = 0;
-    return (sstr_t)s;
-}
+sstr_t sstr_of(const void* data, size_t length);
+
+/**
+ * @brief Create a sstr_t from data with length bytes. The data is not
+ * copied, but have a pointer to data.
+ *
+ * @param data data of the result sstr_t.
+ * @param length length of \a data.
+ * @return sstr_t
+ * @note The result sstr_t does not own data, but have a pointer to data. It is
+ * a reference, not a copy.
+ * @note You cannot append a sstr_ref() result.
+ */
+sstr_t sstr_ref(const void* data, size_t length);
 
 /**
  * @brief Create a sstr_t from C-style (NULL-terminated) string \a str.
@@ -128,7 +118,7 @@ static inline sstr_t sstr_of(const void* data, size_t length) {
  * @param cstr C-style string to copy to the result sstr_t.
  * @return sstr_t containing \a data copied from cstr.
  */
-#define sstr(cstr) sstr_of(cstr, strlen(cstr))
+sstr_t sstr(const char* cstr);
 
 /**
  * @brief Return C-style string representation of \a s.
@@ -142,7 +132,7 @@ static inline sstr_t sstr_of(const void* data, size_t length) {
  * @return char* C-style string representation of \a s.
  * @note The returned string is reused by \a s, do not free it yourself.
  */
-#define sstr_cstr(s) __SSTR_PTR(s)
+char* sstr_cstr(sstr_t s);
 
 /**
  * @brief Return the length of \a s, in terms of bytes.
@@ -157,8 +147,7 @@ static inline sstr_t sstr_of(const void* data, size_t length) {
  * @param s sstr_t instance to get length of.
  * @return size_t The number of bytes of \a s.
  */
-
-#define sstr_length(s) (((__SSTR*)s)->length)
+#define sstr_length(s) ((struct sstr_s*)s)->length
 
 /**
  * @brief Compare \a a and \a b
@@ -196,14 +185,6 @@ int sstr_compare_c(sstr_t a, const char* b);
 void sstr_append_zero(sstr_t s, size_t length);
 
 /**
- * @brief append spaces at the end of the sstr_t.
- *
- * @param s the sstr_t to append spaces to.
- * @param indent numbers of spaces to append.
- */
-void sstr_append_indent(sstr_t s, size_t indent);
-
-/**
  * @brief Extends the sstr_t by appending additional characters in \a data with
  * length of \a length at the end of its current value .
  *
@@ -211,12 +192,7 @@ void sstr_append_indent(sstr_t s, size_t indent);
  * @param data data to append.
  * @param length length of \a data.
  */
-static inline void sstr_append_of(sstr_t s, const void* data, size_t length) {
-    size_t oldlen = sstr_length(s);
-    sstr_append_zero(s, length);
-    memcpy(__SSTR_PTR(s) + oldlen, data, length);
-    __SSTR_PTR(s)[sstr_length(s)] = '\0';
-}
+void sstr_append_of(sstr_t s, const void* data, size_t length);
 
 /**
  * @brief Extends the sstr_t by appending additional characters contained in \a
@@ -225,8 +201,7 @@ static inline void sstr_append_of(sstr_t s, const void* data, size_t length) {
  * @param dst destination sstr_t.
  * @param src source sstr_t.
  */
-#define sstr_append(dst, src) \
-    sstr_append_of(dst, __SSTR_PTR(src), sstr_length(src))
+void sstr_append(sstr_t dst, sstr_t src);
 
 /**
  * @brief Extends the sstr_t by appending additional characters contained in \a
@@ -235,34 +210,7 @@ static inline void sstr_append_of(sstr_t s, const void* data, size_t length) {
  * @param dst destination sstr_t.
  * @param src source C-style string.
  */
-#define sstr_append_cstr(dst, src) sstr_append_of(dst, src, strlen(src))
-
-/**
- * @brief Append if cond is true, otherwise do nothing.
- *
- * @param s the sstr_t to append to.
- * @param data data to append.
- * @param length length of \a data.
- * @param cond condition
- */
-static inline void sstr_append_of_if(sstr_t s, const void* data, size_t length,
-                                     int cond) {
-    if (cond) {
-        size_t oldlen = sstr_length(s);
-        sstr_append_zero(s, length);
-        memcpy(__SSTR_PTR(s) + oldlen, data, length);
-        __SSTR_PTR(s)[sstr_length(s)] = '\0';
-    }
-}
-
-/**
- * @brief Append C style string if cond is true, otherwise do nothing.
- * @param dst destination sstr_t to append to.
- * @param src source C-style string to append
- * @param cond condition
- */
-#define sstr_append_cstr_if(dst, src, cond) \
-    sstr_append_of_if(dst, src, strlen(src), cond)
+void sstr_append_cstr(sstr_t dst, const char* src);
 
 /**
  * @brief Duplicate \a s and return.
@@ -270,7 +218,7 @@ static inline void sstr_append_of_if(sstr_t s, const void* data, size_t length,
  * @param s sstr_t to duplicate.
  * @return sstr_t  duplicate of \a s.
  */
-#define sstr_dup(s) sstr_of(__SSTR_PTR(s), sstr_length(s))
+sstr_t sstr_dup(sstr_t s);
 
 /**
  * @brief Get substring of \a s starting at \a index with \a length bytes.
@@ -278,7 +226,8 @@ static inline void sstr_append_of_if(sstr_t s, const void* data, size_t length,
  * @param s sstr_t instance to get substring of.
  * @param index index of the first byte of the substring.
  * @param len number of bytes of the substring.
- * @return sstr_t substring of \a s.
+ * @return sstr_t substring of \a s. if \a index is out of range, return an
+ * empty string.
  */
 sstr_t sstr_substr(sstr_t s, size_t index, size_t len);
 
@@ -287,18 +236,7 @@ sstr_t sstr_substr(sstr_t s, size_t index, size_t len);
  *
  * @param s sstr_t instance to clear.
  */
-
-static inline void sstr_clear(sstr_t s) {
-    __SSTR* ss = (__SSTR*)s;
-    if (__SSTR_SHORT_P(ss)) {
-    } else {
-        free(ss->long_str);
-        ss->long_str = NULL;
-        ss->long_str_cap = 0;
-    }
-    ss->length = 0;
-    ss->short_str[0] = 0;
-}
+void sstr_clear(sstr_t s);
 
 /**
  * @brief Printf implement.
@@ -313,7 +251,7 @@ static inline void sstr_clear(sstr_t s) {
  *   - %[0][width][u][x|X]L      int64_t/uint64_t
  *   - %[0][width][.width]f      double, max valid number fits to %18.15f
  *   - %p                        void *
- *   - %S                        sstr_t
+ *   - %[x|X]S                   sstr_t, if x, print as hexadecimal
  *   - %s                        null-terminated string
  *   - %*s                       length and string
  *   - %Z                        '\0'
@@ -359,24 +297,44 @@ sstr_t sstr_printf(const char* fmt, ...);
  */
 sstr_t sstr_printf_append(sstr_t buf, const char* fmt, ...);
 
-/**
- * @brief Convert \a l to string and append to \a s.
- *
- * @param s sstr_t to append to.
- * @param l long to append.
- */
-void sstr_append_long_str(sstr_t s, long l);
+/// convert sstr <-> int,long,float,double
 
-/**
- * @brief Convert interger i into decimal string and append to \a s.
- *
- * @param s sstr_t to append to.
- * @param i integer to convert.
- */
 void sstr_append_int_str(sstr_t s, int i);
-
+int sstr_parse_long(sstr_t s, long* v);
+int sstr_parse_int(sstr_t* s, int* v);
+void sstr_append_long_str(sstr_t s, long l);
+void sstr_append_float_str(sstr_t s, float f, int precission);
 void sstr_append_double_str(sstr_t s, double f, int precision);
-void sstr_append_float_str(sstr_t s, float f, int precision);
+int sstr_parse_double(sstr_t s, double* v);
+
+/**
+ * @brief Append if cond is true, otherwise do nothing.
+ *
+ * @param s the sstr_t to append to.
+ * @param data data to append.
+ * @param length length of \a data.
+ * @param cond condition
+ */
+void sstr_append_of_if(sstr_t s, const void* data, size_t length, int cond);
+/**
+ * @brief Append C style string if cond is true, otherwise do nothing.
+ * @param dst destination sstr_t to append to.
+ * @param src source C-style string to append
+ * @param cond condition
+ */
+#define sstr_append_cstr_if(dst, src, cond) \
+    sstr_append_of_if(dst, src, strlen(src), cond)
+
+// escape string to json string format
+int sstr_json_escape_string_append(sstr_t out, sstr_t in);
+
+/**
+ * @brief append spaces at the end of the sstr_t.
+ *
+ * @param s the sstr_t to append spaces to.
+ * @param indent numbers of spaces to append.
+ */
+void sstr_append_indent(sstr_t s, size_t indent);
 
 /**
  * @brief return version string.
@@ -384,8 +342,6 @@ void sstr_append_float_str(sstr_t s, float f, int precision);
  * @return const char* static version string.
  */
 const char* sstr_version();
-
-int sstr_json_escape_string_append(sstr_t out, sstr_t in);
 
 #ifdef __cplusplus
 }

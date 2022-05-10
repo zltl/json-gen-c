@@ -5,6 +5,8 @@
 
 #include "sstr.h"
 
+#include <assert.h>
+#include <ctype.h>
 #include <malloc.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -13,6 +15,74 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#define STR struct sstr_s
+#define SSTR(s) ((STR*)(s))
+
+#define STR_PTR(s)                                                        \
+    ((SSTR(s))->type == SSTR_TYPE_SHORT                                   \
+         ? (SSTR(s))->un.short_str                                        \
+         : (SSTR(s)->type == SSTR_TYPE_LONG ? (SSTR(s)->un.long_str.data) \
+                                            : (SSTR(s)->un.ref_str.data)))
+
+static void char_to_hex(unsigned char c, unsigned char* buf, int cap) {
+    static unsigned char hex[] = "0123456789abcdef";
+    static unsigned char HEX[] = "0123456789ABCDEF";
+
+    if (cap) {
+        buf[0] = HEX[((c >> 4) & 0x0f)];
+        buf[1] = HEX[(c & 0x0f)];
+    } else {
+        buf[0] = hex[((c >> 4) & 0x0f)];
+        buf[1] = hex[(c & 0x0f)];
+    }
+}
+
+sstr_t sstr_new() {
+    STR* s = (STR*)malloc(sizeof(STR));
+    memset(s, 0, sizeof(STR));
+    return s;
+}
+
+void sstr_free(sstr_t s) {
+    if (s == NULL) {
+        return;
+    }
+    STR* ss = (STR*)s;
+    if (ss->type == SSTR_TYPE_LONG) {
+        free(ss->un.long_str.data);
+    }
+    free(s);
+}
+
+sstr_t sstr_of(const void* data, size_t length) {
+    STR* s = (STR*)sstr_new();
+    if (length <= SHORT_STR_CAPACITY) {
+        memcpy(s->un.short_str, data, length);
+        s->un.short_str[length] = '\0';
+        s->type = SSTR_TYPE_SHORT;
+    } else {
+        s->un.long_str.data = (char*)malloc(length + 1);
+        memcpy(s->un.long_str.data, data, length);
+        s->un.long_str.capacity = length;
+        s->un.long_str.data[length] = '\0';
+        s->type = SSTR_TYPE_LONG;
+    }
+    s->length = length;
+    return s;
+}
+
+sstr_t sstr_ref(const void* data, size_t length) {
+    STR* s = (STR*)sstr_new();
+    s->un.ref_str.data = (char*)data;
+    s->length = length;
+    s->type = SSTR_TYPE_REF;
+    return s;
+}
+
+sstr_t sstr(const char* cstr) { return sstr_of(cstr, strlen(cstr)); }
+
+char* sstr_cstr(sstr_t s) { return STR_PTR(s); }
 
 int sstr_compare(sstr_t a, sstr_t b) {
     if (a == NULL && b == NULL) {
@@ -30,7 +100,7 @@ int sstr_compare(sstr_t a, sstr_t b) {
         minlen = blen;
     }
 
-    int c = memcmp(__SSTR_PTR(a), __SSTR_PTR(b), minlen);
+    int c = memcmp(STR_PTR(a), STR_PTR(b), minlen);
     if (c != 0) {
         return c;
     }
@@ -44,7 +114,7 @@ int sstr_compare_c(sstr_t a, const char* b) {
         minlen = blen;
     }
 
-    int c = memcmp(__SSTR_PTR(a), b, minlen);
+    int c = memcmp(STR_PTR(a), b, minlen);
     if (c != 0) {
         return c;
     }
@@ -52,50 +122,58 @@ int sstr_compare_c(sstr_t a, const char* b) {
 }
 
 void sstr_append_zero(sstr_t s, size_t length) {
-    __SSTR* ss = (__SSTR*)s;
+    STR* ss = (STR*)s;
 
-    if (__SSTR_SHORT_P(s)) {
+    assert(ss->type != SSTR_TYPE_REF);
+
+    if (ss->type == SSTR_TYPE_SHORT) {
         if (ss->length + length <= SHORT_STR_CAPACITY) {
-            // memset(ss->short_str + ss->length, 0, length + 1);
+            memset(ss->un.short_str + ss->length, 0, length + 1);
             ss->length += length;
             return;
         } else {
-            if (ss->long_str) {
-                free(ss->long_str);
-            }
-            ss->long_str =
-                (char*)calloc(length + ss->length + CAP_ADD_DELTA + 1, 1);
-            ss->long_str_cap = length + ss->length + CAP_ADD_DELTA;
-            memcpy(ss->long_str, ss->short_str, ss->length);
+            char* ldata =
+                (char*)malloc(length + ss->length + CAP_ADD_DELTA + 1);
+            memcpy(ldata, ss->un.short_str, ss->length);
+            memset(ldata + ss->length, 0, length + 1);
+            ss->un.long_str.data = ldata;
+            ss->un.long_str.capacity = length + ss->length + CAP_ADD_DELTA;
             ss->length += length;
+            ss->type = SSTR_TYPE_LONG;
             return;
         }
     } else {
-        if (ss->long_str_cap - ss->length > length) {
-            // memset(ss->long_str + ss->length, 0, length + 1);
+        if (ss->un.long_str.capacity - ss->length > length) {
+            memset(ss->un.long_str.data + ss->length, 0, length + 1);
             ss->length += length;
             return;
         } else {
-            ss->long_str = (char*)realloc(
-                __SSTR_PTR(s), length + ss->length + CAP_ADD_DELTA + 1);
-            ss->long_str_cap = length + ss->length + CAP_ADD_DELTA + 1;
-            memset(ss->long_str + ss->length, 0, length + 1);
+            ss->un.long_str.data = (char*)realloc(
+                STR_PTR(s), length + ss->length + CAP_ADD_DELTA + 1);
+            ss->un.long_str.capacity = length + ss->length + CAP_ADD_DELTA + 1;
+            memset(ss->un.long_str.data + ss->length, 0, length + 1);
             ss->length += length;
             return;
         }
     }
 }
 
-void sstr_append_indent(sstr_t s, size_t indent) {
-    if (indent == 0) {
-        return;
-    }
-    size_t cur_len = sstr_length(s);
-    sstr_append_zero(s, indent);
-    for (size_t i = 0; i < indent; i++) {
-        __SSTR_PTR(s)[cur_len + i] = ' ';
-    }
+void sstr_append_of(sstr_t s, const void* data, size_t length) {
+    size_t oldlen = sstr_length(s);
+    sstr_append_zero(s, length);
+    memcpy(STR_PTR(s) + oldlen, data, length);
+    STR_PTR(s)[sstr_length(s)] = '\0';
 }
+
+void sstr_append(sstr_t dst, sstr_t src) {
+    sstr_append_of(dst, STR_PTR(src), sstr_length(src));
+}
+
+void sstr_append_cstr(sstr_t dst, const char* src) {
+    sstr_append_of(dst, src, strlen(src));
+}
+
+sstr_t sstr_dup(sstr_t s) { return sstr_of(STR_PTR(s), sstr_length(s)); }
 
 sstr_t sstr_substr(sstr_t s, size_t index, size_t len) {
     size_t minlen = len;
@@ -106,7 +184,28 @@ sstr_t sstr_substr(sstr_t s, size_t index, size_t len) {
     if (index + minlen > str_len) {
         minlen = str_len - index;
     }
-    return sstr_of(__SSTR_PTR(s) + index, minlen);
+    return sstr_of(STR_PTR(s) + index, minlen);
+}
+
+void sstr_clear(sstr_t s) {
+    STR* ss = (STR*)s;
+
+    switch (ss->type) {
+        case SSTR_TYPE_REF:
+            ss->length = 0;
+            ss->un.ref_str.data = NULL;
+            break;
+        case SSTR_TYPE_SHORT:
+            ss->length = 0;
+            ss->un.short_str[0] = 0;
+            break;
+        case SSTR_TYPE_LONG:
+            ss->length = 0;
+            free(ss->un.long_str.data);
+            ss->un.long_str.data = NULL;
+            ss->un.long_str.capacity = 0;
+            break;
+    }
 }
 
 static unsigned char* sstr_sprintf_num(unsigned char* buf, unsigned char* last,
@@ -145,10 +244,11 @@ sstr_t sstr_vslprintf_append(sstr_t buf, const char* fmt, va_list args) {
     int d;
     double f;
     size_t slen;
+    size_t i;
     int64_t i64;
     uint64_t ui64, frac, scale;
     unsigned int width, sign, hex, frac_width, frac_width_set, n;
-    __SSTR* S;
+    STR* S;
     /* a default d after %..x/u  */
     int df_d;
     unsigned char tmp[100];
@@ -218,12 +318,19 @@ sstr_t sstr_vslprintf_append(sstr_t buf, const char* fmt, va_list args) {
 
             switch (*fmt) {
                 case 'S':
-                    S = va_arg(args, __SSTR*);
+                    S = va_arg(args, STR*);
                     if (S == NULL) {
                         p = (unsigned char*)"NULL";
                         sstr_append_of(buf, p, 4);
-                    } else {
-                        sstr_append(buf, (sstr_t)S);
+                    } else if (hex == 0) {
+                        sstr_append(buf, S);
+                    } else if (hex) {
+                        p = (unsigned char*)STR_PTR(S);
+                        slen = sstr_length(S);
+                        for (i = 0; i < slen; ++i) {
+                            char_to_hex(p[i], tmp, hex == 2);
+                            sstr_append_of(buf, tmp, 2);
+                        }
                     }
 
                     fmt++;
@@ -487,6 +594,11 @@ static unsigned char* sstr_sprintf_num(unsigned char* buf, unsigned char* last,
     return buf;
 }
 
+const char* sstr_version() {
+    static const char* const version = "1.1.1";
+    return version;
+}
+
 void sstr_append_int_str(sstr_t s, int i) {
     unsigned char buf[SSTR_INT32_LEN + 1];
     unsigned char* p = buf + SSTR_INT32_LEN;
@@ -508,6 +620,39 @@ void sstr_append_int_str(sstr_t s, int i) {
         sstr_append_of(s, "-", 1);
     }
     sstr_append_of(s, p, buf + SSTR_INT32_LEN - p);
+}
+
+int sstr_parse_long(sstr_t s, long* v) {
+    size_t i = 0;
+    int negative = 0;
+    *v = 0;
+    unsigned char* p = (unsigned char*)STR_PTR(s);
+    for (i = 0; i < sstr_length(s); ++i) {
+        if (isspace(p[i])) {
+            continue;
+        }
+        if (p[i] == '-') {
+            negative = 1;
+        }
+    }
+    for (; i < sstr_length(s); ++i) {
+        if (isdigit(p[i])) {
+            *v = *v * 10 + p[i] - '0';
+        }
+    }
+
+    if (negative) {
+        *v = -*v;
+    }
+
+    return i;
+}
+
+int sstr_parse_int(sstr_t* s, int* v) {
+    long vr;
+    int r = sstr_parse_long(s, &vr);
+    *v = (int)vr;
+    return r;
 }
 
 void sstr_append_long_str(sstr_t s, long l) {
@@ -575,9 +720,40 @@ void sstr_append_double_str(sstr_t s, double f, int precision) {
     }
 }
 
-const char* sstr_version() {
-    static const char* const version = "1.0.1";
-    return version;
+int sstr_parse_double(sstr_t s, double* v) {
+    size_t i = 0;
+    int negative = 0;
+    *v = 0;
+    unsigned char* p = (unsigned char*)STR_PTR(s);
+    for (i = 0; i < sstr_length(s); ++i) {
+        if (isspace(p[i])) {
+            continue;
+        }
+        if (p[i] == '-') {
+            negative = 1;
+        }
+    }
+    for (; i < sstr_length(s); ++i) {
+        if (isdigit(p[i])) {
+            *v = *v * 10 + p[i] - '0';
+        }
+    }
+    if (p[i] == '.') i++;
+
+    double v2 = 0, d2 = 10;
+    for (; i < sstr_length(s); ++i) {
+        if (isdigit(p[i])) {
+            v2 += (p[i] - '0') / d2;
+            d2 *= 10;
+        }
+    }
+    *v += v2;
+
+    if (negative) {
+        *v = -*v;
+    }
+
+    return i;
 }
 
 int sstr_json_escape_string_append(sstr_t out, sstr_t in) {
@@ -632,4 +808,24 @@ int sstr_json_escape_string_append(sstr_t out, sstr_t in) {
         }
     }
     return 0;
+}
+
+void sstr_append_of_if(sstr_t s, const void* data, size_t length, int cond) {
+    if (cond) {
+        size_t oldlen = sstr_length(s);
+        sstr_append_zero(s, length);
+        memcpy(STR_PTR(s) + oldlen, data, length);
+        STR_PTR(s)[sstr_length(s)] = '\0';
+    }
+}
+
+void sstr_append_indent(sstr_t s, size_t indent) {
+    if (indent == 0) {
+        return;
+    }
+    size_t cur_len = sstr_length(s);
+    sstr_append_zero(s, indent);
+    for (size_t i = 0; i < indent; i++) {
+        STR_PTR(s)[cur_len + i] = ' ';
+    }
 }
