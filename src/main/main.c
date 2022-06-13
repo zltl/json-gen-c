@@ -34,6 +34,9 @@ static int options_parse(int argc, const char **argv, struct options *options) {
             return -1;
         }
     }
+    if (options->output_path == NULL) {
+        options->output_path = "./";
+    }
     return 0;
 }
 
@@ -41,7 +44,7 @@ int main(int argc, const char **argv) {
     // parse options
     struct options options = {NULL, NULL};
     options_parse(argc, argv, &options);
-    if (options.input_file == NULL || options.output_path == NULL) {
+    if (options.input_file == NULL) {
         usage();
         return -1;
     }
