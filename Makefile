@@ -33,16 +33,16 @@ export
 
 all: json-gen-c
 
-libs: $(TARGET_DIR)/utils.a $(TARGET_DIR)/struct.a $(TARGET_DIR)/gencode.a
+libs: $(TARGET_DIR)/libutils.a $(TARGET_DIR)/libstruct.a $(TARGET_DIR)/gencode.a
 
-$(TARGET_DIR)/utils.a: $(wildcard src/utils/*.c) $(wildcard src/utils/*.h)
+$(TARGET_DIR)/libutils.a:
 	make -C src/utils
-$(TARGET_DIR)/struct.a: $(wildcard src/struct/*.c) $(wildcard src/struct/*.h)
+$(TARGET_DIR)/libstruct.a:
 	make -C src/struct
-$(TARGET_DIR)/gencode.a: $(wildcard src/gencode/*.c) $(wildcard src/gencode/*.h) $(wildcard src/gencode/codes/*)
+$(TARGET_DIR)/gencode.a:
 	make -C src/gencode
 
-libs_mmm = $(TARGET_DIR)/gencode.a $(TARGET_DIR)/struct.a $(TARGET_DIR)/utils.a
+libs_mmm = $(TARGET_DIR)/gencode.a $(TARGET_DIR)/libstruct.a $(TARGET_DIR)/libutils.a
 
 $(TARGET_DIR)/main.o: src/main/main.c
 	make -C src/main
