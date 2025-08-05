@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "sstr.h"
+#include "utils/error_codes.h"
 
 /*
   hash map to describe structs like:
@@ -291,20 +292,50 @@ static int utf16_literal_to_utf8(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
+/**
+ * @brief Parse a JSON string token with proper bounds checking
+ * @param content JSON content string
+ * @param pos Current parsing position
+ * @param txt Output string buffer
+ * @return Token type or JSON_ERROR on failure
+ */
 static int json_parse_string_token(sstr_t content, struct json_pos* pos,
                                    sstr_t txt) {
     long len = sstr_length(content);
     long i = pos->offset;
     char* data = sstr_cstr(content);
+    
+    // Validate input parameters
+    if (data == NULL || txt == NULL || pos == NULL) {
+        return JSON_ERROR;
+    }
+    
+    // Validate bounds before accessing data[i]
+    if (i >= len) {
+        sstr_clear(txt);
+        sstr_t e = PERROR(pos, "unexpected end of input when expecting string");
+        sstr_append(txt, e);
+        sstr_free(e);
+        return JSON_ERROR;
+    }
 
-    // data[i] = "
+    // data[i] should be '"' - validate this
+    if (data[i] != '"') {
+        sstr_clear(txt);
+        sstr_t e = PERROR(pos, "expected '\"' at start of string, got '%c'", data[i]);
+        sstr_append(txt, e);
+        sstr_free(e);
+        return JSON_ERROR;
+    }
+    
+    // Move past opening quote
     i++;
     pos->col++;
 
     sstr_clear(txt);
-    while (i < len && data[i] != '\"') {
+    while (i < len && data[i] != '"') {
         if (data[i] == '\\') {
-            // is escape sequence
+            // Handle escape sequence with proper bounds checking
             if (i + 1 >= len) {
                 sstr_clear(txt);
                 sstr_t e = PERROR(pos,
@@ -992,6 +1023,15 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                                           struct json_parse_param* param,
                                           sstr_t txt);
 
+/**
+ * @brief Parse JSON array with proper memory management
+ * @param content JSON content string
+ * @param pos Current parsing position
+ * @param param Parse parameters
+ * @param len Output array length
+ * @param txt Error message buffer
+ * @return 0 on success, negative on error
+ */
 static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
                                          struct json_parse_param* param,
                                          int* len, sstr_t txt) {
@@ -1002,7 +1042,7 @@ static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
         sstr_t e = PERROR(pos, "struct %s not found", param->struct_name);
         sstr_append(txt, e);
         sstr_free(e);
-        return -1;
+        return JSON_GEN_ERROR_NOT_FOUND;
     }
 #ifdef JSON_DEBUG
     printf("array find field struct %s, size %d\n", field->struct_name,
@@ -1014,11 +1054,18 @@ static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
         sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
         sstr_append(txt, e);
         sstr_free(e);
-        return -1;
+        return JSON_GEN_ERROR_PARSE;
     }
 
     while (1) {
         void* ptr = malloc(field->type_size);
+        if (ptr == NULL) {
+            sstr_t e = PERROR(pos, "memory allocation failed for array element");
+            sstr_append(txt, e);
+            sstr_free(e);
+            return JSON_GEN_ERROR_MEMORY;
+        }
+        
         memset(ptr, 0, field->type_size);
         struct json_parse_param sub_param;
         sub_param.instance_ptr = ptr;
@@ -1028,38 +1075,52 @@ static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
         sub_param.field_name = param->field_name;
 
         int r = json_unmarshal_struct_internal(content, pos, &sub_param, txt);
+        
+        // Handle parsing failure - free allocated memory before returning
+        if (r < 0) {
+            free(ptr);
+            return r;
+        }
+        
+        // Reallocate array buffer with error checking
         void* pptr = realloc(*(void**)param->instance_ptr,
                              (*len + 1) * field->type_size);
+        if (pptr == NULL) {
+            free(ptr);
+            sstr_t e = PERROR(pos, "memory reallocation failed for array");
+            sstr_append(txt, e);
+            sstr_free(e);
+            return JSON_GEN_ERROR_MEMORY;
+        }
+        
+        // Copy element to array and update pointer
         memcpy(pptr + (*len * field->type_size), ptr, field->type_size);
         free(ptr);
         *(void**)param->instance_ptr = pptr;
         *len = *len + 1;
 
-        if (r < 0) {
-            return r;
-        }
         if (r == 1) {
-            return 0;  // finished
+            return JSON_GEN_SUCCESS;  // finished
         }
 
         int tk = json_next_token(content, pos, txt);
         if (tk == JSON_TOKEN_RIGHT_BRACKET) {
-            return 0;
+            return JSON_GEN_SUCCESS;
         }
         if (tk == JSON_TOKEN_COMMA) {
             continue;
         }
         if (tk == JSON_ERROR) {
-            return -1;
+            return JSON_GEN_ERROR_PARSE;
         }
         if (tk == JSON_TOKEN_EOF) {
-            sstr_t e = PERROR(pos, "parsing array, each EOF");
+            sstr_t e = PERROR(pos, "parsing array, reached EOF unexpectedly");
             sstr_append(txt, e);
             sstr_free(e);
-            return -1;
+            return JSON_GEN_ERROR_PARSE;
         }
     }
-    return 0;
+    return JSON_GEN_SUCCESS;
 }
 
 static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,

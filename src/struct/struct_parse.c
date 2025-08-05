@@ -12,6 +12,7 @@
 #include "utils/hash_map.h"
 #include "utils/io.h"
 #include "utils/sstr.h"
+#include "utils/error_codes.h"
 
 /*
     STRUCT_LIST = STRUCT STRUCT_LIST
@@ -346,14 +347,26 @@ static char* token_type_str(struct struct_token* token) {
             parser->pos.line, parser->pos.col, ##__VA_ARGS__)
 
 // '#include "filename"'
+/**
+ * @brief Parse include directive with proper error handling and resource management
+ * @param parser Current parser state
+ * @param content Content being parsed
+ * @param token Current token
+ * @return 0 on success, negative on error
+ */
 static int struct_parse_include(struct struct_parser* parser, sstr_t content,
                                 struct struct_token* token) {
+    // Validate input parameters
+    if (parser == NULL || content == NULL || token == NULL) {
+        return JSON_GEN_ERROR_INVALID_PARAM;
+    }
+    
     // 'include'
     int tk = next_token(parser, content, token);
     if (tk != TOKEN_IDENTIFY || sstr_compare_c(token->txt, "include") != 0) {
         PERROR(parser, "expect #include, but found %s\n",
                token_type_str(token));
-        return -1;
+        return JSON_GEN_ERROR_PARSE;
     }
 
     // '"filename"', or '<filename>'
@@ -361,33 +374,52 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     if (tk != TOKEN_STRING) {
         PERROR(parser, "expect string file name, but found %s\n",
                token_type_str(token));
-        return -1;
+        return JSON_GEN_ERROR_PARSE;
     }
 
     // filename is relative to current file.
     // get the real path of the file.
     char* filename = sstr_cstr(token->txt);
+    if (filename == NULL) {
+        PERROR(parser, "invalid filename in include directive\n");
+        return JSON_GEN_ERROR_INVALID_PARAM;
+    }
+    
     sstr_t file = sstr_new();
+    if (file == NULL) {
+        PERROR(parser, "memory allocation failed for file path\n");
+        return JSON_GEN_ERROR_MEMORY;
+    }
+    
     int fname_len = strlen(parser->name);
     while (fname_len >= 0 && parser->name[fname_len] != '/') {
         fname_len--;
     }
-    if (fname_len == !0) {
-        sstr_append_of(file, parser->name, fname_len);
+    if (fname_len >= 0) {  // Fixed: was '!0' which is always true
+        sstr_append_of(file, parser->name, fname_len + 1);  // include the '/'
     }
     sstr_append_cstr(file, filename);
-    sstr_free(token->txt);
-    token->txt = NULL;
+    
+    // Clean up token text
+    if (token->txt) {
+        sstr_free(token->txt);
+        token->txt = NULL;
+    }
 
     // read the contents of the file
     sstr_t sub_content = sstr_new();
+    if (sub_content == NULL) {
+        PERROR(parser, "memory allocation failed for file content\n");
+        sstr_free(file);
+        return JSON_GEN_ERROR_MEMORY;
+    }
+    
     int r = read_file(sstr_cstr(file), sub_content);
     if (r != 0) {
-        fprintf(stderr, "error reading file %s", sstr_cstr(file));
+        PERROR(parser, "include file \"%s\" not found\n", sstr_cstr(file));
         sstr_free(sub_content);
         sstr_free(file);
-
-        return -1;
+        return JSON_GEN_ERROR_FILE_IO;
     }
 
     // then parse it.

