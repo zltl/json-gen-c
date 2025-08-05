@@ -1,3 +1,4 @@
 <map id="struct_field" name="struct_field">
-<area shape="rect" id="node1" title="structure to store field list of parsed structs. A struct may have multiple field,..." alt="" coords="5,5,100,32"/>
+<area shape="rect" id="Node000001" title="structure to store field list of parsed structs. A struct may have multiple field,..." alt="" coords="5,5,100,31"/>
+<area shape="poly" id="edge1_Node000001_Node000001" title=" " alt="" coords="115,12,127,18,118,24,101,25,100,20,117,19,121,18,113,17"/>
 </map>

@@ -1,6 +1,10 @@
 <map id="src/utils/hash_map.h" name="src/utils/hash_map.h">
-<area shape="rect" id="node1" title="A simple hash_map implementation." alt="" coords="6,5,162,32"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,155,80,181"/>
-<area shape="rect" id="node3" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="81,80,170,107"/>
-<area shape="rect" id="node4" title=" " alt="" coords="104,155,179,181"/>
+<area shape="rect" id="Node000001" title="A simple hash_map implementation." alt="" coords="6,5,162,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,152,80,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="83,32,52,139,47,138,78,30"/>
+<area shape="rect" id="Node000003" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="81,79,170,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="93,30,114,65,109,68,89,32"/>
+<area shape="poly" id="edge4_Node000003_Node000002" title=" " alt="" coords="114,106,68,145,65,141,110,102"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="104,152,179,177"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="131,104,138,138,133,139,125,105"/>
 </map>

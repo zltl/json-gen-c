@@ -1,13 +1,31 @@
 <map id="src/struct/struct_parse.c" name="src/struct/struct_parse.c">
-<area shape="rect" id="node1" title="parse struct definition file." alt="" coords="329,5,506,32"/>
-<area shape="rect" id="node2" href="$struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="125,80,280,107"/>
-<area shape="rect" id="node4" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="5,155,139,181"/>
-<area shape="rect" id="node5" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="222,229,311,256"/>
-<area shape="rect" id="node7" title=" " alt="" coords="419,80,490,107"/>
-<area shape="rect" id="node8" title=" " alt="" coords="514,80,593,107"/>
-<area shape="rect" id="node9" title=" " alt="" coords="617,80,684,107"/>
-<area shape="rect" id="node10" title=" " alt="" coords="709,80,779,107"/>
-<area shape="rect" id="node11" href="$io_8h.html" title="file operation helper functions." alt="" coords="265,155,343,181"/>
-<area shape="rect" id="node3" title=" " alt="" coords="135,304,209,331"/>
-<area shape="rect" id="node6" title=" " alt="" coords="233,304,308,331"/>
+<area shape="rect" id="Node000001" title="parse struct definition file." alt="" coords="338,5,515,31"/>
+<area shape="rect" id="Node000002" href="$struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="110,79,265,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="389,33,240,77,239,72,387,28"/>
+<area shape="rect" id="Node000004" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="28,152,161,177"/>
+<area shape="poly" id="edge13_Node000001_Node000004" title=" " alt="" coords="338,26,268,32,198,43,137,59,115,69,100,80,93,93,89,108,91,138,85,139,84,107,88,91,96,77,113,64,136,54,197,37,268,27,337,21"/>
+<area shape="rect" id="Node000005" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="154,225,243,251"/>
+<area shape="poly" id="edge16_Node000001_Node000005" title=" " alt="" coords="419,32,382,80,368,108,360,132,349,155,329,179,293,205,254,223,252,218,291,201,326,175,345,152,355,130,363,106,377,77,414,29"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="391,79,462,104"/>
+<area shape="poly" id="edge9_Node000001_Node000007" title=" " alt="" coords="429,31,429,65,424,65,424,31"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="486,79,564,104"/>
+<area shape="poly" id="edge10_Node000001_Node000008" title=" " alt="" coords="444,29,500,68,496,73,441,33"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="589,79,656,104"/>
+<area shape="poly" id="edge11_Node000001_Node000009" title=" " alt="" coords="459,28,578,71,577,76,457,33"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="680,79,751,104"/>
+<area shape="poly" id="edge12_Node000001_Node000010" title=" " alt="" coords="473,28,668,76,667,81,472,33"/>
+<area shape="rect" id="Node000011" href="$io_8h.html" title="file operation helper functions." alt="" coords="236,152,315,177"/>
+<area shape="poly" id="edge14_Node000001_Node000011" title=" " alt="" coords="405,33,371,53,336,81,310,111,291,142,286,139,306,108,332,77,368,49,402,29"/>
+<area shape="rect" id="Node000012" href="$error__codes_8h.html" title="Unified error code definitions for json&#45;gen&#45;c." alt="" coords="775,79,918,104"/>
+<area shape="poly" id="edge17_Node000001_Node000012" title=" " alt="" coords="494,28,766,74,765,79,493,33"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="57,299,132,324"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="111,102,84,109,59,120,36,134,18,154,10,170,8,188,12,206,21,225,45,260,72,288,69,291,41,263,16,227,7,208,3,188,5,169,13,150,33,130,57,115,83,104,109,97"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="174,106,122,146,119,141,171,102"/>
+<area shape="poly" id="edge8_Node000002_Node000005" title=" " alt="" coords="191,104,199,211,194,212,186,105"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="97,178,97,285,92,285,92,178"/>
+<area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="113,175,171,215,168,219,110,180"/>
+<area shape="poly" id="edge7_Node000005_Node000003" title=" " alt="" coords="183,253,124,293,121,288,180,248"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="161,299,236,324"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="201,251,201,285,196,285,196,251"/>
+<area shape="poly" id="edge15_Node000011_Node000005" title=" " alt="" coords="265,179,223,218,219,214,261,175"/>
 </map>

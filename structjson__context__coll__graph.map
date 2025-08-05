@@ -1,0 +1,5 @@
+<map id="json_context" name="json_context">
+<area shape="rect" id="Node000001" title="Thread&#45;safe JSON parsing context This structure replaces global variables to ensure thread safety." alt="" coords="35,93,141,119"/>
+<area shape="rect" id="Node000002" href="$structjson__field__offset__item.html" title="Field offset item structure for JSON parsing." alt="" coords="5,5,171,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,45,91,93,85,93,85,45"/>
+</map>

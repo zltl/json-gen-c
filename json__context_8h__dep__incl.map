@@ -1,0 +1,5 @@
+<map id="src/utils/json_context.h" name="src/utils/json_context.h">
+<area shape="rect" id="Node000001" title="Thread&#45;safe context structure for JSON parsing." alt="" coords="5,5,177,31"/>
+<area shape="rect" id="Node000002" href="$json__context_8c.html" title="Implementation of thread&#45;safe JSON parsing context." alt="" coords="6,79,177,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="94,44,94,79,89,79,89,44"/>
+</map>

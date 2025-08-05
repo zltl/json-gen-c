@@ -1,7 +1,14 @@
 <map id="src/struct/struct_parse.h" name="src/struct/struct_parse.h">
-<area shape="rect" id="node1" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="5,5,184,32"/>
-<area shape="rect" id="node2" title=" " alt="" coords="27,229,101,256"/>
-<area shape="rect" id="node3" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="28,80,161,107"/>
-<area shape="rect" id="node4" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="114,155,203,181"/>
-<area shape="rect" id="node5" title=" " alt="" coords="125,229,200,256"/>
+<area shape="rect" id="Node000001" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="5,5,184,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="27,225,101,251"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="70,33,41,52,28,65,18,80,13,97,11,114,17,151,32,185,49,213,45,215,27,187,12,152,6,115,7,96,14,77,24,62,38,48,68,29"/>
+<area shape="rect" id="Node000003" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="28,79,161,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="97,31,97,65,92,65,92,31"/>
+<area shape="rect" id="Node000004" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="114,152,203,177"/>
+<area shape="poly" id="edge7_Node000001_Node000004" title=" " alt="" coords="122,29,151,48,165,62,176,78,180,93,181,110,173,140,168,139,175,109,175,94,171,80,161,65,148,52,119,33"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="95,105,72,213,67,212,90,104"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="107,103,141,140,137,144,103,106"/>
+<area shape="poly" id="edge6_Node000004_Node000002" title=" " alt="" coords="145,179,92,219,89,215,142,175"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="125,225,200,251"/>
+<area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="162,178,164,212,159,212,157,178"/>
 </map>
