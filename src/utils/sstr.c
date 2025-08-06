@@ -378,15 +378,7 @@ sstr_t sstr_vslprintf_append(sstr_t buf, const char* fmt, va_list args) {
                     df_d = 0;
                     break;
 
-                case 'l':  // long type handling with format validation
-                    // Check if next character is a valid format specifier
-                    if (fmt[1] != 'd' && fmt[1] != 'u' && fmt[1] != 'x' && fmt[1] != 'X') {
-                        // If no valid format specifier follows, treat as plain 'l' and continue
-                        sstr_append_of(buf, "l", 1);
-                        fmt++;
-                        continue;
-                    }
-                    
+                case 'l':
                     if (sign) {
                         i64 = (int64_t)va_arg(args, long);
                     } else {
