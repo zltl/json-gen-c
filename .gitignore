@@ -1,11 +1,8 @@
-/target
 /.vscode
 /.ccls-cache/
 /test/venv/
 __pycache__
 /deps/gcc-linaro*
-*-target/
-/target*
 /doxy/*.log
 /doxy/*.aux
 /doxy/*latexmk

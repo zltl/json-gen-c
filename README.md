@@ -164,14 +164,6 @@ free(a);
 
 ## Build System
 
-json-gen-c features a modern, efficient build system with the following benefits:
-
-- **Parallel Compilation**: Full support for `make -j` flag for faster builds
-- **Incremental Builds**: Only rebuilds what's necessary
-- **Centralized Configuration**: All build settings in `build.mk`
-- **Debug Support**: `make debug` and `make sanitize` options
-- **Clean Structure**: Organized build artifacts in `build/` directory
-
 For detailed build system documentation, see [BUILD_SYSTEM.md](BUILD_SYSTEM.md).
 
 ## The Format of Structs Definition File
