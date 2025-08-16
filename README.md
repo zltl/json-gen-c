@@ -20,16 +20,39 @@ make
 sudo make install
 ```
 
+The project uses a modern, efficient build system with support for parallel compilation:
+
+```bash
+# Parallel build (recommended)
+make -j$(nproc)
+
+# Debug build
+make debug
+
+# Build with sanitizers
+make sanitize
+
+# Show build configuration
+make show-config
+```
+
 To build example, tests, and benchmarks
 
 ```bash
-# build ./target/example
+# build ./build/example/example
 make example
-# build ./target/test/unit_test
+# build ./build/test/unit_test
 make test
-# build ./target/benchmark/json_bench
+# build ./build/benchmark/json_bench
 make benchmark
 ```
+
+All build artifacts are organized under the `build/` directory:
+- `build/bin/` - Main executable
+- `build/lib/` - Static libraries  
+- `build/example/` - Example executable
+- `build/test/` - Test executables
+- `build/benchmark/` - Benchmark executable
 
 ## Quick Start
 
@@ -138,6 +161,10 @@ for (i = 0; i < len; ++i) {
 }
 free(a);
 ```
+
+## Build System
+
+For detailed build system documentation, see [BUILD_SYSTEM.md](BUILD_SYSTEM.md).
 
 ## The Format of Structs Definition File
 

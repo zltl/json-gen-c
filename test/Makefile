@@ -1,47 +1,98 @@
 
-.PHONY: all clean
+# Test Makefile for json-gen-c
+include ../build.mk
 
-.ONESHELL:
+.PHONY: all clean run
 
-$(shell mkdir -p $(TARGET_DIR)/test)
+# Test build directory
+TEST_BUILD := $(BUILD_DIR)/test
 
-TEST_DIR=$(TARGET_DIR)/test
+# Test source files
+TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc
+TEST_OBJECTS := $(patsubst %.cc,$(TEST_BUILD)/%.o,$(TEST_SOURCES))
 
-all: $(TEST_DIR)/unit_test $(TEST_DIR)/enhanced_test $(TEST_DIR)/empty_array_test
+# Generated files
+GENERATED_SOURCES := json.gen.c sstr.c
+GENERATED_OBJECTS := $(patsubst %.c,$(TEST_BUILD)/%.o,$(GENERATED_SOURCES))
 
-# Generate test structures
-json.gen.c: test.json-gen-c
-	$(TARGET_DIR)/json-gen-c -in test.json-gen-c -out .
-$(TEST_DIR)/sstr.c.o: json.gen.c
-	$(CC) $(CFLAGS) -c sstr.c -o $@
-$(TEST_DIR)/json.gen.c.o: json.gen.c
-	$(CC) $(CFLAGS) -I. -I$(ROOT_DIR)/src -I$(ROOT_DIR)/src/utils -c json.gen.c -o $@
+# Test executables
+UNIT_TEST := $(TEST_BUILD)/unit_test
+ENHANCED_TEST := $(TEST_BUILD)/enhanced_test
+EMPTY_ARRAY_TEST := $(TEST_BUILD)/empty_array_test
 
-$(TEST_DIR)/simple_test.cc.o: simple_test.cc
-	$(CXX) $(CXXFLAGS) -I. -c $< -o $@ 
-$(TEST_DIR)/struct_test.cc.o: struct_test.cc
-	$(CXX) $(CXXFLAGS) -I. -c $< -o $@
-$(TEST_DIR)/enhanced_test.cc.o: enhanced_test.cc
-	$(CXX) $(CXXFLAGS) -I. -c $< -o $@
-$(TEST_DIR)/empty_array_bugfix_test.cc.o: empty_array_bugfix_test.cc
-	$(CXX) $(CXXFLAGS) -I. -c $< -o $@
+# All test targets
+ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST)
 
-common_objs = $(TEST_DIR)/sstr.c.o $(TEST_DIR)/json.gen.c.o
+#==============================================================================
+# Build rules
+#==============================================================================
 
-test_objs = $(TEST_DIR)/simple_test.cc.o $(TEST_DIR)/struct_test.cc.o
+all: $(ALL_TESTS)
 
-enhanced_test_objs = $(TEST_DIR)/enhanced_test.cc.o
+# Generate test structures first
+json.gen.c sstr.c: test.json-gen-c $(JSON_GEN_C)
+	@echo "Generating test structures..."
+	$(JSON_GEN_C) -in test.json-gen-c -out .
 
-empty_array_test_objs = $(TEST_DIR)/empty_array_bugfix_test.cc.o
+# Compile generated C files
+$(foreach src,$(GENERATED_SOURCES),$(eval $(call compile-c,$(src),$(patsubst %.c,$(TEST_BUILD)/%.o,$(src)),-I. -I$(ROOT_DIR)/src -I$(ROOT_DIR)/src/utils)))
 
-$(TEST_DIR)/unit_test: $(common_objs) $(test_objs)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+# Compile test C++ files
+$(foreach src,$(TEST_SOURCES),$(eval $(call compile-cxx,$(src),$(patsubst %.cc,$(TEST_BUILD)/%.o,$(src)),-I.)))
 
-$(TEST_DIR)/enhanced_test: $(enhanced_test_objs)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread -L$(ROOT_DIR)/target -lutils
+# Make test objects depend on generated files
+$(TEST_OBJECTS): json.gen.c
 
-$(TEST_DIR)/empty_array_test: $(common_objs) $(empty_array_test_objs)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+# Link test executables
+$(UNIT_TEST): $(TEST_BUILD)/simple_test.o $(TEST_BUILD)/struct_test.o $(GENERATED_OBJECTS)
+	@echo "Linking unit tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
+$(ENHANCED_TEST): $(TEST_BUILD)/enhanced_test.o
+	@echo "Linking enhanced tests: $@" 
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread -L$(BUILD_DIR)/lib -lutils
+
+$(EMPTY_ARRAY_TEST): $(TEST_BUILD)/empty_array_bugfix_test.o $(GENERATED_OBJECTS)
+	@echo "Linking empty array tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
+#==============================================================================
+# Test execution
+#==============================================================================
+
+run: $(ALL_TESTS)
+	@echo "Running all tests..."
+	@echo "=== Unit Tests ==="
+	$(UNIT_TEST)
+	@echo "=== Enhanced Tests ==="
+	$(ENHANCED_TEST)
+	@echo "=== Empty Array Tests ==="
+	$(EMPTY_ARRAY_TEST)
+	@echo "All tests completed successfully!"
+
+# Individual test runs
+run-unit: $(UNIT_TEST)
+	@echo "Running unit tests..."
+	$(UNIT_TEST)
+
+run-enhanced: $(ENHANCED_TEST)
+	@echo "Running enhanced tests..."
+	$(ENHANCED_TEST)
+	
+run-empty-array: $(EMPTY_ARRAY_TEST)
+	@echo "Running empty array tests..."
+	$(EMPTY_ARRAY_TEST)
+
+#==============================================================================
+# Cleanup
+#==============================================================================
 
 clean:
-	rm -rf json.gen* sstr*
+	@echo "Cleaning test artifacts..."
+	rm -rf $(GENERATED_SOURCES) *.h
+	rm -rf $(TEST_BUILD)
+
+.PHONY: run run-unit run-enhanced run-empty-array
