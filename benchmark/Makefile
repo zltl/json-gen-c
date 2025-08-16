@@ -34,6 +34,9 @@ $(foreach src,$(GENERATED_SOURCES),$(eval $(call compile-c,$(src),$(patsubst %.c
 # Compile benchmark main
 $(eval $(call compile-cxx,$(BENCH_SOURCE),$(BENCH_OBJECT),-I.))
 
+# Make benchmark object depend on generated files
+$(BENCH_OBJECT): json.gen.c
+
 # Link benchmark executable
 $(BENCHMARK): $(BENCH_OBJECT) $(GENERATED_OBJECTS)
 	@echo "Linking benchmark: $@"
