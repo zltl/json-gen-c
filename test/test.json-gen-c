@@ -8,3 +8,19 @@ struct TestStruct {
 	   bool bool_val;
 	   sstr_t sstr_val;
 }
+
+// Empty array bug fix test structures
+struct House {
+    sstr_t number;
+    sstr_t street;
+}
+
+struct Person {
+    sstr_t name;
+    sstr_t age;
+}
+
+struct Data {
+    House house;
+    Person people[];
+}
