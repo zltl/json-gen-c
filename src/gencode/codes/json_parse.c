@@ -1,5 +1,6 @@
 
 #include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -560,6 +561,20 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
                 pos->col++;
             }
         }
+        // Handle scientific notation (e/E followed by optional +/- and digits)
+        if (i < len && (data[i] == 'e' || data[i] == 'E')) {
+            tk = JSON_TOKEN_FLOAT;
+            i++;
+            pos->col++;
+            if (i < len && (data[i] == '+' || data[i] == '-')) {
+                i++;
+                pos->col++;
+            }
+            while (i < len && isdigit(data[i])) {
+                i++;
+                pos->col++;
+            }
+        }
         sstr_append_of(txt, data + start_pos, i - start_pos);
         pos->offset = i;
         return tk;
@@ -603,7 +618,15 @@ static int json_unmarshal_scalar_int(sstr_t content, struct json_pos* pos,
         sstr_free(e);
         return tk;
     } else {
-        *val = atoi(sstr_cstr(txt));
+        char* endptr;
+        long temp_val = strtol(sstr_cstr(txt), &endptr, 10);
+        if (*endptr != '\0' || temp_val > INT_MAX || temp_val < INT_MIN) {
+            sstr_t e = PERROR(pos, "integer value out of range: '%s'", sstr_cstr(txt));
+            sstr_append(txt, e);
+            sstr_free(e);
+            return JSON_ERROR;
+        }
+        *val = (int)temp_val;
     }
     return 0;
 }
@@ -623,7 +646,15 @@ static int json_unmarshal_scalar_long(sstr_t content, struct json_pos* pos,
         sstr_free(e);
         return tk;
     } else {
-        *val = atol(sstr_cstr(txt));
+        char* endptr;
+        long temp_val = strtol(sstr_cstr(txt), &endptr, 10);
+        if (*endptr != '\0') {
+            sstr_t e = PERROR(pos, "invalid long integer format: '%s'", sstr_cstr(txt));
+            sstr_append(txt, e);
+            sstr_free(e);
+            return JSON_ERROR;
+        }
+        *val = temp_val;
     }
     return 0;
 }
@@ -639,7 +670,15 @@ static int json_unmarshal_scalar_float(sstr_t content, struct json_pos* pos,
         sstr_free(e);
         return tk;
     } else {
-        *val = atof(sstr_cstr(txt));
+        char* endptr;
+        float temp_val = strtof(sstr_cstr(txt), &endptr);
+        if (*endptr != '\0') {
+            sstr_t e = PERROR(pos, "invalid float format: '%s'", sstr_cstr(txt));
+            sstr_append(txt, e);
+            sstr_free(e);
+            return JSON_ERROR;
+        }
+        *val = temp_val;
     }
     return 0;
 }
@@ -656,7 +695,15 @@ static int json_unmarshal_scalar_double(sstr_t content, struct json_pos* pos,
         sstr_free(e);
         return tk;
     } else {
-        *val = atof(sstr_cstr(txt));
+        char* endptr;
+        double temp_val = strtod(sstr_cstr(txt), &endptr);
+        if (*endptr != '\0') {
+            sstr_t e = PERROR(pos, "invalid double format: '%s'", sstr_cstr(txt));
+            sstr_append(txt, e);
+            sstr_free(e);
+            return JSON_ERROR;
+        }
+        *val = temp_val;
     }
     return 0;
 }
@@ -1172,6 +1219,23 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
             break;
         }
         if (tk == JSON_TOKEN_COMMA) {
+            // Look ahead to see if there's a trailing comma
+            struct json_pos saved_pos = *pos;
+            sstr_t temp_txt = sstr_new();
+            int next_tk = json_next_token(content, pos, temp_txt);
+            
+            if (next_tk == JSON_TOKEN_RIGHT_BRACE) {
+                // This is a trailing comma - not allowed in strict JSON
+                sstr_t e = PERROR(pos, "trailing comma not allowed before '}'");
+                sstr_append(txt, e);
+                sstr_free(e);
+                sstr_free(temp_txt);
+                return -1;
+            }
+            
+            // Restore position and continue parsing
+            *pos = saved_pos;
+            sstr_free(temp_txt);
             continue;
         }
 

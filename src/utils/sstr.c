@@ -677,46 +677,33 @@ void sstr_append_long_str(sstr_t s, long l) {
 }
 
 void sstr_append_float_str(sstr_t s, float f, int precission) {
-    sstr_append_double_str(s, (double)f, precission);
+    (void)precission;  // Suppress unused parameter warning
+    char buf[64];  // Sufficient for float representation
+    
+    // For float, use %.9g to maintain full precision (float has ~7 decimal digits)
+    // But we use 9 to be safe and capture all significant digits
+    int len = snprintf(buf, sizeof(buf), "%.9g", (double)f);
+    if (len > 0 && len < (int)sizeof(buf)) {
+        sstr_append_of(s, buf, len);
+    } else {
+        // Fallback for very long numbers or errors
+        sstr_append_cstr(s, "0");
+    }
 }
 
 // #define MAX_DOUBLE_LEN (sizeof("-1.7976931348623157E+308") - 1)
 void sstr_append_double_str(sstr_t s, double f, int precision) {
-    unsigned char buf[SSTR_INT64_LEN + 1];
-    unsigned char* p = buf + SSTR_INT64_LEN;
-    uint64_t ui64;
-    int negative = 0;
-    double f2;  // fractional part
-
-    // int part
-    if (f < 0) {
-        negative = 1;
-        ui64 = (uint64_t)-f;
-        f2 = -f - ui64;
+    (void)precision;  // Suppress unused parameter warning for now
+    char buf[128];  // Increased buffer size for high precision
+    
+    // For maximum precision representation:
+    // Use %.17g for double (17 significant digits)
+    int len = snprintf(buf, sizeof(buf), "%.17g", f);
+    if (len > 0 && len < (int)sizeof(buf)) {
+        sstr_append_of(s, buf, len);
     } else {
-        ui64 = (uint64_t)f;
-        f2 = f - ui64;
-    }
-
-    do {
-        *--p = (unsigned char)(ui64 % 10 + '0');
-    } while (ui64 /= 10);
-    if (negative) {
-        sstr_append_of(s, "-", 1);
-    }
-    sstr_append_of(s, p, buf + SSTR_INT64_LEN - p);
-
-    // float part
-    if (f2 > 0 && f2 > 1e-6) {
-        sstr_append_of(s, ".", 1);
-        p = buf;
-        do {
-            f2 *= 10;
-            *p++ = (unsigned char)(f2 + '0');
-            f2 -= (long)f2;
-        } while (f2 > 1e-6 && f2 > 0.0 && p < buf + precision);
-
-        sstr_append_of(s, buf, p - buf);
+        // Fallback for very long numbers or errors
+        sstr_append_cstr(s, "0");
     }
 }
 

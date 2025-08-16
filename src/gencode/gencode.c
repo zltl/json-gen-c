@@ -330,12 +330,12 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                 break;
             case FIELD_TYPE_FLOAT:
                 sstr_printf_append(source,
-                                   "    sstr_append_float_str(out, obj->%S, 6);\n",
+                                   "    sstr_append_float_str(out, obj->%S, -1);\n",
                                    field->name);
                 break;
             case FIELD_TYPE_DOUBLE:
                 sstr_printf_append(
-                    source, "    sstr_append_double_str(out, obj->%S, 6);\n",
+                    source, "    sstr_append_double_str(out, obj->%S, -1);\n",
                     field->name);
                 break;
             case FIELD_TYPE_SSTR:

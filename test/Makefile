@@ -8,7 +8,7 @@ include ../build.mk
 TEST_BUILD := $(BUILD_DIR)/test
 
 # Test source files
-TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc
+TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc
 TEST_OBJECTS := $(patsubst %.cc,$(TEST_BUILD)/%.o,$(TEST_SOURCES))
 
 # Generated files
@@ -19,9 +19,12 @@ GENERATED_OBJECTS := $(patsubst %.c,$(TEST_BUILD)/%.o,$(GENERATED_SOURCES))
 UNIT_TEST := $(TEST_BUILD)/unit_test
 ENHANCED_TEST := $(TEST_BUILD)/enhanced_test
 EMPTY_ARRAY_TEST := $(TEST_BUILD)/empty_array_test
+COMPREHENSIVE_TEST := $(TEST_BUILD)/comprehensive_test
+NESTED_STRUCT_TEST := $(TEST_BUILD)/nested_struct_test
+PERFORMANCE_TEST := $(TEST_BUILD)/performance_test
 
 # All test targets
-ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST)
+ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST)
 
 #==============================================================================
 # Build rules
@@ -59,6 +62,21 @@ $(EMPTY_ARRAY_TEST): $(TEST_BUILD)/empty_array_bugfix_test.o $(GENERATED_OBJECTS
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
 
+$(COMPREHENSIVE_TEST): $(TEST_BUILD)/comprehensive_test.o $(GENERATED_OBJECTS)
+	@echo "Linking comprehensive tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
+$(NESTED_STRUCT_TEST): $(TEST_BUILD)/nested_struct_test.o $(GENERATED_OBJECTS)
+	@echo "Linking nested struct tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
+$(PERFORMANCE_TEST): $(TEST_BUILD)/performance_test.o $(GENERATED_OBJECTS)
+	@echo "Linking performance tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
 #==============================================================================
 # Test execution
 #==============================================================================
@@ -71,6 +89,12 @@ run: $(ALL_TESTS)
 	$(ENHANCED_TEST)
 	@echo "=== Empty Array Tests ==="
 	$(EMPTY_ARRAY_TEST)
+	@echo "=== Comprehensive Tests ==="
+	$(COMPREHENSIVE_TEST)
+	@echo "=== Nested Struct Tests ==="
+	$(NESTED_STRUCT_TEST)
+	@echo "=== Performance Tests ==="
+	$(PERFORMANCE_TEST)
 	@echo "All tests completed successfully!"
 
 # Individual test runs
@@ -86,6 +110,18 @@ run-empty-array: $(EMPTY_ARRAY_TEST)
 	@echo "Running empty array tests..."
 	$(EMPTY_ARRAY_TEST)
 
+run-comprehensive: $(COMPREHENSIVE_TEST)
+	@echo "Running comprehensive tests..."
+	$(COMPREHENSIVE_TEST)
+
+run-nested: $(NESTED_STRUCT_TEST)
+	@echo "Running nested struct tests..."
+	$(NESTED_STRUCT_TEST)
+
+run-performance: $(PERFORMANCE_TEST)
+	@echo "Running performance tests..."
+	$(PERFORMANCE_TEST)
+
 #==============================================================================
 # Cleanup
 #==============================================================================
@@ -95,4 +131,4 @@ clean:
 	rm -rf $(GENERATED_SOURCES) *.h
 	rm -rf $(TEST_BUILD)
 
-.PHONY: run run-unit run-enhanced run-empty-array
+.PHONY: run run-unit run-enhanced run-empty-array run-comprehensive run-nested run-performance

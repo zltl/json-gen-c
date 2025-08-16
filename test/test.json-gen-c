@@ -24,3 +24,47 @@ struct Data {
     House house;
     Person people[];
 }
+
+// Additional test structures for comprehensive testing
+struct NestedStruct {
+    int id;
+    sstr_t name;
+    TestStruct embedded;
+}
+
+struct ComplexStruct {
+    int simple_int;
+    long simple_long;
+    float simple_float;
+    double simple_double;
+    bool simple_bool;
+    sstr_t simple_string;
+    
+    // Arrays of primitives
+    int int_array[];
+    long long_array[];
+    float float_array[];
+    double double_array[];
+    sstr_t string_array[];
+    
+    // Nested structures
+    House address;
+    Person contacts[];
+}
+
+struct OptionalFieldsStruct {
+    int required_id;
+    sstr_t optional_name;
+    float optional_value;
+    bool has_data;
+}
+
+struct EdgeCaseStruct {
+    int zero_int;
+    long negative_long;
+    float tiny_float;
+    double huge_double;
+    bool false_bool;
+    sstr_t empty_string;
+    sstr_t special_chars_string;
+}

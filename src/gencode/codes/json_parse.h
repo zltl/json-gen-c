@@ -140,7 +140,7 @@ int json_marshal_array_indent_float(float* obj, int len, int indent,
     curindent += indent;
     for (i = 0; i < len; i++) {
         sstr_append_indent(out, curindent);
-        sstr_printf_append(out, "%f", (double)obj[i]);
+        sstr_append_float_str(out, obj[i], -1);
         if (i != len - 1) {
             sstr_append_of(out, ",", 1);
         }
@@ -160,7 +160,7 @@ int json_marshal_array_indent_double(double* obj, int len, int indent,
     curindent += indent;
     for (i = 0; i < len; i++) {
         sstr_append_indent(out, curindent);
-        sstr_printf_append(out, "%f", obj[i]);
+        sstr_append_double_str(out, obj[i], -1);
         if (i != len - 1) {
             sstr_append_of(out, ",", 1);
         }
