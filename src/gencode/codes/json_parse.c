@@ -1057,6 +1057,17 @@ static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
         return JSON_GEN_ERROR_PARSE;
     }
 
+    // Check for empty array immediately after '['
+    // We need to peek ahead to see if the next token is ']'
+    struct json_pos peek_pos = *pos;  // Save current position
+    tk = json_next_token(content, &peek_pos, txt);
+    if (tk == JSON_TOKEN_RIGHT_BRACKET) {
+        // Empty array case - update position and return
+        *pos = peek_pos;
+        return JSON_GEN_SUCCESS;
+    }
+    // If not empty, continue with normal parsing using original position
+
     while (1) {
         void* ptr = malloc(field->type_size);
         if (ptr == NULL) {
