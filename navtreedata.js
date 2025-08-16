@@ -37,9 +37,10 @@ var NAVTREE =
         [ "To Deserialize JSON to Array of Structs", "index.html#autotoc_md9", null ]
       ] ]
     ] ],
-    [ "The Format of Structs Definition File", "index.html#autotoc_md10", null ],
-    [ "The JSON API", "index.html#autotoc_md11", null ],
-    [ "License", "index.html#autotoc_md12", null ],
+    [ "Build System", "index.html#autotoc_md10", null ],
+    [ "The Format of Structs Definition File", "index.html#autotoc_md11", null ],
+    [ "The JSON API", "index.html#autotoc_md12", null ],
+    [ "License", "index.html#autotoc_md13", null ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
