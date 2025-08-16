@@ -861,13 +861,13 @@ int gencode_source_begin(sstr_t source) {
                        "#include \"%s\"\n\n#include <stdio.h>\n"
                        "#include <malloc.h>\n\n",
                        OUTPUT_H_FILENAME);
-    sstr_append_of(source, codes_json_parse_h, (size_t)codes_json_parse_h_len);
+    sstr_append_of(source, json_parse_h, (size_t)json_parse_h_len);
     gen_code_scalar_marshal_array(source);
     return 0;
 }
 
 int gencode_source_end(sstr_t source) {
-    sstr_append_of(source, codes_json_parse_c, (size_t)codes_json_parse_c_len);
+    sstr_append_of(source, json_parse_c, (size_t)json_parse_c_len);
     return 0;
 }
 

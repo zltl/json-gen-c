@@ -192,8 +192,8 @@ int main(int argc, const char **argv) {
     
     // Include utility source code
 #include "extra_codes_sstr.inc"
-    sstr_t source_ext_c = sstr_of(utils_sstr_c, utils_sstr_c_len);
-    sstr_t head_ext_h = sstr_of(utils_sstr_h, utils_sstr_h_len);
+    sstr_t source_ext_c = sstr_of(sstr_c, sstr_c_len);
+    sstr_t head_ext_h = sstr_of(sstr_h, sstr_h_len);
     
     if (source_ext_c == NULL || head_ext_h == NULL) {
         fprintf(stderr, "Error: failed to create utility file content\n");

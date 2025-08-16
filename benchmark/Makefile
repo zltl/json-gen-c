@@ -1,24 +1,58 @@
-.PHONY: all clean
+# Benchmark Makefile for json-gen-c
+include ../build.mk
 
-.ONESHELL:
+.PHONY: all clean run
 
-$(shell mkdir -p $(TARGET_DIR)/benchmark)
+# Benchmark build directory
+BENCH_BUILD := $(BUILD_DIR)/benchmark
 
-BENCH_DIR=$(TARGET_DIR)/benchmark
+# Generated files
+GENERATED_SOURCES := json.gen.c sstr.c
+GENERATED_OBJECTS := $(patsubst %.c,$(BENCH_BUILD)/%.o,$(GENERATED_SOURCES))
 
-all: $(BENCH_DIR)/json_bench
+# Benchmark source and object
+BENCH_SOURCE := json_bench.cc
+BENCH_OBJECT := $(BENCH_BUILD)/json_bench.o
 
-json.gen.c: structs.json-gen-c 
-	$(TARGET_DIR)/json-gen-c -in structs.json-gen-c -out .
-$(BENCH_DIR)/sstr.c.o: json.gen.c
-	$(CC) $(CFLAGS) -c sstr.c -o $@
-$(BENCH_DIR)/json.gen.c.o: json.gen.c structs.json-gen-c
-	$(CC) $(CFLAGS) -I. -c json.gen.c -o $@
-$(BENCH_DIR)/json_bench.cc.o: json_bench.cc
-	$(CXX) $(CXXFLAGS) -I. -c $< -o $@
+# Benchmark executable
+BENCHMARK := $(BENCH_BUILD)/json_bench
 
-$(BENCH_DIR)/json_bench: $(BENCH_DIR)/json.gen.c.o $(BENCH_DIR)/json_bench.cc.o $(BENCH_DIR)/sstr.c.o
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -lbenchmark -lpthread -o $@
+#==============================================================================
+# Build rules
+#==============================================================================
+
+all: $(BENCHMARK)
+
+# Generate benchmark structures
+json.gen.c sstr.c: structs.json-gen-c $(JSON_GEN_C)
+	@echo "Generating benchmark structures..."
+	$(JSON_GEN_C) -in structs.json-gen-c -out .
+
+# Compile generated files
+$(foreach src,$(GENERATED_SOURCES),$(eval $(call compile-c,$(src),$(patsubst %.c,$(BENCH_BUILD)/%.o,$(src)),-I.)))
+
+# Compile benchmark main
+$(eval $(call compile-cxx,$(BENCH_SOURCE),$(BENCH_OBJECT),-I.))
+
+# Link benchmark executable
+$(BENCHMARK): $(BENCH_OBJECT) $(GENERATED_OBJECTS)
+	@echo "Linking benchmark: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lbenchmark -lpthread
+
+#==============================================================================
+# Run benchmark
+#==============================================================================
+
+run: $(BENCHMARK)
+	@echo "Running benchmark..."
+	$(BENCHMARK)
+
+#==============================================================================
+# Cleanup
+#==============================================================================
 
 clean:
-	rm -rf json.gen* sstr*
+	@echo "Cleaning benchmark artifacts..."
+	rm -rf $(GENERATED_SOURCES) *.h
+	rm -rf $(BENCH_BUILD)
