@@ -203,7 +203,6 @@ static int utf16_literal_to_utf8(sstr_t content, struct json_pos* pos,
     }
     i++;
     unsigned int first_code = parse_hex4((const unsigned char*)&data[i + 1]);
-    unsigned int second_code = 0;
     unsigned int codepoint = 0;
     i += 4;
     pos->col += 5;
@@ -217,6 +216,8 @@ static int utf16_literal_to_utf8(sstr_t content, struct json_pos* pos,
     }
     // UTF16 surrogate pair
     if ((first_code >= 0xD800) && (first_code <= 0xDBFF)) {
+        unsigned int second_code;
+
         if (i + 6 >= len) {
             sstr_clear(txt);
             sstr_append_cstr(txt, "UTF16 surrogate pair expected, but EOF");
@@ -239,7 +240,6 @@ static int utf16_literal_to_utf8(sstr_t content, struct json_pos* pos,
         /* calculate the unicode codepoint from the surrogate pair */
         codepoint =
             0x10000 + (((first_code & 0x3FF) << 10) | (second_code & 0x3FF));
-        i += 6;
         pos->col += 6;
         pos->offset += 6;
     } else {
@@ -303,7 +303,7 @@ static int utf16_literal_to_utf8(sstr_t content, struct json_pos* pos,
 static int json_parse_string_token(sstr_t content, struct json_pos* pos,
                                    sstr_t txt) {
     long len = sstr_length(content);
-    long i = pos->offset;
+    long i;
     char* data = sstr_cstr(content);
     
     // Validate input parameters
@@ -311,6 +311,8 @@ static int json_parse_string_token(sstr_t content, struct json_pos* pos,
         return JSON_ERROR;
     }
     
+    i = pos->offset;
+
     // Validate bounds before accessing data[i]
     if (i >= len) {
         sstr_clear(txt);

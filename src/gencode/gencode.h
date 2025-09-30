@@ -27,7 +27,7 @@ extern "C" {
  * @param header the output header code.
  * @return int 0 if success, -1 if failed.
  */
-int gencode_source(struct hash_map* struct_map, sstr_t source, sstr_t header);
+extern int gencode_source(struct hash_map* struct_map, sstr_t source, sstr_t header);
 
 #ifdef __cplusplus
 }

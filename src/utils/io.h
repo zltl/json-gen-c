@@ -12,8 +12,8 @@
 extern "C" {
 #endif
 
-int read_file(const char* filename, sstr_t content);
-int write_file(const char* filename, sstr_t content);
+extern int read_file(const char* filename, sstr_t content);
+extern int write_file(const char* filename, sstr_t content);
 
 #ifdef __cplusplus
 }

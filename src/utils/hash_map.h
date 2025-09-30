@@ -50,7 +50,7 @@ struct hash_map {
  * @retval NULL malloc failed.
  * @retval !NULL the new entry.
  */
-struct hash_map_entry *hash_map_entry_new(void *key, void *value);
+extern struct hash_map_entry *hash_map_entry_new(void *key, void *value);
 
 /**
  * @brief free a hash_map_entry. the key and value will be freed by
@@ -60,7 +60,7 @@ struct hash_map_entry *hash_map_entry_new(void *key, void *value);
  * map->value_free_func.
  * @param entry the entry to be freed.
  */
-void hash_map_entry_free(struct hash_map *map, struct hash_map_entry *entry);
+extern void hash_map_entry_free(struct hash_map *map, struct hash_map_entry *entry);
 
 /**
  * @brief create a new hash_map.
@@ -72,7 +72,7 @@ void hash_map_entry_free(struct hash_map *map, struct hash_map_entry *entry);
  * @param value_free_func the value free function.
  * @return struct hash_map* the new hash_map.
  */
-struct hash_map *hash_map_new(int bucket_count,
+extern struct hash_map *hash_map_new(int bucket_count,
                               unsigned int (*hash_func)(void *),
                               int (*key_cmp_func)(void *, void *),
                               void (*key_free_func)(void *),
@@ -83,7 +83,7 @@ struct hash_map *hash_map_new(int bucket_count,
  *
  * @param map the hash_map to be freed.
  */
-void hash_map_free(struct hash_map *map);
+extern void hash_map_free(struct hash_map *map);
 
 /**
  * @brief insert a new entry into hash_map.
@@ -94,7 +94,7 @@ void hash_map_free(struct hash_map *map);
  * @return int HASH_MAP_OK if success, HASH_MAP_DUPLICATE_KEY will ignore the
  *        entry, HASH_MAP_ERROR if malloc failed.
  */
-int hash_map_insert(struct hash_map *map, void *key, void *value);
+extern int hash_map_insert(struct hash_map *map, void *key, void *value);
 
 /**
  * @brief find a entry in hash_map.
@@ -104,7 +104,7 @@ int hash_map_insert(struct hash_map *map, void *key, void *value);
  * @param value the value of the entry if found.
  * @return int HASH_MAP_OK if found, HASH_MAP_ERROR if not found.
  */
-int hash_map_find(struct hash_map *map, void *key, void **value);
+extern int hash_map_find(struct hash_map *map, void *key, void **value);
 
 /**
  * @brief remove a entry from hash_map.
@@ -114,7 +114,7 @@ int hash_map_find(struct hash_map *map, void *key, void **value);
  * @return int HASH_MAP_OK if found, HASH_MAP_ERROR if not found.
  * @note the entry will be free.
  */
-int hash_map_delete(struct hash_map *map, void *key);
+extern int hash_map_delete(struct hash_map *map, void *key);
 
 /**
  * @brief for each key-value pair in hash_map, call fn(key, value).
@@ -123,7 +123,7 @@ int hash_map_delete(struct hash_map *map, void *key);
  * @param fn the function to be called.
  * @param ptr user data.
  */
-void hash_map_for_each(struct hash_map *map,
+extern void hash_map_for_each(struct hash_map *map,
                        void (*fn)(void *key, void *value, void *ptr),
                        void *ptr);
 
@@ -134,11 +134,11 @@ void hash_map_for_each(struct hash_map *map,
  * @param n the length of key buffer.
  * @return unsigned int the hash value.
  */
-unsigned int hash(const char *data, size_t n);
+extern unsigned int hash(const char *data, size_t n);
 
-unsigned int sstr_key_hash(void *key);
-int sstr_key_cmp(void *a, void *b);
-void sstr_key_free(void *key);
+extern unsigned int sstr_key_hash(void *key);
+extern int sstr_key_cmp(void *a, void *b);
+extern void sstr_key_free(void *key);
 
 #ifdef __cplusplus
 }

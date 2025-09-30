@@ -26,8 +26,8 @@
                                             : (SSTR(s)->un.ref_str.data)))
 
 static void char_to_hex(unsigned char c, unsigned char* buf, int cap) {
-    static unsigned char hex[] = "0123456789abcdef";
-    static unsigned char HEX[] = "0123456789ABCDEF";
+    static const unsigned char hex[] = "0123456789abcdef";
+    static const unsigned char HEX[] = "0123456789ABCDEF";
 
     if (cap) {
         buf[0] = HEX[((c >> 4) & 0x0f)];
@@ -324,7 +324,7 @@ sstr_t sstr_vslprintf_append(sstr_t buf, const char* fmt, va_list args) {
                         sstr_append_of(buf, p, 4);
                     } else if (hex == 0) {
                         sstr_append(buf, S);
-                    } else if (hex) {
+                    } else {
                         p = (unsigned char*)STR_PTR(S);
                         slen = sstr_length(S);
                         for (i = 0; i < slen; ++i) {
@@ -541,14 +541,15 @@ static unsigned char* sstr_sprintf_num(unsigned char* buf, unsigned char* last,
                                        unsigned width) {
     unsigned char *p, temp[SSTR_INT64_LEN + 1];
     size_t len;
-    uint32_t ui32;
-    static unsigned char hex[] = "0123456789abcdef";
-    static unsigned char HEX[] = "0123456789ABCDEF";
+    static const unsigned char hex[] = "0123456789abcdef";
+    static const unsigned char HEX[] = "0123456789ABCDEF";
 
     p = temp + SSTR_INT64_LEN;
 
     if (hexadecimal == 0) {
         if (ui64 <= (uint64_t)SSTR_MAX_UINT32_VALUE) {
+            uint32_t ui32;
+
             ui32 = (uint32_t)ui64;
 
             do {

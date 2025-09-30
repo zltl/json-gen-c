@@ -38,13 +38,13 @@ struct json_context {
  * @brief Create a new JSON parsing context
  * @return Pointer to new context, or NULL on failure
  */
-struct json_context* json_context_new(void);
+extern struct json_context* json_context_new(void);
 
 /**
  * @brief Free a JSON parsing context
  * @param ctx Context to free
  */
-void json_context_free(struct json_context* ctx);
+extern void json_context_free(struct json_context* ctx);
 
 /**
  * @brief Initialize context with field offset data
@@ -55,7 +55,7 @@ void json_context_free(struct json_context* ctx);
  * @param hash_size Size of hash table
  * @return 0 on success, negative on error
  */
-int json_context_init(struct json_context* ctx,
+extern int json_context_init(struct json_context* ctx,
                      struct json_field_offset_item* field_items,
                      int item_count,
                      int* hash_table,
@@ -68,7 +68,7 @@ int json_context_init(struct json_context* ctx,
  * @param field_name Field name
  * @return Pointer to field offset item, or NULL if not found
  */
-struct json_field_offset_item* json_context_find_field(
+extern struct json_field_offset_item* json_context_find_field(
     struct json_context* ctx,
     const char* struct_name,
     const char* field_name);

@@ -28,6 +28,6 @@ typedef enum {
  * @param error_code The error code
  * @return Human-readable error message
  */
-const char* json_gen_error_string(json_gen_error_t error_code);
+extern const char* json_gen_error_string(json_gen_error_t error_code);
 
 #endif /* ERROR_CODES_H */
