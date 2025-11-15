@@ -1,7 +1,0 @@
-<map id="src/gencode/gencode.h" name="src/gencode/gencode.h">
-<area shape="rect" id="Node000001" title="generate json manipulate codes." alt="" coords="92,5,263,31"/>
-<area shape="rect" id="Node000002" href="$gencode_8c.html" title="JSON code generation implementation." alt="" coords="5,79,176,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="155,41,107,81,103,76,151,37"/>
-<area shape="rect" id="Node000003" href="$main_8c.html" title="Main entry point for json&#45;gen&#45;c code generator." alt="" coords="201,79,327,104"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="203,37,252,76,248,81,200,41"/>
-</map>

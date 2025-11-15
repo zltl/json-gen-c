@@ -87,12 +87,11 @@ Include dependency graph for error_codes.c:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:abf7372e771af82158d4af3e9629a85c8" id="r_abf7372e771af82158d4af3e9629a85c8"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="error__codes_8c.html#abf7372e771af82158d4af3e9629a85c8">json_gen_error_string</a> (<a class="el" href="error__codes_8h.html#a2e52ff2b658220c2389b649b75bb220b">json_gen_error_t</a> error_code)</td></tr>
-<tr class="memdesc:abf7372e771af82158d4af3e9629a85c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert error code to human-readable string.  <br /></td></tr>
+<tr class="memdesc:abf7372e771af82158d4af3e9629a85c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get error message string for error code.  <br /></td></tr>
 <tr class="separator:abf7372e771af82158d4af3e9629a85c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Implementation of error code utilities. </p>
-<p>Provides human-readable error messages for all json-gen-c error codes. This enables consistent error reporting across the codebase and helps with debugging and user error messages. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a id="abf7372e771af82158d4af3e9629a85c8" name="abf7372e771af82158d4af3e9629a85c8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abf7372e771af82158d4af3e9629a85c8">&#9670;&#160;</a></span>json_gen_error_string()</h2>
@@ -110,19 +109,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Convert error code to human-readable string. </p>
-<p>Get error message string for error code.</p>
-<p>Returns a descriptive error message for the given error code. All messages are statically allocated and do not need to be freed. Used for logging, debugging, and error reporting to users.</p>
+<p>Get error message string for error code. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">error_code</td><td>The error code to convert </td></tr>
+    <tr><td class="paramname">error_code</td><td>The error code </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Pointer to static string describing the error </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>The returned string should not be modified or freed </dd>
-<dd>
-Returns "Unknown error" for unrecognized error codes </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Human-readable error message </dd></dl>
 
 </div>
 </div>

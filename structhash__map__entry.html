@@ -70,79 +70,28 @@ $(document).ready(function(){initNavTree('structhash__map__entry.html',''); init
   <div class="headertitle"><div class="title">hash_map_entry Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
-
-<p>Entry node in hash map's linked list (for collision handling)  
- <a href="structhash__map__entry.html#details">More...</a></p>
-
-<p><code>#include &lt;<a class="el" href="hash__map_8h_source.html">hash_map.h</a>&gt;</code></p>
 <div class="dynheader">
 Collaboration diagram for hash_map_entry:</div>
 <div class="dyncontent">
 <div class="center"><img src="structhash__map__entry__coll__graph.png" border="0" usemap="#ahash__map__entry_coll__map" alt="Collaboration graph"/></div>
 <map name="ahash__map__entry_coll__map" id="ahash__map__entry_coll__map">
-<area shape="rect" title="Entry node in hash map&#39;s linked list (for collision handling)" alt="" coords="5,5,136,31"/>
+<area shape="rect" title=" " alt="" coords="5,5,136,31"/>
 <area shape="poly" title=" " alt="" coords="151,12,163,18,137,25,136,20,157,18,149,17"/>
 </map>
 <center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a79e1e217766c6b0bde3f9f99a1bb7a8b" id="r_a79e1e217766c6b0bde3f9f99a1bb7a8b"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhash__map__entry.html#a79e1e217766c6b0bde3f9f99a1bb7a8b">key</a></td></tr>
+<tr class="memitem:a79e1e217766c6b0bde3f9f99a1bb7a8b" id="r_a79e1e217766c6b0bde3f9f99a1bb7a8b"><td class="memItemLeft" align="right" valign="top"><a id="a79e1e217766c6b0bde3f9f99a1bb7a8b" name="a79e1e217766c6b0bde3f9f99a1bb7a8b"></a>
+void *&#160;</td><td class="memItemRight" valign="bottom"><b>key</b></td></tr>
 <tr class="separator:a79e1e217766c6b0bde3f9f99a1bb7a8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa7d9993de18f3c5e96556fda7f4cd1a8" id="r_aa7d9993de18f3c5e96556fda7f4cd1a8"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhash__map__entry.html#aa7d9993de18f3c5e96556fda7f4cd1a8">value</a></td></tr>
+<tr class="memitem:aa7d9993de18f3c5e96556fda7f4cd1a8" id="r_aa7d9993de18f3c5e96556fda7f4cd1a8"><td class="memItemLeft" align="right" valign="top"><a id="aa7d9993de18f3c5e96556fda7f4cd1a8" name="aa7d9993de18f3c5e96556fda7f4cd1a8"></a>
+void *&#160;</td><td class="memItemRight" valign="bottom"><b>value</b></td></tr>
 <tr class="separator:aa7d9993de18f3c5e96556fda7f4cd1a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27c2b0f9abd5489b753aee83f6403577" id="r_a27c2b0f9abd5489b753aee83f6403577"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structhash__map__entry.html">hash_map_entry</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhash__map__entry.html#a27c2b0f9abd5489b753aee83f6403577">next</a></td></tr>
+<tr class="memitem:a27c2b0f9abd5489b753aee83f6403577" id="r_a27c2b0f9abd5489b753aee83f6403577"><td class="memItemLeft" align="right" valign="top"><a id="a27c2b0f9abd5489b753aee83f6403577" name="a27c2b0f9abd5489b753aee83f6403577"></a>
+struct <a class="el" href="structhash__map__entry.html">hash_map_entry</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>next</b></td></tr>
 <tr class="separator:a27c2b0f9abd5489b753aee83f6403577"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Entry node in hash map's linked list (for collision handling) </p>
-<p>Each bucket in the hash map contains a linked list of entries. When hash collisions occur, new entries are added to the list. </p>
-</div><h2 class="groupheader">Member Data Documentation</h2>
-<a id="a79e1e217766c6b0bde3f9f99a1bb7a8b" name="a79e1e217766c6b0bde3f9f99a1bb7a8b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a79e1e217766c6b0bde3f9f99a1bb7a8b">&#9670;&#160;</a></span>key</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void* hash_map_entry::key</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Pointer to key data </p>
-
-</div>
-</div>
-<a id="a27c2b0f9abd5489b753aee83f6403577" name="a27c2b0f9abd5489b753aee83f6403577"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a27c2b0f9abd5489b753aee83f6403577">&#9670;&#160;</a></span>next</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct <a class="el" href="structhash__map__entry.html">hash_map_entry</a>* hash_map_entry::next</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Next entry in collision chain </p>
-
-</div>
-</div>
-<a id="aa7d9993de18f3c5e96556fda7f4cd1a8" name="aa7d9993de18f3c5e96556fda7f4cd1a8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa7d9993de18f3c5e96556fda7f4cd1a8">&#9670;&#160;</a></span>value</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void* hash_map_entry::value</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Pointer to value data </p>
-
-</div>
-</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>src/utils/<a class="el" href="hash__map_8h_source.html">hash_map.h</a></li>
 </ul>

@@ -114,7 +114,6 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Implementation of thread-safe JSON parsing context. </p>
-<p>Provides thread-safe management of JSON field offset tables and hash structures. The implementation uses POSIX mutexes to protect concurrent access to shared context data. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a id="a8119379b5569852d133d781c0bec7a6d" name="a8119379b5569852d133d781c0bec7a6d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8119379b5569852d133d781c0bec7a6d">&#9670;&#160;</a></span>json_context_find_field()</h2>
@@ -149,19 +148,15 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Find field offset item in thread-safe manner. </p>
-<p>Performs a thread-safe hash-based lookup to find the field offset item for a given struct and field name combination. Uses linear probing for collision resolution.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">ctx</td><td>JSON context containing field data </td></tr>
-    <tr><td class="paramname">struct_name</td><td>Name of the struct containing the field </td></tr>
-    <tr><td class="paramname">field_name</td><td>Name of the field to find </td></tr>
+    <tr><td class="paramname">ctx</td><td>JSON context </td></tr>
+    <tr><td class="paramname">struct_name</td><td>Structure name </td></tr>
+    <tr><td class="paramname">field_name</td><td>Field name </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Pointer to field offset item if found, or NULL if not found</dd></dl>
-<dl class="section note"><dt>Note</dt><dd>This function is thread-safe (uses mutex) </dd>
-<dd>
-Returns NULL if context is not initialized or field doesn't exist </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to field offset item, or NULL if not found </dd></dl>
 
 </div>
 </div>
@@ -182,10 +177,9 @@ Returns NULL if context is not initialized or field doesn't exist </dd></dl>
 </div><div class="memdoc">
 
 <p>Free a JSON parsing context. </p>
-<p>Destroys the mutex and frees the context structure. Does not free the field_offset_items or entry_hash arrays as these are typically static data owned by generated code.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">ctx</td><td>Context to free (safe to pass NULL) </td></tr>
+    <tr><td class="paramname">ctx</td><td>Context to free </td></tr>
   </table>
   </dd>
 </dl>
@@ -237,18 +231,17 @@ Returns NULL if context is not initialized or field doesn't exist </dd></dl>
 </div><div class="memdoc">
 
 <p>Initialize context with field offset data. </p>
-<p>Thread-safe initialization that associates the context with field offset arrays and hash table. The context stores pointers to these arrays without copying them.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">ctx</td><td>Context to initialize </td></tr>
-    <tr><td class="paramname">field_items</td><td>Field offset array (must remain valid) </td></tr>
-    <tr><td class="paramname">item_count</td><td>Array size </td></tr>
-    <tr><td class="paramname">hash_table</td><td>Hash table for lookups (must remain valid) </td></tr>
-    <tr><td class="paramname">hash_size</td><td>Hash table size </td></tr>
+    <tr><td class="paramname">field_items</td><td>Array of field offset items </td></tr>
+    <tr><td class="paramname">item_count</td><td>Number of items in array </td></tr>
+    <tr><td class="paramname">hash_table</td><td>Hash table for lookups </td></tr>
+    <tr><td class="paramname">hash_size</td><td>Size of hash table </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>JSON_GEN_SUCCESS or error code </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, negative on error </dd></dl>
 
 </div>
 </div>
@@ -269,12 +262,7 @@ Returns NULL if context is not initialized or field doesn't exist </dd></dl>
 </div><div class="memdoc">
 
 <p>Create a new JSON parsing context. </p>
-<p>Implementation details:</p><ol type="1">
-<li>Allocates memory for context structure</li>
-<li>Zeros all fields</li>
-<li>Initializes pthread mutex</li>
-<li>Returns context ready for initialization </li>
-</ol>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to new context, or NULL on failure </dd></dl>
 
 </div>
 </div>

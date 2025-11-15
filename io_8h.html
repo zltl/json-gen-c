@@ -70,7 +70,7 @@ $(document).ready(function(){initNavTree('io_8h.html',''); initResizable(); });
 </div><!--header-->
 <div class="contents">
 
-<p>File operation helper functions for reading and writing files.  
+<p>file operation helper functions.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="sstr_8h_source.html">utils/sstr.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
@@ -78,7 +78,7 @@ Include dependency graph for io.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="io_8h__incl.png" border="0" usemap="#asrc_2utils_2io_8h" alt=""/></div>
 <map name="asrc_2utils_2io_8h" id="asrc_2utils_2io_8h">
-<area shape="rect" title="File operation helper functions for reading and writing files." alt="" coords="41,5,143,31"/>
+<area shape="rect" title="file operation helper functions." alt="" coords="41,5,143,31"/>
 <area shape="rect" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="47,79,137,104"/>
 <area shape="poly" title=" " alt="" coords="95,31,95,65,89,65,89,31"/>
 <area shape="rect" title=" " alt="" coords="5,152,80,177"/>
@@ -92,13 +92,9 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="io_8h__dep__incl.png" border="0" usemap="#asrc_2utils_2io_8hdep" alt=""/></div>
 <map name="asrc_2utils_2io_8hdep" id="asrc_2utils_2io_8hdep">
-<area shape="rect" title="File operation helper functions for reading and writing files." alt="" coords="194,5,295,31"/>
-<area shape="rect" href="main_8c.html" title="Main entry point for json&#45;gen&#45;c code generator." alt="" coords="5,79,132,104"/>
-<area shape="poly" title=" " alt="" coords="205,38,98,81,96,76,203,33"/>
-<area shape="rect" href="struct__parse_8c.html" title="parse struct definition file." alt="" coords="156,79,333,104"/>
-<area shape="poly" title=" " alt="" coords="247,44,247,79,242,79,242,44"/>
-<area shape="rect" href="io_8c.html" title="Implementation of file I/O helper functions." alt="" coords="357,79,457,104"/>
-<area shape="poly" title=" " alt="" coords="284,34,382,76,380,81,282,39"/>
+<area shape="rect" title="file operation helper functions." alt="" coords="43,5,145,31"/>
+<area shape="rect" href="struct__parse_8c.html" title="parse struct definition file." alt="" coords="5,79,183,104"/>
+<area shape="poly" title=" " alt="" coords="97,44,97,79,91,79,91,44"/>
 </map>
 </div>
 </div>
@@ -106,146 +102,16 @@ This graph shows which files directly or indirectly include this file:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a23e7848df8cadf9c13918c2ccd9f100e" id="r_a23e7848df8cadf9c13918c2ccd9f100e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="io_8h.html#a23e7848df8cadf9c13918c2ccd9f100e">read_file</a> (const char *filename, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> content)</td></tr>
-<tr class="memdesc:a23e7848df8cadf9c13918c2ccd9f100e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read entire file content into an sstr_t string.  <br /></td></tr>
+<tr class="memitem:a23e7848df8cadf9c13918c2ccd9f100e" id="r_a23e7848df8cadf9c13918c2ccd9f100e"><td class="memItemLeft" align="right" valign="top"><a id="a23e7848df8cadf9c13918c2ccd9f100e" name="a23e7848df8cadf9c13918c2ccd9f100e"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>read_file</b> (const char *filename, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> content)</td></tr>
 <tr class="separator:a23e7848df8cadf9c13918c2ccd9f100e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae0561670b9ef3e0bae879b06687c8807" id="r_ae0561670b9ef3e0bae879b06687c8807"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="io_8h.html#ae0561670b9ef3e0bae879b06687c8807">write_file</a> (const char *filename, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> content)</td></tr>
-<tr class="memdesc:ae0561670b9ef3e0bae879b06687c8807"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write sstr_t content to a file.  <br /></td></tr>
+<tr class="memitem:ae0561670b9ef3e0bae879b06687c8807" id="r_ae0561670b9ef3e0bae879b06687c8807"><td class="memItemLeft" align="right" valign="top"><a id="ae0561670b9ef3e0bae879b06687c8807" name="ae0561670b9ef3e0bae879b06687c8807"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>write_file</b> (const char *filename, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> content)</td></tr>
 <tr class="separator:ae0561670b9ef3e0bae879b06687c8807"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>File operation helper functions for reading and writing files. </p>
-<p>This module provides convenient wrapper functions for file I/O operations, integrated with the sstr_t string type for efficient string handling. </p>
-</div><h2 class="groupheader">Function Documentation</h2>
-<a id="a23e7848df8cadf9c13918c2ccd9f100e" name="a23e7848df8cadf9c13918c2ccd9f100e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a23e7848df8cadf9c13918c2ccd9f100e">&#9670;&#160;</a></span>read_file()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int read_file </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>filename</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td>
-          <td class="paramname"><em>content</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Read entire file content into an sstr_t string. </p>
-<p>Opens the specified file in binary mode, reads all its content, and stores it in the provided sstr_t buffer. The buffer is cleared before reading. This function is useful for loading configuration files, templates, or any text-based data.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">filename</td><td>Path to the file to read (null-terminated string) </td></tr>
-    <tr><td class="paramname">content</td><td>Output sstr_t buffer to store file content </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, -1 on failure (file not found, read error, etc.)</dd></dl>
-<dl class="section note"><dt>Note</dt><dd>The content buffer must be initialized before calling this function </dd>
-<dd>
-The entire file is loaded into memory, so be cautious with large files</dd></dl>
-<p>Implementation details:</p><ol type="1">
-<li>Opens file in binary read mode</li>
-<li>Seeks to end to determine file size</li>
-<li>Allocates buffer space in sstr_t</li>
-<li>Reads entire file in one operation</li>
-<li>Closes file and returns</li>
-</ol>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">filename</td><td>Path to input file </td></tr>
-    <tr><td class="paramname">content</td><td>Output sstr_t buffer (will be cleared first) </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, -1 if file cannot be opened </dd></dl>
-
-</div>
-</div>
-<a id="ae0561670b9ef3e0bae879b06687c8807" name="ae0561670b9ef3e0bae879b06687c8807"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae0561670b9ef3e0bae879b06687c8807">&#9670;&#160;</a></span>write_file()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int write_file </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>filename</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td>
-          <td class="paramname"><em>content</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Write sstr_t content to a file. </p>
-<p>Opens the specified file in binary write mode and writes the entire content of the sstr_t string to it. If the file exists, it will be overwritten. If it doesn't exist, it will be created.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">filename</td><td>Path to the output file (null-terminated string) </td></tr>
-    <tr><td class="paramname">content</td><td>sstr_t string containing data to write </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, -1 on failure (permission denied, disk full, etc.)</dd></dl>
-<dl class="section note"><dt>Note</dt><dd>This function writes in binary mode to preserve exact byte content </dd>
-<dd>
-The file will be created if it doesn't exist</dd></dl>
-<p>Implementation details:</p><ol type="1">
-<li>Opens file in binary write mode (creates or truncates)</li>
-<li>Writes entire sstr_t content in one operation</li>
-<li>Closes file and returns</li>
-</ol>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">filename</td><td>Path to output file </td></tr>
-    <tr><td class="paramname">content</td><td>sstr_t string to write </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, -1 if file cannot be opened for writing </dd></dl>
-
-</div>
-</div>
-</div><!-- contents -->
+<div class="textblock"><p>file operation helper functions. </p>
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- HTML footer for doxygen 1.8.17-->
 <!-- start footer part -->

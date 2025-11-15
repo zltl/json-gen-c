@@ -72,7 +72,7 @@ $(document).ready(function(){initNavTree('hash__map_8h.html',''); initResizable(
 </div><!--header-->
 <div class="contents">
 
-<p>A simple <a class="el" href="structhash__map.html" title="Hash map data structure using separate chaining.">hash_map</a> implementation.  
+<p>A simple <a class="el" href="structhash__map.html">hash_map</a> implementation.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stddef.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="sstr_8h_source.html">utils/sstr.h</a>&quot;</code><br />
@@ -96,23 +96,14 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="hash__map_8h__dep__incl.png" border="0" usemap="#asrc_2utils_2hash__map_8hdep" alt=""/></div>
 <map name="asrc_2utils_2hash__map_8hdep" id="asrc_2utils_2hash__map_8hdep">
-<area shape="rect" title="A simple hash_map implementation." alt="" coords="235,5,391,31"/>
-<area shape="rect" href="gencode_8c.html" title="JSON code generation implementation." alt="" coords="5,152,176,177"/>
-<area shape="poly" title=" " alt="" coords="222,28,161,35,101,46,50,61,32,70,19,80,15,89,15,98,26,118,47,135,70,150,67,154,43,140,22,121,9,100,9,88,15,77,29,65,48,56,100,40,160,30,221,23"/>
-<area shape="rect" href="gencode_8h.html" title="generate json manipulate codes." alt="" coords="29,79,200,104"/>
-<area shape="poly" title=" " alt="" coords="269,38,148,81,146,76,268,33"/>
-<area shape="rect" href="struct__parse_8c.html" title="parse struct definition file." alt="" coords="351,152,529,177"/>
-<area shape="poly" title=" " alt="" coords="360,34,390,52,417,77,428,96,435,116,442,151,437,152,430,118,423,98,413,80,387,56,357,39"/>
-<area shape="rect" href="struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="224,79,403,104"/>
-<area shape="poly" title=" " alt="" coords="316,44,316,79,311,79,311,44"/>
-<area shape="rect" href="hash__map_8c.html" title="Implementation of a simple hash map data structure." alt="" coords="477,79,632,104"/>
-<area shape="poly" title=" " alt="" coords="366,32,516,76,515,81,365,37"/>
-<area shape="poly" title=" " alt="" coords="109,118,97,153,92,151,104,116"/>
-<area shape="rect" href="main_8c.html" title="Main entry point for json&#45;gen&#45;c code generator." alt="" coords="201,152,327,177"/>
-<area shape="poly" title=" " alt="" coords="152,107,241,149,238,154,150,112"/>
-<area shape="poly" title=" " alt="" coords="266,111,128,154,126,149,264,106"/>
-<area shape="poly" title=" " alt="" coords="300,117,274,153,270,150,295,114"/>
-<area shape="poly" title=" " alt="" coords="347,108,421,149,418,154,344,113"/>
+<area shape="rect" title="A simple hash_map implementation." alt="" coords="135,5,291,31"/>
+<area shape="rect" href="gencode_8h.html" title="generate json manipulate codes." alt="" coords="5,79,176,104"/>
+<area shape="poly" title=" " alt="" coords="183,40,112,81,109,76,181,35"/>
+<area shape="rect" href="struct__parse_8c.html" title="parse struct definition file." alt="" coords="187,152,365,177"/>
+<area shape="poly" title=" " alt="" coords="222,44,241,103,270,150,265,153,236,105,216,45"/>
+<area shape="rect" href="struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="251,79,429,104"/>
+<area shape="poly" title=" " alt="" coords="247,35,321,76,318,81,244,40"/>
+<area shape="poly" title=" " alt="" coords="322,116,288,154,284,150,318,113"/>
 </map>
 </div>
 </div>
@@ -121,112 +112,65 @@ This graph shows which files directly or indirectly include this file:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhash__map__entry.html">hash_map_entry</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Entry node in hash map's linked list (for collision handling)  <a href="structhash__map__entry.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhash__map.html">hash_map</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hash map data structure using separate chaining.  <a href="structhash__map.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a55b8653db565b087bbc30967f751fc02" id="r_a55b8653db565b087bbc30967f751fc02"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#a55b8653db565b087bbc30967f751fc02">HASH_MAP_OK</a>&#160;&#160;&#160;0</td></tr>
-<tr class="memdesc:a55b8653db565b087bbc30967f751fc02"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return codes for <a class="el" href="structhash__map.html" title="Hash map data structure using separate chaining.">hash_map</a> operations.  <br /></td></tr>
+<tr class="memitem:a55b8653db565b087bbc30967f751fc02" id="r_a55b8653db565b087bbc30967f751fc02"><td class="memItemLeft" align="right" valign="top"><a id="a55b8653db565b087bbc30967f751fc02" name="a55b8653db565b087bbc30967f751fc02"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>HASH_MAP_OK</b>&#160;&#160;&#160;0</td></tr>
+<tr class="memdesc:a55b8653db565b087bbc30967f751fc02"><td class="mdescLeft">&#160;</td><td class="mdescRight">return code of <a class="el" href="structhash__map.html">hash_map</a> functions. <br /></td></tr>
 <tr class="separator:a55b8653db565b087bbc30967f751fc02"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3553a8804fdf73dfc50d32152dac866c" id="r_a3553a8804fdf73dfc50d32152dac866c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#a3553a8804fdf73dfc50d32152dac866c">HASH_MAP_DUPLICATE_KEY</a>&#160;&#160;&#160;1</td></tr>
+<tr class="memitem:a3553a8804fdf73dfc50d32152dac866c" id="r_a3553a8804fdf73dfc50d32152dac866c"><td class="memItemLeft" align="right" valign="top"><a id="a3553a8804fdf73dfc50d32152dac866c" name="a3553a8804fdf73dfc50d32152dac866c"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>HASH_MAP_DUPLICATE_KEY</b>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:a3553a8804fdf73dfc50d32152dac866c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab5fd1abf9d1c5c7c2b2b1ab69699c05a" id="r_ab5fd1abf9d1c5c7c2b2b1ab69699c05a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#ab5fd1abf9d1c5c7c2b2b1ab69699c05a">HASH_MAP_ERROR</a>&#160;&#160;&#160;-1</td></tr>
+<tr class="memitem:ab5fd1abf9d1c5c7c2b2b1ab69699c05a" id="r_ab5fd1abf9d1c5c7c2b2b1ab69699c05a"><td class="memItemLeft" align="right" valign="top"><a id="ab5fd1abf9d1c5c7c2b2b1ab69699c05a" name="ab5fd1abf9d1c5c7c2b2b1ab69699c05a"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>HASH_MAP_ERROR</b>&#160;&#160;&#160;-1</td></tr>
 <tr class="separator:ab5fd1abf9d1c5c7c2b2b1ab69699c05a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a371c122ed72ba12a31fd5deae0a1a599" id="r_a371c122ed72ba12a31fd5deae0a1a599"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structhash__map__entry.html">hash_map_entry</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#a371c122ed72ba12a31fd5deae0a1a599">hash_map_entry_new</a> (void *key, void *value)</td></tr>
-<tr class="memdesc:a371c122ed72ba12a31fd5deae0a1a599"><td class="mdescLeft">&#160;</td><td class="mdescRight">create a new <a class="el" href="structhash__map__entry.html" title="Entry node in hash map&#39;s linked list (for collision handling)">hash_map_entry</a> with key and value.  <br /></td></tr>
+<tr class="memdesc:a371c122ed72ba12a31fd5deae0a1a599"><td class="mdescLeft">&#160;</td><td class="mdescRight">create a new <a class="el" href="structhash__map__entry.html">hash_map_entry</a> with key and value.  <br /></td></tr>
 <tr class="separator:a371c122ed72ba12a31fd5deae0a1a599"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae22714ac3d8f5833c2e439775c62cd75" id="r_ae22714ac3d8f5833c2e439775c62cd75"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#ae22714ac3d8f5833c2e439775c62cd75">hash_map_entry_free</a> (struct <a class="el" href="structhash__map.html">hash_map</a> *map, struct <a class="el" href="structhash__map__entry.html">hash_map_entry</a> *entry)</td></tr>
-<tr class="memdesc:ae22714ac3d8f5833c2e439775c62cd75"><td class="mdescLeft">&#160;</td><td class="mdescRight">free a <a class="el" href="structhash__map__entry.html" title="Entry node in hash map&#39;s linked list (for collision handling)">hash_map_entry</a>. the key and value will be freed by key_free_func and value_free_func of <em>map</em>.  <br /></td></tr>
+<tr class="memdesc:ae22714ac3d8f5833c2e439775c62cd75"><td class="mdescLeft">&#160;</td><td class="mdescRight">free a <a class="el" href="structhash__map__entry.html">hash_map_entry</a>. the key and value will be freed by key_free_func and value_free_func of <em>map</em>.  <br /></td></tr>
 <tr class="separator:ae22714ac3d8f5833c2e439775c62cd75"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee25e56c4e5c38d111b5f5c103b54b40" id="r_aee25e56c4e5c38d111b5f5c103b54b40"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structhash__map.html">hash_map</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#aee25e56c4e5c38d111b5f5c103b54b40">hash_map_new</a> (int bucket_count, unsigned int(*hash_func)(void *), int(*key_cmp_func)(void *, void *), void(*key_free_func)(void *), void(*value_free_func)(void *))</td></tr>
-<tr class="memdesc:aee25e56c4e5c38d111b5f5c103b54b40"><td class="mdescLeft">&#160;</td><td class="mdescRight">create a new <a class="el" href="structhash__map.html" title="Hash map data structure using separate chaining.">hash_map</a>.  <br /></td></tr>
+<tr class="memdesc:aee25e56c4e5c38d111b5f5c103b54b40"><td class="mdescLeft">&#160;</td><td class="mdescRight">create a new <a class="el" href="structhash__map.html">hash_map</a>.  <br /></td></tr>
 <tr class="separator:aee25e56c4e5c38d111b5f5c103b54b40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c4230c24f06c3a4eafb747fbbe7fdcb" id="r_a4c4230c24f06c3a4eafb747fbbe7fdcb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#a4c4230c24f06c3a4eafb747fbbe7fdcb">hash_map_free</a> (struct <a class="el" href="structhash__map.html">hash_map</a> *map)</td></tr>
-<tr class="memdesc:a4c4230c24f06c3a4eafb747fbbe7fdcb"><td class="mdescLeft">&#160;</td><td class="mdescRight">free a <a class="el" href="structhash__map.html" title="Hash map data structure using separate chaining.">hash_map</a>.  <br /></td></tr>
+<tr class="memdesc:a4c4230c24f06c3a4eafb747fbbe7fdcb"><td class="mdescLeft">&#160;</td><td class="mdescRight">free a <a class="el" href="structhash__map.html">hash_map</a>.  <br /></td></tr>
 <tr class="separator:a4c4230c24f06c3a4eafb747fbbe7fdcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbc4a658c6617ebd65796bab96347c9b" id="r_abbc4a658c6617ebd65796bab96347c9b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#abbc4a658c6617ebd65796bab96347c9b">hash_map_insert</a> (struct <a class="el" href="structhash__map.html">hash_map</a> *map, void *key, void *value)</td></tr>
-<tr class="memdesc:abbc4a658c6617ebd65796bab96347c9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert a new key-value pair into the hash map.  <br /></td></tr>
+<tr class="memdesc:abbc4a658c6617ebd65796bab96347c9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">insert a new entry into <a class="el" href="structhash__map.html">hash_map</a>.  <br /></td></tr>
 <tr class="separator:abbc4a658c6617ebd65796bab96347c9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0de63495858306207efd060e012c5357" id="r_a0de63495858306207efd060e012c5357"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#a0de63495858306207efd060e012c5357">hash_map_find</a> (struct <a class="el" href="structhash__map.html">hash_map</a> *map, void *key, void **value)</td></tr>
-<tr class="memdesc:a0de63495858306207efd060e012c5357"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find a value by key in the hash map.  <br /></td></tr>
+<tr class="memdesc:a0de63495858306207efd060e012c5357"><td class="mdescLeft">&#160;</td><td class="mdescRight">find a entry in <a class="el" href="structhash__map.html">hash_map</a>.  <br /></td></tr>
 <tr class="separator:a0de63495858306207efd060e012c5357"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9cf226b52b989d7f1bbe47a596be147a" id="r_a9cf226b52b989d7f1bbe47a596be147a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#a9cf226b52b989d7f1bbe47a596be147a">hash_map_delete</a> (struct <a class="el" href="structhash__map.html">hash_map</a> *map, void *key)</td></tr>
-<tr class="memdesc:a9cf226b52b989d7f1bbe47a596be147a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove an entry from the hash map by key.  <br /></td></tr>
+<tr class="memdesc:a9cf226b52b989d7f1bbe47a596be147a"><td class="mdescLeft">&#160;</td><td class="mdescRight">remove a entry from <a class="el" href="structhash__map.html">hash_map</a>.  <br /></td></tr>
 <tr class="separator:a9cf226b52b989d7f1bbe47a596be147a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a55a51f78b80752e115004a0428b7b322" id="r_a55a51f78b80752e115004a0428b7b322"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#a55a51f78b80752e115004a0428b7b322">hash_map_for_each</a> (struct <a class="el" href="structhash__map.html">hash_map</a> *map, void(*fn)(void *key, void *value, void *ptr), void *ptr)</td></tr>
-<tr class="memdesc:a55a51f78b80752e115004a0428b7b322"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterate over all entries in the hash map.  <br /></td></tr>
+<tr class="memdesc:a55a51f78b80752e115004a0428b7b322"><td class="mdescLeft">&#160;</td><td class="mdescRight">for each key-value pair in <a class="el" href="structhash__map.html">hash_map</a>, call fn(key, value).  <br /></td></tr>
 <tr class="separator:a55a51f78b80752e115004a0428b7b322"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac80cee8e5e8252e80714f61598e301ac" id="r_ac80cee8e5e8252e80714f61598e301ac"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#ac80cee8e5e8252e80714f61598e301ac">hash</a> (const char *data, size_t n)</td></tr>
-<tr class="memdesc:ac80cee8e5e8252e80714f61598e301ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute hash value for raw byte data.  <br /></td></tr>
+<tr class="memdesc:ac80cee8e5e8252e80714f61598e301ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">calculate the hash value of a key.  <br /></td></tr>
 <tr class="separator:ac80cee8e5e8252e80714f61598e301ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a623ce9722804122b8b76eb9d6c5e1d3c" id="r_a623ce9722804122b8b76eb9d6c5e1d3c"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#a623ce9722804122b8b76eb9d6c5e1d3c">sstr_key_hash</a> (void *key)</td></tr>
-<tr class="memdesc:a623ce9722804122b8b76eb9d6c5e1d3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hash function for sstr_t keys.  <br /></td></tr>
+<tr class="memitem:a623ce9722804122b8b76eb9d6c5e1d3c" id="r_a623ce9722804122b8b76eb9d6c5e1d3c"><td class="memItemLeft" align="right" valign="top"><a id="a623ce9722804122b8b76eb9d6c5e1d3c" name="a623ce9722804122b8b76eb9d6c5e1d3c"></a>
+unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_key_hash</b> (void *key)</td></tr>
 <tr class="separator:a623ce9722804122b8b76eb9d6c5e1d3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a579e36b0cb7518ade2859ed9daf20ec9" id="r_a579e36b0cb7518ade2859ed9daf20ec9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#a579e36b0cb7518ade2859ed9daf20ec9">sstr_key_cmp</a> (void *a, void *b)</td></tr>
-<tr class="memdesc:a579e36b0cb7518ade2859ed9daf20ec9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Comparison function for sstr_t keys.  <br /></td></tr>
+<tr class="memitem:a579e36b0cb7518ade2859ed9daf20ec9" id="r_a579e36b0cb7518ade2859ed9daf20ec9"><td class="memItemLeft" align="right" valign="top"><a id="a579e36b0cb7518ade2859ed9daf20ec9" name="a579e36b0cb7518ade2859ed9daf20ec9"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_key_cmp</b> (void *a, void *b)</td></tr>
 <tr class="separator:a579e36b0cb7518ade2859ed9daf20ec9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6342c9f3666893d01251fc0613c90170" id="r_a6342c9f3666893d01251fc0613c90170"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#a6342c9f3666893d01251fc0613c90170">sstr_key_free</a> (void *key)</td></tr>
-<tr class="memdesc:a6342c9f3666893d01251fc0613c90170"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free function for sstr_t keys.  <br /></td></tr>
+<tr class="memitem:a6342c9f3666893d01251fc0613c90170" id="r_a6342c9f3666893d01251fc0613c90170"><td class="memItemLeft" align="right" valign="top"><a id="a6342c9f3666893d01251fc0613c90170" name="a6342c9f3666893d01251fc0613c90170"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_key_free</b> (void *key)</td></tr>
 <tr class="separator:a6342c9f3666893d01251fc0613c90170"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>A simple <a class="el" href="structhash__map.html" title="Hash map data structure using separate chaining.">hash_map</a> implementation. </p>
-</div><h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a3553a8804fdf73dfc50d32152dac866c" name="a3553a8804fdf73dfc50d32152dac866c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3553a8804fdf73dfc50d32152dac866c">&#9670;&#160;</a></span>HASH_MAP_DUPLICATE_KEY</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define HASH_MAP_DUPLICATE_KEY&#160;&#160;&#160;1</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Attempted to insert a key that already exists </p>
-
-</div>
-</div>
-<a id="ab5fd1abf9d1c5c7c2b2b1ab69699c05a" name="ab5fd1abf9d1c5c7c2b2b1ab69699c05a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab5fd1abf9d1c5c7c2b2b1ab69699c05a">&#9670;&#160;</a></span>HASH_MAP_ERROR</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define HASH_MAP_ERROR&#160;&#160;&#160;-1</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Memory allocation failed or key not found </p>
-
-</div>
-</div>
-<a id="a55b8653db565b087bbc30967f751fc02" name="a55b8653db565b087bbc30967f751fc02"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a55b8653db565b087bbc30967f751fc02">&#9670;&#160;</a></span>HASH_MAP_OK</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define HASH_MAP_OK&#160;&#160;&#160;0</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Return codes for <a class="el" href="structhash__map.html" title="Hash map data structure using separate chaining.">hash_map</a> operations. </p>
-<p>Consistent error codes used across all hash map functions to indicate success or various failure conditions. Operation completed successfully </p>
-
-</div>
-</div>
-<h2 class="groupheader">Function Documentation</h2>
+<div class="textblock"><p>A simple <a class="el" href="structhash__map.html">hash_map</a> implementation. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
 <a id="ac80cee8e5e8252e80714f61598e301ac" name="ac80cee8e5e8252e80714f61598e301ac"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac80cee8e5e8252e80714f61598e301ac">&#9670;&#160;</a></span>hash()</h2>
 
@@ -261,16 +205,15 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Compute hash value for raw byte data. </p>
-<p>General-purpose hash function for arbitrary byte sequences. Uses a good distribution algorithm suitable for hash tables.</p>
+<p>calculate the hash value of a key. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">data</td><td>Pointer to data buffer to hash </td></tr>
-    <tr><td class="paramname">n</td><td>Length of data in bytes </td></tr>
+    <tr><td class="paramname">data</td><td>pointer to key buffer. </td></tr>
+    <tr><td class="paramname">n</td><td>the length of key buffer. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>32-bit hash value with good distribution </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>unsigned int the hash value. </dd></dl>
 
 </div>
 </div>
@@ -308,21 +251,16 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Remove an entry from the hash map by key. </p>
-<p>Searches for the entry with the given key and removes it from the map. The entry's key and value are freed using the registered free functions before removing.</p>
+<p>remove a entry from <a class="el" href="structhash__map.html">hash_map</a>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">map</td><td>Hash map to modify </td></tr>
-    <tr><td class="paramname">key</td><td>Key of entry to remove </td></tr>
+    <tr><td class="paramname">map</td><td>the <a class="el" href="structhash__map.html">hash_map</a>. </td></tr>
+    <tr><td class="paramname">key</td><td>the key of the entry. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>HASH_MAP_OK if entry found and removed </dd>
-<dd>
-HASH_MAP_ERROR if key not found</dd></dl>
-<dl class="section note"><dt>Note</dt><dd>The entry's key and value are automatically freed </dd>
-<dd>
-After deletion, any pointers to the entry become invalid </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>int HASH_MAP_OK if found, HASH_MAP_ERROR if not found. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>the entry will be free. </dd></dl>
 
 </div>
 </div>
@@ -360,20 +298,11 @@ After deletion, any pointers to the entry become invalid </dd></dl>
 </table>
 </div><div class="memdoc">
 
-<p>free a <a class="el" href="structhash__map__entry.html" title="Entry node in hash map&#39;s linked list (for collision handling)">hash_map_entry</a>. the key and value will be freed by key_free_func and value_free_func of <em>map</em>. </p>
+<p>free a <a class="el" href="structhash__map__entry.html">hash_map_entry</a>. the key and value will be freed by key_free_func and value_free_func of <em>map</em>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">map</td><td>the <a class="el" href="structhash__map.html" title="Hash map data structure using separate chaining.">hash_map</a>, container map-&gt;key_free_func and map-&gt;value_free_func. </td></tr>
-    <tr><td class="paramname">entry</td><td>the entry to be freed.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>free a <a class="el" href="structhash__map__entry.html" title="Entry node in hash map&#39;s linked list (for collision handling)">hash_map_entry</a>. the key and value will be freed by key_free_func and value_free_func of <em>map</em>.</p>
-<p>Uses the map's registered free functions to properly deallocate the key and value data before freeing the entry structure itself. Safe to call with NULL entry.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">map</td><td>Hash map containing the free functions to use </td></tr>
-    <tr><td class="paramname">entry</td><td>Entry to free (can be NULL) </td></tr>
+    <tr><td class="paramname">map</td><td>the <a class="el" href="structhash__map.html">hash_map</a>, container map-&gt;key_free_func and map-&gt;value_free_func. </td></tr>
+    <tr><td class="paramname">entry</td><td>the entry to be freed. </td></tr>
   </table>
   </dd>
 </dl>
@@ -414,7 +343,7 @@ After deletion, any pointers to the entry become invalid </dd></dl>
 </table>
 </div><div class="memdoc">
 
-<p>create a new <a class="el" href="structhash__map__entry.html" title="Entry node in hash map&#39;s linked list (for collision handling)">hash_map_entry</a> with key and value. </p>
+<p>create a new <a class="el" href="structhash__map__entry.html">hash_map_entry</a> with key and value. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">key</td><td>the key of the entry. </td></tr>
@@ -426,20 +355,10 @@ After deletion, any pointers to the entry become invalid </dd></dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
     <tr><td class="paramname">NULL</td><td>malloc failed. </td></tr>
-    <tr><td class="paramname">!NULL</td><td>the new entry.</td></tr>
+    <tr><td class="paramname">!NULL</td><td>the new entry. </td></tr>
   </table>
   </dd>
 </dl>
-<p>create a new <a class="el" href="structhash__map__entry.html" title="Entry node in hash map&#39;s linked list (for collision handling)">hash_map_entry</a> with key and value.</p>
-<p>Allocates memory for a new entry node in the hash map's linked list. The entry initially has no next pointer (standalone node).</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>Pointer to the key data </td></tr>
-    <tr><td class="paramname">value</td><td>Pointer to the value data </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Newly allocated entry, or NULL if memory allocation fails </dd></dl>
 
 </div>
 </div>
@@ -483,22 +402,16 @@ After deletion, any pointers to the entry become invalid </dd></dl>
 </table>
 </div><div class="memdoc">
 
-<p>Find a value by key in the hash map. </p>
-<p>Searches for the given key and returns the associated value if found. Uses the registered hash and comparison functions for lookup.</p>
+<p>find a entry in <a class="el" href="structhash__map.html">hash_map</a>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">map</td><td>Hash map to search </td></tr>
-    <tr><td class="paramname">key</td><td>Key to search for </td></tr>
-    <tr><td class="paramname">value</td><td>Output pointer to store found value (if found) </td></tr>
+    <tr><td class="paramname">map</td><td>the <a class="el" href="structhash__map.html">hash_map</a>. </td></tr>
+    <tr><td class="paramname">key</td><td>the key of the entry. </td></tr>
+    <tr><td class="paramname">value</td><td>the value of the entry if found. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>HASH_MAP_OK if key found (value pointer stored in *value) </dd>
-<dd>
-HASH_MAP_ERROR if key not found (value pointer undefined)</dd></dl>
-<dl class="section note"><dt>Note</dt><dd>The returned value pointer is still owned by the map </dd>
-<dd>
-Do not free the returned value pointer </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>int HASH_MAP_OK if found, HASH_MAP_ERROR if not found. </dd></dl>
 
 </div>
 </div>
@@ -542,19 +455,15 @@ Do not free the returned value pointer </dd></dl>
 </table>
 </div><div class="memdoc">
 
-<p>Iterate over all entries in the hash map. </p>
-<p>Calls the provided callback function for each key-value pair in the hash map. The iteration order is undefined (based on bucket order). Useful for operations like printing, serialization, or cleanup.</p>
+<p>for each key-value pair in <a class="el" href="structhash__map.html">hash_map</a>, call fn(key, value). </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">map</td><td>Hash map to iterate over </td></tr>
-    <tr><td class="paramname">fn</td><td>Callback function called for each entry </td></tr>
-    <tr><td class="paramname">ptr</td><td>User data pointer passed to each callback invocation</td></tr>
+    <tr><td class="paramname">map</td><td>the <a class="el" href="structhash__map.html">hash_map</a>. </td></tr>
+    <tr><td class="paramname">fn</td><td>the function to be called. </td></tr>
+    <tr><td class="paramname">ptr</td><td>user data. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>Do not modify the hash map structure during iteration </dd>
-<dd>
-The callback receives (key, value, ptr) for each entry </dd></dl>
 
 </div>
 </div>
@@ -582,18 +491,10 @@ The callback receives (key, value, ptr) for each entry </dd></dl>
 </table>
 </div><div class="memdoc">
 
-<p>free a <a class="el" href="structhash__map.html" title="Hash map data structure using separate chaining.">hash_map</a>. </p>
+<p>free a <a class="el" href="structhash__map.html">hash_map</a>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">map</td><td>the <a class="el" href="structhash__map.html" title="Hash map data structure using separate chaining.">hash_map</a> to be freed.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>free a <a class="el" href="structhash__map.html" title="Hash map data structure using separate chaining.">hash_map</a>.</p>
-<p>Iterates through all buckets, freeing all entries and their associated data using the registered free functions. Finally frees the hash map structure itself. Safe to call with NULL map.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">map</td><td>Hash map to free (can be NULL) </td></tr>
+    <tr><td class="paramname">map</td><td>the <a class="el" href="structhash__map.html">hash_map</a> to be freed. </td></tr>
   </table>
   </dd>
 </dl>
@@ -640,25 +541,17 @@ The callback receives (key, value, ptr) for each entry </dd></dl>
 </table>
 </div><div class="memdoc">
 
-<p>Insert a new key-value pair into the hash map. </p>
-<p>Adds a new entry to the hash map. If the key already exists, returns HASH_MAP_DUPLICATE_KEY and does not modify the map. Uses the registered hash function to determine the bucket and adds to the collision chain. Automatically checks load factor and may trigger resizing.</p>
+<p>insert a new entry into <a class="el" href="structhash__map.html">hash_map</a>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">map</td><td>Hash map to insert into </td></tr>
-    <tr><td class="paramname">key</td><td>Key pointer (ownership transferred to map if successful) </td></tr>
-    <tr><td class="paramname">value</td><td>Value pointer (ownership transferred to map if successful) </td></tr>
+    <tr><td class="paramname">map</td><td>the <a class="el" href="structhash__map.html">hash_map</a>. </td></tr>
+    <tr><td class="paramname">key</td><td>the key of the entry. </td></tr>
+    <tr><td class="paramname">value</td><td>the value of the entry. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>HASH_MAP_OK on success </dd>
-<dd>
-HASH_MAP_DUPLICATE_KEY if key already exists (entry not added) </dd>
-<dd>
-HASH_MAP_ERROR if memory allocation fails</dd></dl>
-<dl class="section note"><dt>Note</dt><dd>If insertion fails, caller retains ownership of key and value </dd>
-<dd>
-If successful, map owns key and value (freed with registered functions)</dd></dl>
-<p>Insert a new key-value pair into the hash map.</p>
+<dl class="section return"><dt>Returns</dt><dd>int HASH_MAP_OK if success, HASH_MAP_DUPLICATE_KEY will ignore the entry, HASH_MAP_ERROR if malloc failed.</dd></dl>
+<p>insert a new entry into <a class="el" href="structhash__map.html">hash_map</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">map</td><td>Hash map </td></tr>
@@ -723,7 +616,7 @@ If successful, map owns key and value (freed with registered functions)</dd></dl
 </table>
 </div><div class="memdoc">
 
-<p>create a new <a class="el" href="structhash__map.html" title="Hash map data structure using separate chaining.">hash_map</a>. </p>
+<p>create a new <a class="el" href="structhash__map.html">hash_map</a>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">bucket_count</td><td>the number of buckets. </td></tr>
@@ -734,141 +627,7 @@ If successful, map owns key and value (freed with registered functions)</dd></dl
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>struct hash_map* the new <a class="el" href="structhash__map.html" title="Hash map data structure using separate chaining.">hash_map</a>.</dd></dl>
-<p>create a new <a class="el" href="structhash__map.html" title="Hash map data structure using separate chaining.">hash_map</a>.</p>
-<p>Initializes a hash map with the given number of buckets and function pointers for hashing, comparing, and freeing keys and values. All function pointers must be non-NULL.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">bucket_count</td><td>Initial number of buckets (should be prime or power of 2) </td></tr>
-    <tr><td class="paramname">hash_func</td><td>Function to compute hash value from key </td></tr>
-    <tr><td class="paramname">key_cmp_func</td><td>Function to compare two keys (return 0 if equal) </td></tr>
-    <tr><td class="paramname">key_free_func</td><td>Function to free key memory </td></tr>
-    <tr><td class="paramname">value_free_func</td><td>Function to free value memory </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Newly created hash map, or NULL if allocation fails</dd></dl>
-<dl class="section note"><dt>Note</dt><dd>All function pointers must be provided and non-NULL </dd>
-<dd>
-Caller is responsible for calling <a class="el" href="hash__map_8h.html#a4c4230c24f06c3a4eafb747fbbe7fdcb" title="free a hash_map.">hash_map_free()</a> when done </dd></dl>
-
-</div>
-</div>
-<a id="a579e36b0cb7518ade2859ed9daf20ec9" name="a579e36b0cb7518ade2859ed9daf20ec9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a579e36b0cb7518ade2859ed9daf20ec9">&#9670;&#160;</a></span>sstr_key_cmp()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int sstr_key_cmp </td>
-          <td>(</td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>a</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>b</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Comparison function for sstr_t keys. </p>
-<p>Specialized comparison for use with hash maps that have sstr_t keys. Pass this to <a class="el" href="hash__map_8h.html#aee25e56c4e5c38d111b5f5c103b54b40" title="create a new hash_map.">hash_map_new()</a> as the key_cmp_func parameter.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">a</td><td>First sstr_t key </td></tr>
-    <tr><td class="paramname">b</td><td>Second sstr_t key </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 if equal, non-zero if different </dd></dl>
-
-</div>
-</div>
-<a id="a6342c9f3666893d01251fc0613c90170" name="a6342c9f3666893d01251fc0613c90170"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6342c9f3666893d01251fc0613c90170">&#9670;&#160;</a></span>sstr_key_free()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void sstr_key_free </td>
-          <td>(</td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>key</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Free function for sstr_t keys. </p>
-<p>Specialized free function for use with hash maps that have sstr_t keys. Pass this to <a class="el" href="hash__map_8h.html#aee25e56c4e5c38d111b5f5c103b54b40" title="create a new hash_map.">hash_map_new()</a> as the key_free_func parameter.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>Pointer to sstr_t to free </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a623ce9722804122b8b76eb9d6c5e1d3c" name="a623ce9722804122b8b76eb9d6c5e1d3c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a623ce9722804122b8b76eb9d6c5e1d3c">&#9670;&#160;</a></span>sstr_key_hash()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">unsigned int sstr_key_hash </td>
-          <td>(</td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>key</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Hash function for sstr_t keys. </p>
-<p>Specialized hash function for use with hash maps that have sstr_t keys. Pass this to <a class="el" href="hash__map_8h.html#aee25e56c4e5c38d111b5f5c103b54b40" title="create a new hash_map.">hash_map_new()</a> as the hash_func parameter.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>Pointer to sstr_t to hash </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Hash value for the string </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>struct hash_map* the new <a class="el" href="structhash__map.html">hash_map</a>. </dd></dl>
 
 </div>
 </div>

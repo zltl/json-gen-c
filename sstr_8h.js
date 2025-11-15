@@ -1,11 +1,8 @@
 var sstr_8h =
 [
-    [ "sstr_s", "structsstr__s.html", "structsstr__s" ],
+    [ "sstr_s", "structsstr__s.html", null ],
     [ "sstr_append_cstr_if", "sstr_8h.html#ad5290253c7b53c6a66ed07b782f68714", null ],
     [ "sstr_length", "sstr_8h.html#a7f83884713d44719070e83e62639716c", null ],
-    [ "SSTR_TYPE_LONG", "sstr_8h.html#afdb2acea9cceef81b1749f5604483b54", null ],
-    [ "SSTR_TYPE_REF", "sstr_8h.html#ac08dcbb7318a37aaebc120173cdc0b9b", null ],
-    [ "SSTR_TYPE_SHORT", "sstr_8h.html#a02b26ce895798f7fd4df3d6e40b0afad", null ],
     [ "sstr_t", "sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7", null ],
     [ "sstr", "sstr_8h.html#aa3b3c1563041f1323542f3e84f7817b1", null ],
     [ "sstr_append", "sstr_8h.html#ad8eb5ed3acc6d1f90c5097ab2f62672f", null ],

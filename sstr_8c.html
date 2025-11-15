@@ -143,40 +143,40 @@ Macros</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ae04c530ce9fbdb9b517ca74ab5f3edbc" id="r_ae04c530ce9fbdb9b517ca74ab5f3edbc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#ae04c530ce9fbdb9b517ca74ab5f3edbc">sstr_new</a> ()</td></tr>
-<tr class="memdesc:ae04c530ce9fbdb9b517ca74ab5f3edbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new empty sstr_t string.  <br /></td></tr>
+<tr class="memdesc:ae04c530ce9fbdb9b517ca74ab5f3edbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an empty sstr_t.  <br /></td></tr>
 <tr class="separator:ae04c530ce9fbdb9b517ca74ab5f3edbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae99d652d5a9d25fc79343d2ac18cb0e5" id="r_ae99d652d5a9d25fc79343d2ac18cb0e5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#ae99d652d5a9d25fc79343d2ac18cb0e5">sstr_free</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> s)</td></tr>
-<tr class="memdesc:ae99d652d5a9d25fc79343d2ac18cb0e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free memory allocated for an sstr_t string.  <br /></td></tr>
+<tr class="memdesc:ae99d652d5a9d25fc79343d2ac18cb0e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">delete a sstr_t.  <br /></td></tr>
 <tr class="separator:ae99d652d5a9d25fc79343d2ac18cb0e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad61027cdd29e89a0a946740cc04fcba2" id="r_ad61027cdd29e89a0a946740cc04fcba2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#ad61027cdd29e89a0a946740cc04fcba2">sstr_of</a> (const void *data, size_t length)</td></tr>
-<tr class="memdesc:ad61027cdd29e89a0a946740cc04fcba2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an sstr_t string from raw data with specified length.  <br /></td></tr>
+<tr class="memdesc:ad61027cdd29e89a0a946740cc04fcba2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a sstr_t from <em>data</em> with <em>length</em> bytes.  <br /></td></tr>
 <tr class="separator:ad61027cdd29e89a0a946740cc04fcba2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aadff88bf80c9a1d4b2911f9f19aceb03" id="r_aadff88bf80c9a1d4b2911f9f19aceb03"><td class="memItemLeft" align="right" valign="top"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#aadff88bf80c9a1d4b2911f9f19aceb03">sstr_ref</a> (const void *data, size_t length)</td></tr>
-<tr class="memdesc:aadff88bf80c9a1d4b2911f9f19aceb03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an sstr_t reference to existing data (zero-copy)  <br /></td></tr>
+<tr class="memdesc:aadff88bf80c9a1d4b2911f9f19aceb03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a sstr_t from data with length bytes. The data is not copied, but have a pointer to data.  <br /></td></tr>
 <tr class="separator:aadff88bf80c9a1d4b2911f9f19aceb03"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa3b3c1563041f1323542f3e84f7817b1" id="r_aa3b3c1563041f1323542f3e84f7817b1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#aa3b3c1563041f1323542f3e84f7817b1">sstr</a> (const char *cstr)</td></tr>
-<tr class="memdesc:aa3b3c1563041f1323542f3e84f7817b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an sstr_t from a C-style null-terminated string.  <br /></td></tr>
+<tr class="memdesc:aa3b3c1563041f1323542f3e84f7817b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a sstr_t from C-style (NULL-terminated) string <em>str</em>.  <br /></td></tr>
 <tr class="separator:aa3b3c1563041f1323542f3e84f7817b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af45cbd228a22432910527e63c4b26b3b" id="r_af45cbd228a22432910527e63c4b26b3b"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#af45cbd228a22432910527e63c4b26b3b">sstr_cstr</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> s)</td></tr>
-<tr class="memdesc:af45cbd228a22432910527e63c4b26b3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get pointer to the underlying C string data.  <br /></td></tr>
+<tr class="memdesc:af45cbd228a22432910527e63c4b26b3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return C-style string representation of <em>s</em>.  <br /></td></tr>
 <tr class="separator:af45cbd228a22432910527e63c4b26b3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad27f624aa62f1f648e96cc195da7412f" id="r_ad27f624aa62f1f648e96cc195da7412f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#ad27f624aa62f1f648e96cc195da7412f">sstr_compare</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> a, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> b)</td></tr>
-<tr class="memdesc:ad27f624aa62f1f648e96cc195da7412f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare two sstr_t strings lexicographically.  <br /></td></tr>
+<tr class="memdesc:ad27f624aa62f1f648e96cc195da7412f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare <em>a</em> and <em>b</em> return 0 if equal, &lt;0 if <em>a</em> &lt; <em>b</em>, &gt;0 if <em>a</em> &gt; <em>b</em>.  <br /></td></tr>
 <tr class="separator:ad27f624aa62f1f648e96cc195da7412f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4925de2352444a8822843cbbac5ae3ed" id="r_a4925de2352444a8822843cbbac5ae3ed"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#a4925de2352444a8822843cbbac5ae3ed">sstr_compare_c</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> a, const char *b)</td></tr>
 <tr class="memdesc:a4925de2352444a8822843cbbac5ae3ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">compare sstr_t <em>a</em> and <em>c-style</em> string b  <br /></td></tr>
 <tr class="separator:a4925de2352444a8822843cbbac5ae3ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:affb41a505a69f235d647bec5f96165f8" id="r_affb41a505a69f235d647bec5f96165f8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#affb41a505a69f235d647bec5f96165f8">sstr_append_zero</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> s, size_t length)</td></tr>
-<tr class="memdesc:affb41a505a69f235d647bec5f96165f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append zero bytes to string (for buffer allocation)  <br /></td></tr>
+<tr class="memdesc:affb41a505a69f235d647bec5f96165f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extends the sstr_t by appending additional '\0' characters at the end of its current value.  <br /></td></tr>
 <tr class="separator:affb41a505a69f235d647bec5f96165f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab55b8f697e21006921e191ca25dbcec5" id="r_ab55b8f697e21006921e191ca25dbcec5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#ab55b8f697e21006921e191ca25dbcec5">sstr_append_of</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> s, const void *data, size_t length)</td></tr>
-<tr class="memdesc:ab55b8f697e21006921e191ca25dbcec5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append raw data to string.  <br /></td></tr>
+<tr class="memdesc:ab55b8f697e21006921e191ca25dbcec5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extends the sstr_t by appending additional characters in <em>data</em> with length of <em>length</em> at the end of its current value .  <br /></td></tr>
 <tr class="separator:ab55b8f697e21006921e191ca25dbcec5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad8eb5ed3acc6d1f90c5097ab2f62672f" id="r_ad8eb5ed3acc6d1f90c5097ab2f62672f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#ad8eb5ed3acc6d1f90c5097ab2f62672f">sstr_append</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> dst, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> src)</td></tr>
-<tr class="memdesc:ad8eb5ed3acc6d1f90c5097ab2f62672f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append one sstr_t to another.  <br /></td></tr>
+<tr class="memdesc:ad8eb5ed3acc6d1f90c5097ab2f62672f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extends the sstr_t by appending additional characters contained in <em>src</em>.  <br /></td></tr>
 <tr class="separator:ad8eb5ed3acc6d1f90c5097ab2f62672f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0985a798ff952a68046fb594d2f3d27" id="r_aa0985a798ff952a68046fb594d2f3d27"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#aa0985a798ff952a68046fb594d2f3d27">sstr_append_cstr</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> dst, const char *src)</td></tr>
-<tr class="memdesc:aa0985a798ff952a68046fb594d2f3d27"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append C string to sstr_t.  <br /></td></tr>
+<tr class="memdesc:aa0985a798ff952a68046fb594d2f3d27"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extends the sstr_t by appending additional characters contained in <em>src</em>.  <br /></td></tr>
 <tr class="separator:aa0985a798ff952a68046fb594d2f3d27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a87e2708071bfb86f3961788466c9192f" id="r_a87e2708071bfb86f3961788466c9192f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#a87e2708071bfb86f3961788466c9192f">sstr_dup</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> s)</td></tr>
 <tr class="memdesc:a87e2708071bfb86f3961788466c9192f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Duplicate <em>s</em> and return.  <br /></td></tr>
@@ -185,19 +185,19 @@ Functions</h2></td></tr>
 <tr class="memdesc:a5ba343262041c4dc26b5c218c4cc9cb3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get substring of <em>s</em> starting at <em>index</em> with <em>length</em> bytes.  <br /></td></tr>
 <tr class="separator:a5ba343262041c4dc26b5c218c4cc9cb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb1410073b28bea451ab0be874d5875b" id="r_acb1410073b28bea451ab0be874d5875b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#acb1410073b28bea451ab0be874d5875b">sstr_clear</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> s)</td></tr>
-<tr class="memdesc:acb1410073b28bea451ab0be874d5875b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear the content of an sstr_t string.  <br /></td></tr>
+<tr class="memdesc:acb1410073b28bea451ab0be874d5875b"><td class="mdescLeft">&#160;</td><td class="mdescRight">clear the sstr_t. After this call, the sstr_t is empty.  <br /></td></tr>
 <tr class="separator:acb1410073b28bea451ab0be874d5875b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2d845cc91a348545e8f6b375437de6b" id="r_ab2d845cc91a348545e8f6b375437de6b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#ab2d845cc91a348545e8f6b375437de6b">sstr_printf</a> (const char *fmt,...)</td></tr>
-<tr class="memdesc:ab2d845cc91a348545e8f6b375437de6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create formatted string (printf-style with extensions)  <br /></td></tr>
+<tr class="memdesc:ab2d845cc91a348545e8f6b375437de6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">printf implement.  <br /></td></tr>
 <tr class="separator:ab2d845cc91a348545e8f6b375437de6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d6e86f4ff2db447c525e82b88d3173e" id="r_a2d6e86f4ff2db447c525e82b88d3173e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#a2d6e86f4ff2db447c525e82b88d3173e">sstr_printf_append</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> buf, const char *fmt,...)</td></tr>
-<tr class="memdesc:a2d6e86f4ff2db447c525e82b88d3173e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <a class="el" href="sstr_8h.html#ab2d845cc91a348545e8f6b375437de6b" title="Create formatted string (printf-style with extensions)">sstr_printf()</a>, but but print to <em>buf</em> instead of create a new one.  <br /></td></tr>
+<tr class="memdesc:a2d6e86f4ff2db447c525e82b88d3173e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <a class="el" href="sstr_8h.html#ab2d845cc91a348545e8f6b375437de6b" title="printf implement.">sstr_printf()</a>, but but print to <em>buf</em> instead of create a new one.  <br /></td></tr>
 <tr class="separator:a2d6e86f4ff2db447c525e82b88d3173e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a024de0f2bca395ea91d6f8966adaedbe" id="r_a024de0f2bca395ea91d6f8966adaedbe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#a024de0f2bca395ea91d6f8966adaedbe">sstr_vslprintf</a> (const char *fmt, va_list args)</td></tr>
-<tr class="memdesc:a024de0f2bca395ea91d6f8966adaedbe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Printf-style formatting with extended format specifiers.  <br /></td></tr>
+<tr class="memdesc:a024de0f2bca395ea91d6f8966adaedbe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Printf implement.  <br /></td></tr>
 <tr class="separator:a024de0f2bca395ea91d6f8966adaedbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad64cf287e39b67b4bf945b5f5344562e" id="r_ad64cf287e39b67b4bf945b5f5344562e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#ad64cf287e39b67b4bf945b5f5344562e">sstr_vslprintf_append</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> buf, const char *fmt, va_list args)</td></tr>
-<tr class="memdesc:ad64cf287e39b67b4bf945b5f5344562e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append formatted text to existing string (va_list version)  <br /></td></tr>
+<tr class="memdesc:ad64cf287e39b67b4bf945b5f5344562e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as sstr_vslprintf, but print to <em>buf</em> instead of create a new one.  <br /></td></tr>
 <tr class="separator:ad64cf287e39b67b4bf945b5f5344562e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0095307829d7066fd6ba4d827fb217b0" id="r_a0095307829d7066fd6ba4d827fb217b0"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#a0095307829d7066fd6ba4d827fb217b0">sstr_version</a> ()</td></tr>
 <tr class="memdesc:a0095307829d7066fd6ba4d827fb217b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">return version string.  <br /></td></tr>
@@ -252,12 +252,10 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_json_escape_strin
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">    ((SSTR(s))-&gt;type == <a class="code hl_define" href="sstr_8h.html#a02b26ce895798f7fd4df3d6e40b0afad">SSTR_TYPE_SHORT</a>                                   \</div>
+<b>Value:</b><div class="fragment"><div class="line">    ((SSTR(s))-&gt;type == SSTR_TYPE_SHORT                                   \</div>
 <div class="line">         ? (SSTR(s))-&gt;un.short_str                                        \</div>
-<div class="line">         : (SSTR(s)-&gt;type == <a class="code hl_define" href="sstr_8h.html#afdb2acea9cceef81b1749f5604483b54">SSTR_TYPE_LONG</a> ? (SSTR(s)-&gt;un.long_str.data) \</div>
+<div class="line">         : (SSTR(s)-&gt;type == SSTR_TYPE_LONG ? (SSTR(s)-&gt;un.long_str.data) \</div>
 <div class="line">                                            : (SSTR(s)-&gt;un.ref_str.data)))</div>
-<div class="ttc" id="asstr_8h_html_a02b26ce895798f7fd4df3d6e40b0afad"><div class="ttname"><a href="sstr_8h.html#a02b26ce895798f7fd4df3d6e40b0afad">SSTR_TYPE_SHORT</a></div><div class="ttdeci">#define SSTR_TYPE_SHORT</div><div class="ttdef"><b>Definition</b> sstr.h:79</div></div>
-<div class="ttc" id="asstr_8h_html_afdb2acea9cceef81b1749f5604483b54"><div class="ttname"><a href="sstr_8h.html#afdb2acea9cceef81b1749f5604483b54">SSTR_TYPE_LONG</a></div><div class="ttdeci">#define SSTR_TYPE_LONG</div><div class="ttdef"><b>Definition</b> sstr.h:81</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -278,16 +276,15 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_json_escape_strin
       </table>
 </div><div class="memdoc">
 
-<p>Create an sstr_t from a C-style null-terminated string. </p>
-<p>Create a sstr_t from C-style (NULL-terminated) string <em>str</em>.</p>
-<p>Convenience function that creates an sstr_t from a standard C string. Automatically calculates length using strlen() and copies the data.</p>
+<p>Create a sstr_t from C-style (NULL-terminated) string <em>str</em>. </p>
+<p>The <em>cstr</em> is copied to the new sstr_t, so you can free <em>cstr</em> after calling this function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">cstr</td><td>Null-terminated C string to convert </td></tr>
+    <tr><td class="paramname">cstr</td><td>C-style string to copy to the result sstr_t. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>New sstr_t containing a copy of the string </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>sstr_t containing <em>data</em> copied from cstr. </dd></dl>
 
 </div>
 </div>
@@ -317,18 +314,14 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_json_escape_strin
       </table>
 </div><div class="memdoc">
 
-<p>Append one sstr_t to another. </p>
-<p>Concatenates two sstr_t strings efficiently. Automatically handles all storage type combinations and capacity management.</p>
+<p>Extends the sstr_t by appending additional characters contained in <em>src</em>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">dst</td><td>Destination sstr_t to extend </td></tr>
-    <tr><td class="paramname">src</td><td>Source sstr_t to append </td></tr>
+    <tr><td class="paramname">dst</td><td>destination sstr_t. </td></tr>
+    <tr><td class="paramname">src</td><td>source sstr_t. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>dst is modified, src is unchanged </dd>
-<dd>
-dst cannot be REF type </dd></dl>
 
 </div>
 </div>
@@ -358,18 +351,14 @@ dst cannot be REF type </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Append C string to sstr_t. </p>
-<p>Convenience function to append a null-terminated C string. Calculates length automatically and appends the string data.</p>
+<p>Extends the sstr_t by appending additional characters contained in <em>src</em>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">dst</td><td>Destination sstr_t to extend </td></tr>
-    <tr><td class="paramname">src</td><td>Source C string (null-terminated) </td></tr>
+    <tr><td class="paramname">dst</td><td>destination sstr_t. </td></tr>
+    <tr><td class="paramname">src</td><td>source C-style string. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>More efficient than creating a temporary sstr_t </dd>
-<dd>
-dst cannot be REF type </dd></dl>
 
 </div>
 </div>
@@ -442,19 +431,15 @@ dst cannot be REF type </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Append raw data to string. </p>
-<p>Extends the string by appending arbitrary byte data. The most flexible append function, works with any data including embedded nulls. Handles storage type transitions automatically.</p>
+<p>Extends the sstr_t by appending additional characters in <em>data</em> with length of <em>length</em> at the end of its current value . </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">s</td><td>Destination sstr_t to extend </td></tr>
-    <tr><td class="paramname">data</td><td>Pointer to data to append (can contain null bytes) </td></tr>
-    <tr><td class="paramname">length</td><td>Number of bytes to append from data </td></tr>
+    <tr><td class="paramname">s</td><td>destination sstr_t. </td></tr>
+    <tr><td class="paramname">data</td><td>data to append. </td></tr>
+    <tr><td class="paramname">length</td><td>length of <em>data</em>. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>Automatically manages capacity and storage type </dd>
-<dd>
-Cannot be called on REF type strings </dd></dl>
 
 </div>
 </div>
@@ -535,18 +520,14 @@ Cannot be called on REF type strings </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Append zero bytes to string (for buffer allocation) </p>
-<p>Extends the string by appending the specified number of null bytes. Automatically handles storage type transitions and capacity management. Useful for pre-allocating buffer space before reading data.</p>
+<p>Extends the sstr_t by appending additional '\0' characters at the end of its current value. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">s</td><td>Destination sstr_t to extend </td></tr>
-    <tr><td class="paramname">length</td><td>Number of null bytes to append </td></tr>
+    <tr><td class="paramname">s</td><td>destination sstr_t. </td></tr>
+    <tr><td class="paramname">length</td><td>length of '\0' to append. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>Will convert SHORT to LONG type if needed </dd>
-<dd>
-Cannot be called on REF type strings </dd></dl>
 
 </div>
 </div>
@@ -566,18 +547,13 @@ Cannot be called on REF type strings </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Clear the content of an sstr_t string. </p>
-<p>Clear string content to empty.</p>
-<p>Resets the string to empty state without deallocating memory. For SHORT and LONG types, sets length to 0 and adds null terminator. For REF type, does nothing as it references external data.</p>
+<p>clear the sstr_t. After this call, the sstr_t is empty. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">s</td><td>String to clear </td></tr>
+    <tr><td class="paramname">s</td><td>sstr_t instance to clear. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>Does not free allocated memory, just marks string as empty </dd>
-<dd>
-After clearing, the string can be reused efficiently </dd></dl>
 
 </div>
 </div>
@@ -607,20 +583,22 @@ After clearing, the string can be reused efficiently </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Compare two sstr_t strings lexicographically. </p>
-<p>Compare <em>a</em> and <em>b</em> return 0 if equal, &lt;0 if <em>a</em> &lt; <em>b</em>, &gt;0 if <em>a</em> &gt; <em>b</em>.</p>
-<p>Compares two strings byte-by-byte. Handles NULL values gracefully. Uses the same comparison semantics as strcmp().</p>
+<p>Compare <em>a</em> and <em>b</em> return 0 if equal, &lt;0 if <em>a</em> &lt; <em>b</em>, &gt;0 if <em>a</em> &gt; <em>b</em>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">a</td><td>First string to compare </td></tr>
-    <tr><td class="paramname">b</td><td>Second string to compare </td></tr>
+    <tr><td class="paramname">a</td><td>sstr_t to be compared. </td></tr>
+    <tr><td class="paramname">b</td><td>sstr_t to be compared to. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>&lt;0 if a&lt;b, 0 if a==b, &gt;0 if a&gt;b </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>NULL is considered less than any non-NULL string </dd>
+<dl class="section return"><dt>Returns</dt><dd>int the compare result. </dd>
 <dd>
-Two NULL strings are considered equal </dd></dl>
+0 They compare equal. </dd>
+<dd>
+&lt;0 Either the value of the first character that does not match is lower in the compared string, or all compared characters match but the compared string is shorter. </dd>
+<dd>
+&gt;0 Either the value of the first character that does not match is greater in the compared string, or all compared characters match but the compared string is longer. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>This function is case sensitive. </dd></dl>
 
 </div>
 </div>
@@ -672,17 +650,16 @@ Two NULL strings are considered equal </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Get pointer to the underlying C string data. </p>
-<p>Return C-style string representation of <em>s</em>.</p>
-<p>Returns a pointer to the null-terminated character array. This allows sstr_t strings to be used with standard C string functions. The pointer remains valid until the sstr_t is modified or freed.</p>
+<p>Return C-style string representation of <em>s</em>. </p>
+<p>This function return a pointer to the internal C-style string, it has a null-terminal character at the end. So you can use it as a C-style string. The returned pointer is valid until <a class="el" href="sstr_8h.html#ae99d652d5a9d25fc79343d2ac18cb0e5" title="delete a sstr_t.">sstr_free()</a>/sstr_append()/sstr_append_of() or any functions that may modify the contents of sstr_t is called.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">s</td><td>The sstr_t string </td></tr>
+    <tr><td class="paramname">s</td><td>sstr_t instance to convert to C-style string. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Pointer to null-terminated character array </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>The returned pointer should not be freed directly </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>char* C-style string representation of <em>s</em>. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>The returned string is reused by <em>s</em>, do not free it yourself. </dd></dl>
 
 </div>
 </div>
@@ -729,12 +706,10 @@ Two NULL strings are considered equal </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Free memory allocated for an sstr_t string. </p>
-<p>delete a sstr_t.</p>
-<p>Properly deallocates all memory associated with an sstr_t string. For LONG type strings, frees the dynamically allocated buffer first. For REF type strings, does not free the referenced data (caller's responsibility). Safe to call with NULL pointer.</p>
+<p>delete a sstr_t. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">s</td><td>The sstr_t string to free (can be NULL) </td></tr>
+    <tr><td class="paramname">s</td><td>sstr_t instance to delete. </td></tr>
   </table>
   </dd>
 </dl>
@@ -757,11 +732,8 @@ Two NULL strings are considered equal </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Create a new empty sstr_t string. </p>
-<p>Create an empty sstr_t.</p>
-<p>Allocates memory for a new sstr_t structure and initializes it to an empty string. The string starts in SHORT mode, which is optimized for strings up to 25 characters.</p>
-<dl class="section return"><dt>Returns</dt><dd>Pointer to newly allocated sstr_t, caller must free with <a class="el" href="sstr_8h.html#ae99d652d5a9d25fc79343d2ac18cb0e5" title="delete a sstr_t.">sstr_free()</a> </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>Always check for NULL return value in production code </dd></dl>
+<p>Create an empty sstr_t. </p>
+<dl class="section return"><dt>Returns</dt><dd>sstr_t </dd></dl>
 
 </div>
 </div>
@@ -791,22 +763,16 @@ Two NULL strings are considered equal </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Create an sstr_t string from raw data with specified length. </p>
-<p>Create a sstr_t from <em>data</em> with <em>length</em> bytes.</p>
-<p>Creates a new sstr_t by copying the specified number of bytes from the source data. Automatically chooses SHORT or LONG storage based on the length. This is the most flexible constructor function.</p>
+<p>Create a sstr_t from <em>data</em> with <em>length</em> bytes. </p>
+<p>The <em>data</em> is copied to the new sstr_t, so you can free <em>data</em> after calling this function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">data</td><td>Source data buffer to copy from </td></tr>
-    <tr><td class="paramname">length</td><td>Number of bytes to copy </td></tr>
+    <tr><td class="paramname">data</td><td>data to copy to the result sstr_t. </td></tr>
+    <tr><td class="paramname">length</td><td>length of <em>data</em>. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>New sstr_t containing a copy of the data</dd></dl>
-<dl class="section note"><dt>Note</dt><dd>If length &lt;= 25, uses SHORT storage (no heap allocation for data) </dd>
-<dd>
-If length &gt; 25, uses LONG storage (separate heap allocation) </dd>
-<dd>
-Always adds null terminator for C string compatibility </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>sstr_t containing data copied from <em>data</em>. </dd></dl>
 
 </div>
 </div>
@@ -836,17 +802,15 @@ Always adds null terminator for C string compatibility </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Create formatted string (printf-style with extensions) </p>
-<p>Creates a new sstr_t by formatting the provided arguments according to the format string. Supports all standard printf formats plus extended specifiers like S for sstr_t.</p>
+<p>printf implement. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">fmt</td><td>Format string (supports extended specifiers) </td></tr>
-    <tr><td class="paramname">...</td><td>Variable arguments matching format specifiers </td></tr>
+    <tr><td class="paramname">fmt</td><td>format, like C printf() </td></tr>
+    <tr><td class="paramname">...</td><td>arguments, like C printf() </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>New sstr_t containing formatted result </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>Caller must free the returned sstr_t with <a class="el" href="sstr_8h.html#ae99d652d5a9d25fc79343d2ac18cb0e5" title="delete a sstr_t.">sstr_free()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>sstr_t result string. </dd></dl>
 
 </div>
 </div>
@@ -882,7 +846,7 @@ Always adds null terminator for C string compatibility </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Same as <a class="el" href="sstr_8h.html#ab2d845cc91a348545e8f6b375437de6b" title="Create formatted string (printf-style with extensions)">sstr_printf()</a>, but but print to <em>buf</em> instead of create a new one. </p>
+<p>Same as <a class="el" href="sstr_8h.html#ab2d845cc91a348545e8f6b375437de6b" title="printf implement.">sstr_printf()</a>, but but print to <em>buf</em> instead of create a new one. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">buf</td><td>buffer to print to. </td></tr>
@@ -921,21 +885,18 @@ Always adds null terminator for C string compatibility </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Create an sstr_t reference to existing data (zero-copy) </p>
-<p>Create a sstr_t from data with length bytes. The data is not copied, but have a pointer to data.</p>
-<p>Creates an sstr_t that references external data without copying. This is efficient for temporary strings or when you want to avoid copying large buffers. The referenced data must remain valid for the lifetime of the sstr_t.</p>
+<p>Create a sstr_t from data with length bytes. The data is not copied, but have a pointer to data. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">data</td><td>Pointer to external data buffer </td></tr>
-    <tr><td class="paramname">length</td><td>Length of the referenced data </td></tr>
+    <tr><td class="paramname">data</td><td>data of the result sstr_t. </td></tr>
+    <tr><td class="paramname">length</td><td>length of <em>data</em>. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>New sstr_t that references the data (REF type)</dd></dl>
-<dl class="section warning"><dt>Warning</dt><dd>The referenced data must not be freed while the sstr_t exists </dd>
+<dl class="section return"><dt>Returns</dt><dd>sstr_t </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>The result sstr_t does not own data, but have a pointer to data. It is a reference, not a copy. </dd>
 <dd>
-Modifying operations will fail on REF type strings </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>No memory is allocated for the data itself, only the sstr_t structure </dd></dl>
+You cannot append a <a class="el" href="sstr_8h.html#aadff88bf80c9a1d4b2911f9f19aceb03" title="Create a sstr_t from data with length bytes. The data is not copied, but have a pointer to data.">sstr_ref()</a> result. </dd></dl>
 
 </div>
 </div>
@@ -1031,38 +992,30 @@ Modifying operations will fail on REF type strings </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Printf-style formatting with extended format specifiers. </p>
-<p>Creates a formatted string using printf-like syntax with additional format specifiers for sstr_t and other types. This is the va_list variant used by <a class="el" href="sstr_8h.html#ab2d845cc91a348545e8f6b375437de6b" title="Create formatted string (printf-style with extensions)">sstr_printf()</a> and <a class="el" href="sstr_8h.html#a2d6e86f4ff2db447c525e82b88d3173e" title="Same as sstr_printf(), but but print to buf instead of create a new one.">sstr_printf_append()</a>.</p>
-<p>Supported format specifiers:</p><ul>
-<li>%[0][width]T time_t value</li>
+<p>Printf implement. </p>
+<p>supported formats:</p>
+<ul>
+<li>%[0][width]T time_t</li>
 <li>%[0][width][u][x|X]z ssize_t/size_t</li>
-<li>%[0][width][u][x|X]d int/unsigned int</li>
+<li>%[0][width][u][x|X]d int/u_int</li>
 <li>%[0][width][u][x|X]l long</li>
 <li>%[0][width][u][x|X]D int32_t/uint32_t</li>
 <li>%[0][width][u][x|X]L int64_t/uint64_t</li>
-<li>%[0][width][.width]f double (max %18.15f)</li>
-<li>p void * pointer</li>
-<li>%[x|X]S sstr_t (x/X for hexadecimal)</li>
-<li>s null-terminated C string</li>
-<li>%*s length and string pointer</li>
-<li>Z null character '\0'</li>
-<li>N newline '<br  />
+<li>%[0][width][.width]f double, max valid number fits to %18.15f</li>
+<li>p void *</li>
+<li>%[x|X]S sstr_t, if x, print as hexadecimal</li>
+<li>s null-terminated string</li>
+<li>%*s length and string</li>
+<li>Z '\0'</li>
+<li>N '<br  />
 '</li>
-<li>c single character</li>
-<li>%% literal % character</li>
+<li>c char</li>
+<li>%% %</li>
 </ul>
-<p>Reserved:</p><ul>
-<li>C wide character (wchar_t)</li>
+<p>reserved:</p><ul>
+<li>C wchar</li>
 </ul>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">fmt</td><td>Format string with specifiers </td></tr>
-    <tr><td class="paramname">args</td><td>va_list of arguments matching format specifiers </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>New sstr_t containing formatted result </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>If u/x/X used, trailing 'd' can be omitted </dd></dl>
+<p>if u/x/X, tailing d can be ignore </p>
 
 </div>
 </div>
@@ -1098,20 +1051,16 @@ Modifying operations will fail on REF type strings </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Append formatted text to existing string (va_list version) </p>
-<p>Like sstr_vslprintf but appends to an existing string instead of creating a new one. More efficient when building strings incrementally. Uses the same extended format specifiers as sstr_vslprintf.</p>
+<p>Same as sstr_vslprintf, but print to <em>buf</em> instead of create a new one. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">buf</td><td>Existing sstr_t to append formatted text to </td></tr>
-    <tr><td class="paramname">fmt</td><td>Format string with specifiers </td></tr>
-    <tr><td class="paramname">args</td><td>va_list of arguments matching format specifiers </td></tr>
+    <tr><td class="paramname">buf</td><td>result sstr_t to print to. </td></tr>
+    <tr><td class="paramname">fmt</td><td>format string. </td></tr>
+    <tr><td class="paramname">args</td><td>arguments. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The same buf pointer (for method chaining) </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>buf cannot be REF type </dd>
-<dd>
-Returns NULL on formatting error </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>sstr_t the result string. </dd></dl>
 
 </div>
 </div>
