@@ -69,14 +69,37 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="md_README"></a></p>
 <p><a href="https://github.com/zltl/json-gen-c/actions/workflows/test.yml"><img src="https://github.com/zltl/json-gen-c/actions/workflows/test.yml/badge.svg?branch=main" alt="build test action" style="pointer-events: none;" class="inline"/></a></p>
+<blockquote class="doxtable">
+<p>&zwj;Fast, tiny, and friendly code generator that turns your C structs into fully featured JSON serializers/deserializers. </p>
+</blockquote>
 <h1><a class="anchor" id="autotoc_md0"></a>
+Highlights</h1>
+<ul>
+<li><b>Schema-first workflow</b> – describe your structs once, generate battle-tested C code automatically.</li>
+<li><b>Zero runtime reflection</b> – everything happens at compile time, so the generated code stays fast and lean.</li>
+<li><b>Thread-safe runtime</b> – the parsing context uses explicit structures rather than globals.</li>
+<li><b>Batteries included</b> – includes a lightweight <code>sstr</code> string helper library and ready-made array helpers.</li>
+<li><b>CI-friendly build</b> – warnings are treated as errors and the Make targets work the same locally and in automation.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md1"></a>
+Contents</h1>
+<ul>
+<li>Overview</li>
+<li>Build and Install</li>
+<li>Quick Start</li>
+<li>The Format of Structs Definition File</li>
+<li>The JSON API</li>
+<li>More Resources</li>
+<li>Contributing &amp; Community</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md2"></a>
 Overview</h1>
-<p>json-gen-c is a program for searializing C struct to JSON and deserializing JSON to C struct back. It parse structs' definition files then generate C codes to serialize and deserialize <code>struct</code>s.</p>
+<p>json-gen-c is a program for serializing C structs to JSON and deserializing JSON to C structs. It parses struct definition files then generates C code to handle both directions.</p>
 <p><img src="https://raw.githubusercontent.com/zltl/json-gen-c/main/doc/json-gen-c.png" alt="covor" class="inline"/></p>
 <ul>
 <li><a href="https://zltl.github.io/json-gen-c/">Document</a></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md1"></a>
+<h1><a class="anchor" id="autotoc_md3"></a>
 Build and Install</h1>
 <div class="fragment"><div class="line">make</div>
 <div class="line">sudo make install</div>
@@ -107,10 +130,10 @@ Build and Install</h1>
 <li><code>build/test/</code> - Test executables</li>
 <li><code>build/benchmark/</code> - Benchmark executable</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md2"></a>
+<h1><a class="anchor" id="autotoc_md4"></a>
 Quick Start</h1>
 <p><a href="./example/example.json-gen-c">example</a></p>
-<h2><a class="anchor" id="autotoc_md3"></a>
+<h2><a class="anchor" id="autotoc_md5"></a>
 Define Structs</h2>
 <p>For example, create a file name <code>struct.json-gen-c</code> as contents below:</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>A {</div>
@@ -129,7 +152,7 @@ Define Structs</h2>
 <div class="line">};</div>
 <div class="ttc" id="asstr_8h_html_a8d28a1ce0ac6dd8b8e50af6f78e735e7"><div class="ttname"><a href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a></div><div class="ttdeci">void * sstr_t</div><div class="ttdoc">sstr_t are objects that represent sequences of characters.</div><div class="ttdef"><b>Definition</b> sstr.h:73</div></div>
 </div><!-- fragment --><p>Note that we don't use C-style string <code>char*</code>, a more resonable type is <code>sstr_t</code>. You can find more details about <code>sstr_t</code> in <a href="https://zltl.github.io/json-gen-c/sstr_8h.html">document of sstr</a>.</p>
-<h2><a class="anchor" id="autotoc_md4"></a>
+<h2><a class="anchor" id="autotoc_md6"></a>
 Compiling Your Struct Definition File</h2>
 <div class="fragment"><div class="line">json-gen-c -in struct.json-gen-c -out .</div>
 </div><!-- fragment --><p>This generates the following files in your specified destination directory:</p>
@@ -138,9 +161,9 @@ Compiling Your Struct Definition File</h2>
 <li><code>json.gen.c</code>, which contains the implementation of your functions.</li>
 <li><code><a class="el" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters.">sstr.h</a></code>, <code><a class="el" href="sstr_8c.html" title="Implementation of the sstr.h header file.">sstr.c</a></code>, the string manipulation helper functions that generated code depends on.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md5"></a>
+<h2><a class="anchor" id="autotoc_md7"></a>
 Use Your Generated Codes</h2>
-<h3><a class="anchor" id="autotoc_md6"></a>
+<h3><a class="anchor" id="autotoc_md8"></a>
 To Serialize Structs to JSON</h3>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>A a;</div>
 <div class="line">A_init(&amp;a);</div>
@@ -156,7 +179,7 @@ To Serialize Structs to JSON</h3>
 <div class="ttc" id="asstr_8c_html_ae04c530ce9fbdb9b517ca74ab5f3edbc"><div class="ttname"><a href="sstr_8c.html#ae04c530ce9fbdb9b517ca74ab5f3edbc">sstr_new</a></div><div class="ttdeci">sstr_t sstr_new()</div><div class="ttdoc">Create an empty sstr_t.</div><div class="ttdef"><b>Definition</b> sstr.c:41</div></div>
 <div class="ttc" id="asstr_8c_html_ae99d652d5a9d25fc79343d2ac18cb0e5"><div class="ttname"><a href="sstr_8c.html#ae99d652d5a9d25fc79343d2ac18cb0e5">sstr_free</a></div><div class="ttdeci">void sstr_free(sstr_t s)</div><div class="ttdoc">delete a sstr_t.</div><div class="ttdef"><b>Definition</b> sstr.c:47</div></div>
 <div class="ttc" id="asstr_8c_html_af45cbd228a22432910527e63c4b26b3b"><div class="ttname"><a href="sstr_8c.html#af45cbd228a22432910527e63c4b26b3b">sstr_cstr</a></div><div class="ttdeci">char * sstr_cstr(sstr_t s)</div><div class="ttdoc">Return C-style string representation of s.</div><div class="ttdef"><b>Definition</b> sstr.c:85</div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md7"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md9"></a>
 To Serialize Array of Structs to JSON</h3>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>A a[3];</div>
 <div class="line"><span class="keywordflow">for</span> (i = 0; i &lt; 3; ++i) {</div>
@@ -172,7 +195,7 @@ To Serialize Array of Structs to JSON</h3>
 <div class="line"><span class="keywordflow">for</span> (i = 0; i &lt; 3; ++i) {</div>
 <div class="line">    A_clear(&amp;a[i]);</div>
 <div class="line">}</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md8"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md10"></a>
 To Deserialize JSON to Structs</h3>
 <div class="fragment"><div class="line"><span class="comment">// const char *p_str = &quot;{this is a json string}&quot;;</span></div>
 <div class="line"><span class="comment">// sstr_t json_str = sstr(pstr);</span></div>
@@ -182,7 +205,7 @@ To Deserialize JSON to Structs</h3>
 <div class="line">json_unmarshal_A(json_str, &amp;a); <span class="comment">// json_str is a type of sstr_t</span></div>
 <div class="line"><span class="comment">// ...</span></div>
 <div class="line">A_clear(&amp;a);</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md9"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md11"></a>
 To Deserialize JSON to Array of Structs</h3>
 <div class="fragment"><div class="line"><span class="comment">// const char *p_str = &quot;[this is a json string]&quot;;</span></div>
 <div class="line"><span class="comment">// sstr_t json_str = sstr(pstr);</span></div>
@@ -196,10 +219,10 @@ To Deserialize JSON to Array of Structs</h3>
 <div class="line">    A_clear(&amp;a[i]);</div>
 <div class="line">}</div>
 <div class="line">free(a);</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md10"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md12"></a>
 Build System</h1>
-<p>For detailed build system documentation, see BUILD_SYSTEM.md.</p>
-<h1><a class="anchor" id="autotoc_md11"></a>
+<p>For detailed build system documentation, see BUILD_SYSTEM.md. If you are new to the project, the friendly walkthrough in <a class="el" href="md_docs_2GETTING__STARTED.html">docs/GETTING_STARTED.md</a> covers installation, schema authoring, and integration.</p>
+<h1><a class="anchor" id="autotoc_md13"></a>
 The Format of Structs Definition File</h1>
 <p>Define a struct like:</p>
 <div class="fragment"><div class="line">struct &lt;struct_name&gt; {</div>
@@ -218,7 +241,7 @@ The Format of Structs Definition File</h1>
 <li>a struct name</li>
 </ul>
 <p>If a field is an array, just append <code>[]</code> after the field name.</p>
-<h1><a class="anchor" id="autotoc_md12"></a>
+<h1><a class="anchor" id="autotoc_md14"></a>
 The JSON API</h1>
 <div class="fragment"><div class="line"><span class="comment">// initialize a struct</span></div>
 <div class="line"><span class="comment">// always return 0</span></div>
@@ -243,7 +266,24 @@ The JSON API</h1>
 <div class="line"><span class="comment">// unmarshal a json string to array of struct</span></div>
 <div class="line"><span class="comment">// return 0 if success.</span></div>
 <div class="line"><span class="keywordtype">int</span> json_unmarshal_&lt;struct_name&gt;(<a class="code hl_typedef" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> in, struct &lt;struct_name&gt;**obj, <span class="keywordtype">int</span> *len);</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md13"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md15"></a>
+More Resources</h1>
+<ul>
+<li><a class="el" href="md_docs_2GETTING__STARTED.html">docs/GETTING_STARTED.md</a> – step-by-step tutorial with code snippets.</li>
+<li><a href="example/">example/</a> – real schemas plus sample host programs.</li>
+<li><a href="https://zltl.github.io/json-gen-c/">Online reference</a> – API documentation generated via Doxygen.</li>
+<li><a href="doc/json-gen-c.1">doc/json-gen-c.1</a> – manual page installed with the CLI.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md16"></a>
+Contributing &amp; Community</h1>
+<p>We welcome issues, ideas, documentation updates, and code contributions.</p>
+<ul>
+<li>Read the <a class="el" href="md_CONTRIBUTING.html">CONTRIBUTING.md</a> guide for local setup, coding style, and pull-request tips.</li>
+<li>File bugs or feature requests via <a href="https://github.com/zltl/json-gen-c/issues">GitHub Issues</a> with clear reproduction details.</li>
+<li>Share what you build! Open a discussion or PR if you want your project added to a future showcase section.</li>
+</ul>
+<p>Thanks for helping json-gen-c grow. Happy hacking!</p>
+<h1><a class="anchor" id="autotoc_md17"></a>
 License</h1>
 <p>Codes of <code>json-gen-c</code> are licensed under GPL-3.0, except for the codes it generated. The copy right of the codes generated by <code>json-gen-c</code> is owned by the user who wrote the struct definition file, same as the copy right of a PDF file generated by Latex is owned by the user who wrote the tex file. </p>
 </div></div><!-- PageDoc -->

@@ -25,22 +25,42 @@
 var NAVTREE =
 [
   [ "json-gen-c", "index.html", [
-    [ "Overview", "index.html#autotoc_md0", null ],
-    [ "Build and Install", "index.html#autotoc_md1", null ],
-    [ "Quick Start", "index.html#autotoc_md2", [
-      [ "Define Structs", "index.html#autotoc_md3", null ],
-      [ "Compiling Your Struct Definition File", "index.html#autotoc_md4", null ],
-      [ "Use Your Generated Codes", "index.html#autotoc_md5", [
-        [ "To Serialize Structs to JSON", "index.html#autotoc_md6", null ],
-        [ "To Serialize Array of Structs to JSON", "index.html#autotoc_md7", null ],
-        [ "To Deserialize JSON to Structs", "index.html#autotoc_md8", null ],
-        [ "To Deserialize JSON to Array of Structs", "index.html#autotoc_md9", null ]
+    [ "Highlights", "index.html#autotoc_md0", null ],
+    [ "Contents", "index.html#autotoc_md1", null ],
+    [ "Overview", "index.html#autotoc_md2", null ],
+    [ "Build and Install", "index.html#autotoc_md3", null ],
+    [ "Quick Start", "index.html#autotoc_md4", [
+      [ "Define Structs", "index.html#autotoc_md5", null ],
+      [ "Compiling Your Struct Definition File", "index.html#autotoc_md6", null ],
+      [ "Use Your Generated Codes", "index.html#autotoc_md7", [
+        [ "To Serialize Structs to JSON", "index.html#autotoc_md8", null ],
+        [ "To Serialize Array of Structs to JSON", "index.html#autotoc_md9", null ],
+        [ "To Deserialize JSON to Structs", "index.html#autotoc_md10", null ],
+        [ "To Deserialize JSON to Array of Structs", "index.html#autotoc_md11", null ]
       ] ]
     ] ],
-    [ "Build System", "index.html#autotoc_md10", null ],
-    [ "The Format of Structs Definition File", "index.html#autotoc_md11", null ],
-    [ "The JSON API", "index.html#autotoc_md12", null ],
-    [ "License", "index.html#autotoc_md13", null ],
+    [ "Build System", "index.html#autotoc_md12", null ],
+    [ "The Format of Structs Definition File", "index.html#autotoc_md13", null ],
+    [ "The JSON API", "index.html#autotoc_md14", null ],
+    [ "More Resources", "index.html#autotoc_md15", null ],
+    [ "Contributing & Community", "index.html#autotoc_md16", null ],
+    [ "License", "index.html#autotoc_md17", null ],
+    [ "Contributing to json-gen-c", "md_CONTRIBUTING.html", [
+      [ "Ways to Contribute", "md_CONTRIBUTING.html#autotoc_md19", null ],
+      [ "Development Environment", "md_CONTRIBUTING.html#autotoc_md20", null ],
+      [ "Coding Guidelines", "md_CONTRIBUTING.html#autotoc_md21", null ],
+      [ "Pull Request Checklist", "md_CONTRIBUTING.html#autotoc_md22", null ],
+      [ "Communication", "md_CONTRIBUTING.html#autotoc_md23", null ]
+    ] ],
+    [ "Getting Started with json-gen-c", "md_docs_2GETTING__STARTED.html", [
+      [ "Prerequisites", "md_docs_2GETTING__STARTED.html#autotoc_md25", null ],
+      [ "1. Install json-gen-c", "md_docs_2GETTING__STARTED.html#autotoc_md26", null ],
+      [ "2. Describe Your Data", "md_docs_2GETTING__STARTED.html#autotoc_md27", null ],
+      [ "3. Generate Code", "md_docs_2GETTING__STARTED.html#autotoc_md28", null ],
+      [ "4. Use the Generated API", "md_docs_2GETTING__STARTED.html#autotoc_md29", null ],
+      [ "5. Regenerate on Schema Changes", "md_docs_2GETTING__STARTED.html#autotoc_md30", null ],
+      [ "6. Learn More", "md_docs_2GETTING__STARTED.html#autotoc_md31", null ]
+    ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
