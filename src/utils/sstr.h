@@ -45,26 +45,41 @@ extern "C" {
 #define SHORT_STR_CAPACITY 25
 #define CAP_ADD_DELTA 256
 
+/**
+ * @brief Internal structure for sstr_t implementation
+ * 
+ * Uses three storage strategies based on string length:
+ * - SHORT: Up to 25 chars stored inline (no heap allocation)
+ * - LONG: Heap-allocated buffer with capacity tracking
+ * - REF: Zero-copy reference to external data
+ * 
+ * The length field must be first to enable the sstr_length() macro.
+ */
 struct sstr_s {
-    size_t length;  // MUST FIRST, see sstr_length at sstr.h
-    char type;
+    size_t length;  /**< String length in bytes (MUST BE FIRST) */
+    char type;      /**< Storage type: SHORT, LONG, or REF */
     union {
-        // short string store datas in short_str
+        /** SHORT type: inline storage for strings up to 25 bytes */
         char short_str[SHORT_STR_CAPACITY + 1];
-        // long string allocate a buffer and store datas in long_str
+        
+        /** LONG type: heap-allocated buffer with capacity tracking */
         struct {
-            size_t capacity;
-            char* data;
+            size_t capacity;  /**< Allocated buffer size */
+            char* data;       /**< Pointer to heap-allocated buffer */
         } long_str;
-        // reference to a memory buffer
+        
+        /** REF type: zero-copy reference to external data */
         struct {
-            char* data;
+            char* data;  /**< Pointer to external buffer (not owned) */
         } ref_str;
     } un;
 };
 
+/** String stored inline (up to 25 chars) */
 #define SSTR_TYPE_SHORT 0
+/** String stored in heap-allocated buffer */
 #define SSTR_TYPE_LONG 1
+/** String references external data (zero-copy) */
 #define SSTR_TYPE_REF 2
 
 /**
@@ -176,39 +191,57 @@ extern int sstr_compare(sstr_t a, sstr_t b);
 extern int sstr_compare_c(sstr_t a, const char* b);
 
 /**
- * @brief Extends the sstr_t by appending additional '\0' characters at the end
- * of its current value.
+ * @brief Append zero bytes to string (for buffer allocation)
+ * 
+ * Extends the string by appending the specified number of null bytes.
+ * Automatically handles storage type transitions and capacity management.
+ * Useful for pre-allocating buffer space before reading data.
  *
- * @param s destination sstr_t.
- * @param length length of '\0' to append.
+ * @param s Destination sstr_t to extend
+ * @param length Number of null bytes to append
+ * @note Will convert SHORT to LONG type if needed
+ * @note Cannot be called on REF type strings
  */
 extern void sstr_append_zero(sstr_t s, size_t length);
 
 /**
- * @brief Extends the sstr_t by appending additional characters in \a data with
- * length of \a length at the end of its current value .
+ * @brief Append raw data to string
+ * 
+ * Extends the string by appending arbitrary byte data. The most flexible
+ * append function, works with any data including embedded nulls. Handles
+ * storage type transitions automatically.
  *
- * @param s destination sstr_t.
- * @param data data to append.
- * @param length length of \a data.
+ * @param s Destination sstr_t to extend
+ * @param data Pointer to data to append (can contain null bytes)
+ * @param length Number of bytes to append from data
+ * @note Automatically manages capacity and storage type
+ * @note Cannot be called on REF type strings
  */
 extern void sstr_append_of(sstr_t s, const void* data, size_t length);
 
 /**
- * @brief Extends the sstr_t by appending additional characters contained in \a
- * src.
+ * @brief Append one sstr_t to another
+ * 
+ * Concatenates two sstr_t strings efficiently. Automatically handles
+ * all storage type combinations and capacity management.
  *
- * @param dst destination sstr_t.
- * @param src source sstr_t.
+ * @param dst Destination sstr_t to extend
+ * @param src Source sstr_t to append
+ * @note dst is modified, src is unchanged
+ * @note dst cannot be REF type
  */
 extern void sstr_append(sstr_t dst, sstr_t src);
 
 /**
- * @brief Extends the sstr_t by appending additional characters contained in \a
- * src.
+ * @brief Append C string to sstr_t
+ * 
+ * Convenience function to append a null-terminated C string. Calculates
+ * length automatically and appends the string data.
  *
- * @param dst destination sstr_t.
- * @param src source C-style string.
+ * @param dst Destination sstr_t to extend
+ * @param src Source C string (null-terminated)
+ * @note More efficient than creating a temporary sstr_t
+ * @note dst cannot be REF type
  */
 extern void sstr_append_cstr(sstr_t dst, const char* src);
 
@@ -232,57 +265,80 @@ extern sstr_t sstr_dup(sstr_t s);
 extern sstr_t sstr_substr(sstr_t s, size_t index, size_t len);
 
 /**
- * @brief clear the sstr_t. After this call, the sstr_t is empty.
+ * @brief Clear string content to empty
+ * 
+ * Resets the string to empty (length 0) without deallocating memory.
+ * The string can be reused efficiently after clearing. For SHORT and
+ * LONG types, sets length to 0 and adds null terminator.
  *
- * @param s sstr_t instance to clear.
+ * @param s sstr_t instance to clear
+ * @note Does not free allocated memory, only resets length
+ * @note Does nothing for REF type strings
+ * @note After clearing, the string is reusable
  */
 extern void sstr_clear(sstr_t s);
 
 /**
- * @brief Printf implement.
+ * @brief Printf-style formatting with extended format specifiers
+ * 
+ * Creates a formatted string using printf-like syntax with additional
+ * format specifiers for sstr_t and other types. This is the va_list
+ * variant used by sstr_printf() and sstr_printf_append().
  *
- * supported formats:
- *
- *   - %[0][width]T              time_t
+ * Supported format specifiers:
+ *   - %[0][width]T              time_t value
  *   - %[0][width][u][x|X]z      ssize_t/size_t
- *   - %[0][width][u][x|X]d      int/u_int
+ *   - %[0][width][u][x|X]d      int/unsigned int
  *   - %[0][width][u][x|X]l      long
  *   - %[0][width][u][x|X]D      int32_t/uint32_t
  *   - %[0][width][u][x|X]L      int64_t/uint64_t
- *   - %[0][width][.width]f      double, max valid number fits to %18.15f
- *   - %p                        void *
- *   - %[x|X]S                   sstr_t, if x, print as hexadecimal
- *   - %s                        null-terminated string
- *   - %*s                       length and string
- *   - %Z                        '\0'
- *   - %N                        '\n'
- *   - %c                        char
- *   - %%                        %
+ *   - %[0][width][.width]f      double (max %18.15f)
+ *   - %p                        void * pointer
+ *   - %[x|X]S                   sstr_t (x/X for hexadecimal)
+ *   - %s                        null-terminated C string
+ *   - %*s                       length and string pointer
+ *   - %Z                        null character '\0'
+ *   - %N                        newline '\n'
+ *   - %c                        single character
+ *   - %%                        literal % character
  *
- *  reserved:
- *   - %C                        wchar
+ * Reserved:
+ *   - %C                        wide character (wchar_t)
  *
- *  if %u/%x/%X, tailing d can be ignore
+ * @param fmt Format string with specifiers
+ * @param args va_list of arguments matching format specifiers
+ * @return New sstr_t containing formatted result
+ * @note If %u/%x/%X used, trailing 'd' can be omitted
  */
 extern sstr_t sstr_vslprintf(const char* fmt, va_list args);
 
 /**
- * @brief Same as sstr_vslprintf, but print to \a buf instead of create a new
- * one.
+ * @brief Append formatted text to existing string (va_list version)
+ * 
+ * Like sstr_vslprintf but appends to an existing string instead of
+ * creating a new one. More efficient when building strings incrementally.
+ * Uses the same extended format specifiers as sstr_vslprintf.
  *
- * @param buf result sstr_t to print to.
- * @param fmt format string.
- * @param args arguments.
- * @return sstr_t the result string.
+ * @param buf Existing sstr_t to append formatted text to
+ * @param fmt Format string with specifiers
+ * @param args va_list of arguments matching format specifiers
+ * @return The same buf pointer (for method chaining)
+ * @note buf cannot be REF type
+ * @note Returns NULL on formatting error
  */
 extern sstr_t sstr_vslprintf_append(sstr_t buf, const char* fmt, va_list args);
 
 /**
- * @brief printf implement.
+ * @brief Create formatted string (printf-style with extensions)
+ * 
+ * Creates a new sstr_t by formatting the provided arguments according
+ * to the format string. Supports all standard printf formats plus
+ * extended specifiers like %S for sstr_t.
  *
- * @param fmt format, like C printf()
- * @param ... arguments, like C printf()
- * @return sstr_t result string.
+ * @param fmt Format string (supports extended specifiers)
+ * @param ... Variable arguments matching format specifiers
+ * @return New sstr_t containing formatted result
+ * @note Caller must free the returned sstr_t with sstr_free()
  */
 extern sstr_t sstr_printf(const char* fmt, ...);
 

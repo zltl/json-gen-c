@@ -1,3 +1,18 @@
+/**
+ * @file main.c
+ * @brief Main entry point for json-gen-c code generator
+ * 
+ * This program reads struct definitions from input files and generates
+ * C code for JSON serialization/deserialization. It parses command-line
+ * arguments, processes struct definitions, and outputs the generated code.
+ * 
+ * Usage: json-gen-c -in <input_file> -out <output_dir>
+ * 
+ * The generator creates two files:
+ * - json.gen.h: Header file with struct definitions and function declarations
+ * - json.gen.c: Implementation file with JSON marshal/unmarshal functions
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -8,7 +23,11 @@
 #include "utils/error_codes.h"
 
 /**
- * @brief Display usage information
+ * @brief Display usage information and help message
+ * 
+ * Prints command-line syntax, available options, and documentation links
+ * to standard output. Called when user requests help or provides invalid
+ * arguments.
  */
 static void usage() {
     printf(
@@ -24,18 +43,28 @@ static void usage() {
 
 /**
  * @brief Command line options structure
+ * 
+ * Holds parsed command-line arguments for configuring the code generator.
+ * Both fields are optional with sensible defaults.
  */
 struct options {
-    char *input_file;   /**< Input struct definition file path */
-    char *output_path;  /**< Output directory path */
+    char *input_file;   /**< Input struct definition file path (required) */
+    char *output_path;  /**< Output directory path (default: current directory) */
 };
 
 /**
  * @brief Parse command line options
- * @param argc Argument count
- * @param argv Argument vector
- * @param options Output options structure
- * @return JSON_GEN_SUCCESS on success, error code on failure
+ * 
+ * Processes command-line arguments and populates the options structure.
+ * Validates that required arguments are provided and handles help requests.
+ * 
+ * @param argc Argument count from main()
+ * @param argv Argument vector from main()
+ * @param options Output structure to populate with parsed options
+ * @return JSON_GEN_SUCCESS on success, error code if parsing fails
+ * 
+ * @note Sets output_path to "." if not specified
+ * @note Returns error if -in is not provided
  */
 static json_gen_error_t options_parse(int argc, const char **argv, struct options *options) {
     if (options == NULL) {

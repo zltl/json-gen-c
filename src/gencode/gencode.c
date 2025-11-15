@@ -1,3 +1,20 @@
+/**
+ * @file gencode.c
+ * @brief JSON code generation implementation
+ * 
+ * This module generates C code for JSON serialization and deserialization
+ * based on parsed struct definitions. It creates marshal/unmarshal functions,
+ * array handling, initialization/cleanup functions, and supporting data structures.
+ * 
+ * The generated code includes:
+ * - Struct definitions with array length fields
+ * - Init/clear functions for memory management  
+ * - JSON marshal functions (struct to JSON string)
+ * - JSON unmarshal functions (JSON string to struct)
+ * - Array marshal/unmarshal variants
+ * - Field offset tables for runtime field lookup
+ */
+
 #include "gencode/gencode.h"
 
 #include <malloc.h>
@@ -10,8 +27,18 @@
 
 #define DEPENDENCY_HASH_MAP_BUCKET_SIZE 4096
 
+/**
+ * @brief MurmurHash-inspired hash function for strings
+ * 
+ * Computes a hash value for a byte sequence using a mixing function
+ * similar to MurmurHash. Provides good distribution for hash tables.
+ * 
+ * @param data Pointer to data to hash
+ * @param n    Length of data in bytes
+ * @param seed Initial seed value for hash
+ * @return 32-bit hash value
+ */
 static unsigned int hash_s(const char* data, size_t n, unsigned int seed) {
-    // unsigned int seed = 0xbc9f1d34;
     // Similar to murmur hash
     const unsigned int m = 0xc6a4a793;
     const unsigned int r = 24;
@@ -44,6 +71,17 @@ static unsigned int hash_s(const char* data, size_t n, unsigned int seed) {
     return h;
 }
 
+/**
+ * @brief Hash two strings concatenated with '#' separator
+ * 
+ * Creates a composite hash from two sstr_t strings by concatenating
+ * them with '#' separator. Used for creating unique keys from struct
+ * name and field name pairs.
+ * 
+ * @param key1 First string (typically struct name)
+ * @param key2 Second string (typically field name)
+ * @return Hash value for the concatenated string
+ */
 inline static unsigned int hash_2s(sstr_t key1, sstr_t key2) {
     unsigned int res = 0xbc9f1d34;
     sstr_t tmp = sstr_dup(key1);

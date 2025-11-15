@@ -1,3 +1,12 @@
+/**
+ * @file hash_map.c
+ * @brief Implementation of a simple hash map data structure
+ * 
+ * This hash map uses separate chaining for collision resolution.
+ * It supports dynamic resizing based on load factor and provides
+ * custom hash functions, comparison functions, and memory management.
+ */
+
 #include "utils/hash_map.h"
 #include "utils/error_codes.h"
 
@@ -6,6 +15,16 @@
 
 #define HASH_MAP_LOAD_FACTOR_THRESHOLD 0.75  /**< Load factor threshold for resizing */
 
+/**
+ * @brief Create a new hash map entry with the given key and value
+ * 
+ * Allocates memory for a new entry node in the hash map's linked list.
+ * The entry initially has no next pointer (standalone node).
+ * 
+ * @param key   Pointer to the key data
+ * @param value Pointer to the value data
+ * @return Newly allocated entry, or NULL if memory allocation fails
+ */
 struct hash_map_entry* hash_map_entry_new(void* key, void* value) {
     struct hash_map_entry* entry =
         (struct hash_map_entry*)malloc(sizeof(struct hash_map_entry));
@@ -18,6 +37,16 @@ struct hash_map_entry* hash_map_entry_new(void* key, void* value) {
     return entry;
 }
 
+/**
+ * @brief Free a hash map entry and its associated data
+ * 
+ * Uses the map's registered free functions to properly deallocate
+ * the key and value data before freeing the entry structure itself.
+ * Safe to call with NULL entry.
+ * 
+ * @param map   Hash map containing the free functions to use
+ * @param entry Entry to free (can be NULL)
+ */
 void hash_map_entry_free(struct hash_map* map, struct hash_map_entry* entry) {
     if (entry) {
         map->key_free_func(entry->key);
@@ -26,6 +55,23 @@ void hash_map_entry_free(struct hash_map* map, struct hash_map_entry* entry) {
     free(entry);
 }
 
+/**
+ * @brief Create a new hash map with specified configuration
+ * 
+ * Initializes a hash map with the given number of buckets and function
+ * pointers for hashing, comparing, and freeing keys and values. All
+ * function pointers must be non-NULL.
+ * 
+ * @param bucket_count    Initial number of buckets (should be prime or power of 2)
+ * @param hash_func       Function to compute hash value from key
+ * @param key_cmp_func    Function to compare two keys (return 0 if equal)
+ * @param key_free_func   Function to free key memory
+ * @param value_free_func Function to free value memory
+ * @return Newly created hash map, or NULL if allocation fails
+ * 
+ * @note All function pointers must be provided and non-NULL
+ * @note Caller is responsible for calling hash_map_free() when done
+ */
 struct hash_map* hash_map_new(int bucket_count,
                               unsigned int (*hash_func)(void*),
                               int (*key_cmp_func)(void*, void*),
@@ -51,6 +97,15 @@ struct hash_map* hash_map_new(int bucket_count,
     return map;
 }
 
+/**
+ * @brief Free all memory associated with a hash map
+ * 
+ * Iterates through all buckets, freeing all entries and their associated
+ * data using the registered free functions. Finally frees the hash map
+ * structure itself. Safe to call with NULL map.
+ * 
+ * @param map Hash map to free (can be NULL)
+ */
 void hash_map_free(struct hash_map* map) {
     if (map) {
         for (int i = 0; i < map->bucket_count; i++) {
