@@ -18,13 +18,13 @@ var sstr_8h =
     [ "sstr_cstr", "sstr_8h.html#af45cbd228a22432910527e63c4b26b3b", null ],
     [ "sstr_dup", "sstr_8h.html#a87e2708071bfb86f3961788466c9192f", null ],
     [ "sstr_free", "sstr_8h.html#ae99d652d5a9d25fc79343d2ac18cb0e5", null ],
-    [ "sstr_new", "sstr_8h.html#ae04c530ce9fbdb9b517ca74ab5f3edbc", null ],
+    [ "sstr_new", "sstr_8h.html#a63e859888a3565efeac6f513cadc239e", null ],
     [ "sstr_of", "sstr_8h.html#ad61027cdd29e89a0a946740cc04fcba2", null ],
     [ "sstr_printf", "sstr_8h.html#ab2d845cc91a348545e8f6b375437de6b", null ],
     [ "sstr_printf_append", "sstr_8h.html#a2d6e86f4ff2db447c525e82b88d3173e", null ],
     [ "sstr_ref", "sstr_8h.html#aadff88bf80c9a1d4b2911f9f19aceb03", null ],
     [ "sstr_substr", "sstr_8h.html#a5ba343262041c4dc26b5c218c4cc9cb3", null ],
-    [ "sstr_version", "sstr_8h.html#a0095307829d7066fd6ba4d827fb217b0", null ],
+    [ "sstr_version", "sstr_8h.html#a129613e5c78d5c74439c8abb917234e1", null ],
     [ "sstr_vslprintf", "sstr_8h.html#a024de0f2bca395ea91d6f8966adaedbe", null ],
     [ "sstr_vslprintf_append", "sstr_8h.html#ad64cf287e39b67b4bf945b5f5344562e", null ]
 ];
