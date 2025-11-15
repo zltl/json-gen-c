@@ -93,7 +93,7 @@ benchmark: $(JSON_GEN_C)
 
 test: $(JSON_GEN_C)
 	@echo "Building and running tests..."
-	$(MAKE) -C test
+	$(MAKE) -C test run
 
 #==============================================================================
 # Installation and cleanup
