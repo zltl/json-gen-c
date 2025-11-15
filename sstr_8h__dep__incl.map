@@ -1,20 +1,33 @@
 <map id="src/utils/sstr.h" name="src/utils/sstr.h">
-<area shape="rect" id="Node000001" title="sstr_t are objects that represent sequences of characters." alt="" coords="388,5,500,31"/>
-<area shape="rect" id="Node000002" href="$gencode_8h.html" title="generate json manipulate codes." alt="" coords="259,152,429,177"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="430,44,354,153,350,150,426,41"/>
-<area shape="rect" id="Node000003" href="$struct__parse_8c.html" title="parse struct definition file." alt="" coords="274,225,451,251"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="479,36,518,63,556,98,570,117,578,138,578,158,569,179,548,195,515,208,434,228,433,223,513,203,545,190,565,176,573,157,573,139,565,120,552,101,515,67,476,40"/>
-<area shape="rect" id="Node000004" href="$struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="5,152,184,177"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="374,22,323,27,266,37,209,54,156,81,137,97,122,117,102,153,97,151,117,114,133,93,153,76,207,49,265,32,323,21,374,17"/>
-<area shape="rect" id="Node000005" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="167,79,323,104"/>
-<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="400,38,279,81,277,76,398,33"/>
-<area shape="rect" id="Node000006" href="$io_8h.html" title="file operation helper functions." alt="" coords="453,152,555,177"/>
-<area shape="poly" id="edge9_Node000001_Node000006" title=" " alt="" coords="457,43,502,151,497,153,452,45"/>
-<area shape="rect" id="Node000007" href="$sstr_8c.html" title="Implementation of the sstr.h header file." alt="" coords="630,79,741,104"/>
-<area shape="poly" id="edge11_Node000001_Node000007" title=" " alt="" coords="497,32,647,76,646,81,495,37"/>
-<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="152,178,320,223,319,228,151,183"/>
-<area shape="poly" id="edge6_Node000005_Node000002" title=" " alt="" coords="274,110,329,150,326,154,270,114"/>
-<area shape="poly" id="edge7_Node000005_Node000003" title=" " alt="" coords="242,118,240,147,243,162,249,176,262,192,279,205,317,223,314,228,276,209,258,196,244,179,238,164,235,148,237,117"/>
-<area shape="poly" id="edge8_Node000005_Node000004" title=" " alt="" coords="210,112,120,154,118,149,208,107"/>
-<area shape="poly" id="edge10_Node000006_Node000003" title=" " alt="" coords="471,186,387,227,385,223,468,181"/>
+<area shape="rect" id="Node000001" title="sstr_t are objects that represent sequences of characters." alt="" coords="482,5,594,31"/>
+<area shape="rect" id="Node000002" href="$gencode_8c.html" title="JSON code generation implementation." alt="" coords="86,225,257,251"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="469,29,350,44,212,69,147,86,89,106,44,128,15,154,9,166,10,177,16,187,27,196,61,212,102,223,100,228,59,217,25,201,12,191,5,179,4,165,10,150,41,124,87,101,145,81,211,64,349,39,468,23"/>
+<area shape="rect" id="Node000003" href="$gencode_8h.html" title="generate json manipulate codes." alt="" coords="25,152,195,177"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="469,35,385,55,295,81,204,119,133,154,130,149,201,114,293,76,384,49,468,30"/>
+<area shape="rect" id="Node000005" href="$struct__parse_8c.html" title="parse struct definition file." alt="" coords="600,225,777,251"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="567,37,620,85,648,116,671,151,685,190,690,225,685,225,680,192,666,153,643,119,616,89,563,41"/>
+<area shape="rect" id="Node000006" href="$struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="449,152,627,177"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="541,45,541,152,535,152,535,45"/>
+<area shape="rect" id="Node000007" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="307,79,463,104"/>
+<area shape="poly" id="edge10_Node000001_Node000007" title=" " alt="" coords="502,39,411,81,409,76,500,34"/>
+<area shape="rect" id="Node000009" href="$io_8h.html" title="File operation helper functions for reading and writing files." alt="" coords="753,152,854,177"/>
+<area shape="poly" id="edge16_Node000001_Node000009" title=" " alt="" coords="608,27,672,46,705,59,735,76,756,94,774,114,799,150,795,153,770,117,753,98,732,81,703,64,671,51,607,33"/>
+<area shape="rect" id="Node000011" href="$sstr_8c.html" title="Implementation of the sstr.h header file." alt="" coords="804,79,915,104"/>
+<area shape="poly" id="edge20_Node000001_Node000011" title=" " alt="" coords="603,31,808,76,807,81,602,36"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="131,186,163,223,159,227,127,190"/>
+<area shape="rect" id="Node000004" href="$main_8c.html" title="Main entry point for json&#45;gen&#45;c code generator." alt="" coords="449,225,576,251"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="188,177,449,223,448,228,187,182"/>
+<area shape="poly" id="edge7_Node000006_Node000002" title=" " alt="" coords="466,183,231,228,230,223,465,177"/>
+<area shape="poly" id="edge8_Node000006_Node000004" title=" " alt="" coords="532,191,519,226,514,224,527,189"/>
+<area shape="poly" id="edge9_Node000006_Node000005" title=" " alt="" coords="576,181,665,223,663,228,573,186"/>
+<area shape="poly" id="edge11_Node000007_Node000002" title=" " alt="" coords="341,112,300,130,259,154,215,192,183,227,179,223,211,188,256,150,298,125,339,107"/>
+<area shape="poly" id="edge12_Node000007_Node000003" title=" " alt="" coords="328,110,155,154,154,149,327,105"/>
+<area shape="poly" id="edge13_Node000007_Node000005" title=" " alt="" coords="477,94,518,100,561,111,603,127,641,150,658,167,672,187,687,224,683,226,667,190,654,170,638,154,600,132,559,116,517,105,476,99"/>
+<area shape="poly" id="edge14_Node000007_Node000006" title=" " alt="" coords="423,107,514,149,512,154,420,112"/>
+<area shape="rect" id="Node000008" href="$hash__map_8c.html" title="Implementation of a simple hash map data structure." alt="" coords="270,152,425,177"/>
+<area shape="poly" id="edge15_Node000007_Node000008" title=" " alt="" coords="374,117,356,153,351,151,370,115"/>
+<area shape="poly" id="edge17_Node000009_Node000004" title=" " alt="" coords="744,183,560,228,559,223,743,178"/>
+<area shape="poly" id="edge18_Node000009_Node000005" title=" " alt="" coords="775,187,709,227,706,223,772,182"/>
+<area shape="rect" id="Node000010" href="$io_8c.html" title="Implementation of file I/O helper functions." alt="" coords="801,225,901,251"/>
+<area shape="poly" id="edge19_Node000009_Node000010" title=" " alt="" coords="821,187,846,224,841,227,817,190"/>
 </map>

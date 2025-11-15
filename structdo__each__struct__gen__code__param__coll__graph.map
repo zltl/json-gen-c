@@ -1,8 +1,8 @@
 <map id="do_each_struct_gen_code_param" name="do_each_struct_gen_code_param">
 <area shape="rect" id="Node000001" title=" " alt="" coords="5,181,156,221"/>
-<area shape="rect" id="Node000002" href="$structhash__map.html" title=" " alt="" coords="36,93,125,119"/>
+<area shape="rect" id="Node000002" href="$structhash__map.html" title="Hash map data structure using separate chaining." alt="" coords="36,93,125,119"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="83,132,83,181,78,181,78,132"/>
-<area shape="rect" id="Node000003" href="$structhash__map__entry.html" title=" " alt="" coords="15,5,146,31"/>
+<area shape="rect" id="Node000003" href="$structhash__map__entry.html" title="Entry node in hash map&#39;s linked list (for collision handling)" alt="" coords="15,5,146,31"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="83,45,83,93,78,93,78,45"/>
 <area shape="poly" id="edge3_Node000003_Node000003" title=" " alt="" coords="161,10,173,18,164,26,146,28,146,23,162,21,167,18,158,14"/>
 </map>

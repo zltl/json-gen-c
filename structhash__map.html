@@ -70,13 +70,18 @@ $(document).ready(function(){initNavTree('structhash__map.html',''); initResizab
   <div class="headertitle"><div class="title">hash_map Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Hash map data structure using separate chaining.  
+ <a href="structhash__map.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="hash__map_8h_source.html">hash_map.h</a>&gt;</code></p>
 <div class="dynheader">
 Collaboration diagram for hash_map:</div>
 <div class="dyncontent">
 <div class="center"><img src="structhash__map__coll__graph.png" border="0" usemap="#ahash__map_coll__map" alt="Collaboration graph"/></div>
 <map name="ahash__map_coll__map" id="ahash__map_coll__map">
-<area shape="rect" title=" " alt="" coords="26,93,115,119"/>
-<area shape="rect" href="structhash__map__entry.html" title=" " alt="" coords="5,5,136,31"/>
+<area shape="rect" title="Hash map data structure using separate chaining." alt="" coords="26,93,115,119"/>
+<area shape="rect" href="structhash__map__entry.html" title="Entry node in hash map&#39;s linked list (for collision handling)" alt="" coords="5,5,136,31"/>
 <area shape="poly" title=" " alt="" coords="73,45,73,93,68,93,68,45"/>
 <area shape="poly" title=" " alt="" coords="151,10,163,18,154,26,136,28,136,23,152,21,157,18,148,14"/>
 </map>
@@ -84,28 +89,130 @@ Collaboration diagram for hash_map:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ab6ab724cbaeb05b2f92204ea0633fc28" id="r_ab6ab724cbaeb05b2f92204ea0633fc28"><td class="memItemLeft" align="right" valign="top"><a id="ab6ab724cbaeb05b2f92204ea0633fc28" name="ab6ab724cbaeb05b2f92204ea0633fc28"></a>
-struct <a class="el" href="structhash__map__entry.html">hash_map_entry</a> **&#160;</td><td class="memItemRight" valign="bottom"><b>buckets</b></td></tr>
+<tr class="memitem:ab6ab724cbaeb05b2f92204ea0633fc28" id="r_ab6ab724cbaeb05b2f92204ea0633fc28"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structhash__map__entry.html">hash_map_entry</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhash__map.html#ab6ab724cbaeb05b2f92204ea0633fc28">buckets</a></td></tr>
 <tr class="separator:ab6ab724cbaeb05b2f92204ea0633fc28"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aed3cc33429a6dce4cac756585b4cdad8" id="r_aed3cc33429a6dce4cac756585b4cdad8"><td class="memItemLeft" align="right" valign="top"><a id="aed3cc33429a6dce4cac756585b4cdad8" name="aed3cc33429a6dce4cac756585b4cdad8"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>bucket_count</b></td></tr>
+<tr class="memitem:aed3cc33429a6dce4cac756585b4cdad8" id="r_aed3cc33429a6dce4cac756585b4cdad8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhash__map.html#aed3cc33429a6dce4cac756585b4cdad8">bucket_count</a></td></tr>
 <tr class="separator:aed3cc33429a6dce4cac756585b4cdad8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a07100ecb9da119ebd920bf601357f574" id="r_a07100ecb9da119ebd920bf601357f574"><td class="memItemLeft" align="right" valign="top"><a id="a07100ecb9da119ebd920bf601357f574" name="a07100ecb9da119ebd920bf601357f574"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>size</b></td></tr>
+<tr class="memitem:a07100ecb9da119ebd920bf601357f574" id="r_a07100ecb9da119ebd920bf601357f574"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhash__map.html#a07100ecb9da119ebd920bf601357f574">size</a></td></tr>
 <tr class="separator:a07100ecb9da119ebd920bf601357f574"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a753f1238e8adac0e2136e3a7135c84c6" id="r_a753f1238e8adac0e2136e3a7135c84c6"><td class="memItemLeft" align="right" valign="top"><a id="a753f1238e8adac0e2136e3a7135c84c6" name="a753f1238e8adac0e2136e3a7135c84c6"></a>
-unsigned int(*&#160;</td><td class="memItemRight" valign="bottom"><b>hash_func</b> )(void *)</td></tr>
+<tr class="memitem:a753f1238e8adac0e2136e3a7135c84c6" id="r_a753f1238e8adac0e2136e3a7135c84c6"><td class="memItemLeft" align="right" valign="top">unsigned int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhash__map.html#a753f1238e8adac0e2136e3a7135c84c6">hash_func</a> )(void *)</td></tr>
 <tr class="separator:a753f1238e8adac0e2136e3a7135c84c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9657c3350fb5f86f9d14fd50305e8055" id="r_a9657c3350fb5f86f9d14fd50305e8055"><td class="memItemLeft" align="right" valign="top"><a id="a9657c3350fb5f86f9d14fd50305e8055" name="a9657c3350fb5f86f9d14fd50305e8055"></a>
-int(*&#160;</td><td class="memItemRight" valign="bottom"><b>key_cmp_func</b> )(void *, void *)</td></tr>
+<tr class="memitem:a9657c3350fb5f86f9d14fd50305e8055" id="r_a9657c3350fb5f86f9d14fd50305e8055"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhash__map.html#a9657c3350fb5f86f9d14fd50305e8055">key_cmp_func</a> )(void *, void *)</td></tr>
 <tr class="separator:a9657c3350fb5f86f9d14fd50305e8055"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a063de5efbd1179d41e6bc105021ade35" id="r_a063de5efbd1179d41e6bc105021ade35"><td class="memItemLeft" align="right" valign="top"><a id="a063de5efbd1179d41e6bc105021ade35" name="a063de5efbd1179d41e6bc105021ade35"></a>
-void(*&#160;</td><td class="memItemRight" valign="bottom"><b>key_free_func</b> )(void *)</td></tr>
+<tr class="memitem:a063de5efbd1179d41e6bc105021ade35" id="r_a063de5efbd1179d41e6bc105021ade35"><td class="memItemLeft" align="right" valign="top">void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhash__map.html#a063de5efbd1179d41e6bc105021ade35">key_free_func</a> )(void *)</td></tr>
 <tr class="separator:a063de5efbd1179d41e6bc105021ade35"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aab6edc5c348cb5e7456efc0d7e7aaede" id="r_aab6edc5c348cb5e7456efc0d7e7aaede"><td class="memItemLeft" align="right" valign="top"><a id="aab6edc5c348cb5e7456efc0d7e7aaede" name="aab6edc5c348cb5e7456efc0d7e7aaede"></a>
-void(*&#160;</td><td class="memItemRight" valign="bottom"><b>value_free_func</b> )(void *)</td></tr>
+<tr class="memitem:aab6edc5c348cb5e7456efc0d7e7aaede" id="r_aab6edc5c348cb5e7456efc0d7e7aaede"><td class="memItemLeft" align="right" valign="top">void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhash__map.html#aab6edc5c348cb5e7456efc0d7e7aaede">value_free_func</a> )(void *)</td></tr>
 <tr class="separator:aab6edc5c348cb5e7456efc0d7e7aaede"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Hash map data structure using separate chaining. </p>
+<p>A hash table that maps keys to values using separate chaining for collision resolution. Supports custom hash functions, comparison functions, and memory management callbacks. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="aed3cc33429a6dce4cac756585b4cdad8" name="aed3cc33429a6dce4cac756585b4cdad8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed3cc33429a6dce4cac756585b4cdad8">&#9670;&#160;</a></span>bucket_count</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int hash_map::bucket_count</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of buckets </p>
+
+</div>
+</div>
+<a id="ab6ab724cbaeb05b2f92204ea0633fc28" name="ab6ab724cbaeb05b2f92204ea0633fc28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6ab724cbaeb05b2f92204ea0633fc28">&#9670;&#160;</a></span>buckets</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="structhash__map__entry.html">hash_map_entry</a>** hash_map::buckets</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Array of bucket heads </p>
+
+</div>
+</div>
+<a id="a753f1238e8adac0e2136e3a7135c84c6" name="a753f1238e8adac0e2136e3a7135c84c6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a753f1238e8adac0e2136e3a7135c84c6">&#9670;&#160;</a></span>hash_func</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int(* hash_map::hash_func) (void *)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Custom hash function </p>
+
+</div>
+</div>
+<a id="a9657c3350fb5f86f9d14fd50305e8055" name="a9657c3350fb5f86f9d14fd50305e8055"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9657c3350fb5f86f9d14fd50305e8055">&#9670;&#160;</a></span>key_cmp_func</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int(* hash_map::key_cmp_func) (void *, void *)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Key comparison (0 if equal) </p>
+
+</div>
+</div>
+<a id="a063de5efbd1179d41e6bc105021ade35" name="a063de5efbd1179d41e6bc105021ade35"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a063de5efbd1179d41e6bc105021ade35">&#9670;&#160;</a></span>key_free_func</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void(* hash_map::key_free_func) (void *)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Key memory cleanup </p>
+
+</div>
+</div>
+<a id="a07100ecb9da119ebd920bf601357f574" name="a07100ecb9da119ebd920bf601357f574"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07100ecb9da119ebd920bf601357f574">&#9670;&#160;</a></span>size</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int hash_map::size</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Total number of entries </p>
+
+</div>
+</div>
+<a id="aab6edc5c348cb5e7456efc0d7e7aaede" name="aab6edc5c348cb5e7456efc0d7e7aaede"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab6edc5c348cb5e7456efc0d7e7aaede">&#9670;&#160;</a></span>value_free_func</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void(* hash_map::value_free_func) (void *)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Value memory cleanup </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>src/utils/<a class="el" href="hash__map_8h_source.html">hash_map.h</a></li>
 </ul>

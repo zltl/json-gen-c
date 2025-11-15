@@ -1,5 +1,5 @@
 <map id="src/utils/io.h" name="src/utils/io.h">
-<area shape="rect" id="Node000001" title="file operation helper functions." alt="" coords="41,5,143,31"/>
+<area shape="rect" id="Node000001" title="File operation helper functions for reading and writing files." alt="" coords="41,5,143,31"/>
 <area shape="rect" id="Node000002" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="47,79,137,104"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,31,95,65,89,65,89,31"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="5,152,80,177"/>
