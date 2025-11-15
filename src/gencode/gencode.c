@@ -640,9 +640,9 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
                      "    int offset;\n"
                      "    int type_size;\n"
                      "    int field_type;\n"
-                     "    char* const field_type_name;\n"
-                     "    char* const field_name;\n"
-                     "    char* const struct_name;\n"
+                     "    const char* field_type_name;\n"
+                     "    const char* field_name;\n"
+                     "    const char* struct_name;\n"
                      "    int is_array;\n"
                      "};\n\n");
     sstr_printf_append(

@@ -16,9 +16,9 @@ struct json_field_offset_item {
     int offset;
     int type_size;
     int field_type;
-    char* field_type_name;
-    char* field_name;
-    char* struct_name;
+    const char* field_type_name;
+    const char* field_name;
+    const char* struct_name;
     int is_array;
 };
 

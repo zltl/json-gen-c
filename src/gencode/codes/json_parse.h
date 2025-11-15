@@ -57,8 +57,8 @@ struct json_parse_param {
     void* instance_ptr;
     int in_array;
     int in_struct;
-    char* struct_name;
-    char* field_name;
+    const char* struct_name;
+    const char* field_name;
 };
 
 struct json_pos {
