@@ -25,17 +25,6 @@
          : (SSTR(s)->type == SSTR_TYPE_LONG ? (SSTR(s)->un.long_str.data) \
                                             : (SSTR(s)->un.ref_str.data)))
 
-/**
- * @brief Convert a byte to its hexadecimal string representation
- * 
- * Converts a single unsigned char to two hex digits. The output can be
- * either lowercase (0-9, a-f) or uppercase (0-9, A-F) depending on the
- * cap parameter.
- * 
- * @param c   The byte value to convert (0-255)
- * @param buf Output buffer for 2 hex characters (must have space for 2 bytes)
- * @param cap If non-zero, use uppercase (A-F); if zero, use lowercase (a-f)
- */
 static void char_to_hex(unsigned char c, unsigned char* buf, int cap) {
     static const unsigned char hex[] = "0123456789abcdef";
     static const unsigned char HEX[] = "0123456789ABCDEF";
@@ -49,32 +38,12 @@ static void char_to_hex(unsigned char c, unsigned char* buf, int cap) {
     }
 }
 
-/**
- * @brief Create a new empty sstr_t string
- * 
- * Allocates memory for a new sstr_t structure and initializes it to
- * an empty string. The string starts in SHORT mode, which is optimized
- * for strings up to 25 characters.
- * 
- * @return Pointer to newly allocated sstr_t, caller must free with sstr_free()
- * @note Always check for NULL return value in production code
- */
 sstr_t sstr_new() {
     STR* s = (STR*)malloc(sizeof(STR));
     memset(s, 0, sizeof(STR));
     return s;
 }
 
-/**
- * @brief Free memory allocated for an sstr_t string
- * 
- * Properly deallocates all memory associated with an sstr_t string.
- * For LONG type strings, frees the dynamically allocated buffer first.
- * For REF type strings, does not free the referenced data (caller's responsibility).
- * Safe to call with NULL pointer.
- * 
- * @param s The sstr_t string to free (can be NULL)
- */
 void sstr_free(sstr_t s) {
     if (s == NULL) {
         return;
@@ -86,21 +55,6 @@ void sstr_free(sstr_t s) {
     free(s);
 }
 
-/**
- * @brief Create an sstr_t string from raw data with specified length
- * 
- * Creates a new sstr_t by copying the specified number of bytes from
- * the source data. Automatically chooses SHORT or LONG storage based
- * on the length. This is the most flexible constructor function.
- * 
- * @param data   Source data buffer to copy from
- * @param length Number of bytes to copy
- * @return New sstr_t containing a copy of the data
- * 
- * @note If length <= 25, uses SHORT storage (no heap allocation for data)
- * @note If length > 25, uses LONG storage (separate heap allocation)
- * @note Always adds null terminator for C string compatibility
- */
 sstr_t sstr_of(const void* data, size_t length) {
     STR* s = (STR*)sstr_new();
     if (length <= SHORT_STR_CAPACITY) {
@@ -118,22 +72,6 @@ sstr_t sstr_of(const void* data, size_t length) {
     return s;
 }
 
-/**
- * @brief Create an sstr_t reference to existing data (zero-copy)
- * 
- * Creates an sstr_t that references external data without copying.
- * This is efficient for temporary strings or when you want to avoid
- * copying large buffers. The referenced data must remain valid for
- * the lifetime of the sstr_t.
- * 
- * @param data   Pointer to external data buffer
- * @param length Length of the referenced data
- * @return New sstr_t that references the data (REF type)
- * 
- * @warning The referenced data must not be freed while the sstr_t exists
- * @warning Modifying operations will fail on REF type strings
- * @note No memory is allocated for the data itself, only the sstr_t structure
- */
 sstr_t sstr_ref(const void* data, size_t length) {
     STR* s = (STR*)sstr_new();
     s->un.ref_str.data = (char*)data;
@@ -142,42 +80,10 @@ sstr_t sstr_ref(const void* data, size_t length) {
     return s;
 }
 
-/**
- * @brief Create an sstr_t from a C-style null-terminated string
- * 
- * Convenience function that creates an sstr_t from a standard C string.
- * Automatically calculates length using strlen() and copies the data.
- * 
- * @param cstr Null-terminated C string to convert
- * @return New sstr_t containing a copy of the string
- */
 sstr_t sstr(const char* cstr) { return sstr_of(cstr, strlen(cstr)); }
 
-/**
- * @brief Get pointer to the underlying C string data
- * 
- * Returns a pointer to the null-terminated character array. This allows
- * sstr_t strings to be used with standard C string functions. The pointer
- * remains valid until the sstr_t is modified or freed.
- * 
- * @param s The sstr_t string
- * @return Pointer to null-terminated character array
- * @note The returned pointer should not be freed directly
- */
 char* sstr_cstr(sstr_t s) { return STR_PTR(s); }
 
-/**
- * @brief Compare two sstr_t strings lexicographically
- * 
- * Compares two strings byte-by-byte. Handles NULL values gracefully.
- * Uses the same comparison semantics as strcmp().
- * 
- * @param a First string to compare
- * @param b Second string to compare
- * @return <0 if a<b, 0 if a==b, >0 if a>b
- * @note NULL is considered less than any non-NULL string
- * @note Two NULL strings are considered equal
- */
 int sstr_compare(sstr_t a, sstr_t b) {
     if (a == NULL && b == NULL) {
         return 0;
@@ -278,20 +184,9 @@ sstr_t sstr_substr(sstr_t s, size_t index, size_t len) {
     if (index + minlen > str_len) {
         minlen = str_len - index;
     }
-    return sstr_of(STR_PTR(s) + start, len);
+    return sstr_of(STR_PTR(s) + index, minlen);
 }
 
-/**
- * @brief Clear the content of an sstr_t string
- * 
- * Resets the string to empty state without deallocating memory.
- * For SHORT and LONG types, sets length to 0 and adds null terminator.
- * For REF type, does nothing as it references external data.
- * 
- * @param s String to clear
- * @note Does not free allocated memory, just marks string as empty
- * @note After clearing, the string can be reused efficiently
- */
 void sstr_clear(sstr_t s) {
     STR* ss = (STR*)s;
 

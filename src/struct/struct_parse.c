@@ -15,8 +15,6 @@
 #include "utils/error_codes.h"
 
 /*
-    Grammar for struct definition parsing:
-    
     STRUCT_LIST = STRUCT STRUCT_LIST
     STRUCT = "struct" NAME "{" FIELD_LIST "}" | INCLUDE | empty
     FIELD_LIST = FIELD FIELD_LIST
@@ -24,22 +22,8 @@
     INCLUDE = "#include <" NAME ">" | "#include \"" NAME "\""
     
     NAME = [a-zA-Z_][a-zA-Z0-9_]*
-    
-    This defines a simple grammar for C-style struct definitions with support
-    for scalar types, arrays, nested structs, and include directives.
 */
 
-/**
- * @brief Create a new struct field node
- * 
- * Allocates and initializes a struct_field node for a linked list of fields.
- * Used during parsing to build up the field list for a struct definition.
- * 
- * @param name      Field name (ownership transferred)
- * @param type      Field type ID (FIELD_TYPE_INT, etc.)
- * @param type_name Type name string (ownership transferred)
- * @return Newly allocated field, or NULL on allocation failure
- */
 static struct struct_field* struct_field_new(sstr_t name, int type,
                                              sstr_t type_name) {
     struct struct_field* field =
@@ -55,14 +39,6 @@ static struct struct_field* struct_field_new(sstr_t name, int type,
     return field;
 }
 
-/**
- * @brief Free a single struct field and its strings
- * 
- * Deallocates the field node and its associated name and type_name strings.
- * Safe to call with NULL field pointer.
- * 
- * @param field Field to free (can be NULL)
- */
 static void struct_field_free(struct struct_field* field) {
     if (field) {
         sstr_free(field->name);
@@ -71,14 +47,6 @@ static void struct_field_free(struct struct_field* field) {
     free(field);
 }
 
-/**
- * @brief Free all fields in a linked list
- * 
- * Traverses the field list and frees each node and its associated data.
- * Handles NULL safely by doing nothing.
- * 
- * @param field Head of field list to free (can be NULL)
- */
 static void struct_field_free_all(struct struct_field* field) {
     struct struct_field* tmp = NULL;
     while (field) {
@@ -88,30 +56,12 @@ static void struct_field_free_all(struct struct_field* field) {
     }
 }
 
-/**
- * @brief Add a field to the head of a field list
- * 
- * Inserts a field at the beginning of the linked list. This creates
- * a reverse order (last field added is first in list), which is later
- * reversed to restore original order.
- * 
- * @param head  Pointer to list head (modified)
- * @param field Field to add at the head
- */
 static void struct_field_add(struct struct_field** head,
                              struct struct_field* field) {
     field->next = *head;
     *head = field;
 }
 
-/**
- * @brief Create a new struct container
- * 
- * Allocates a container to hold a parsed struct definition including
- * its name and list of fields. Used as values in the struct hash map.
- * 
- * @return New container, or NULL on allocation failure
- */
 static struct struct_container* struct_container_new() {
     struct struct_container* container =
         (struct struct_container*)malloc(sizeof(struct struct_container));
@@ -123,14 +73,6 @@ static struct struct_container* struct_container_new() {
     return container;
 }
 
-/**
- * @brief Free a struct container and all its contents
- * 
- * Deallocates the container, its name string, and all fields in its
- * field list. Safe to call with NULL container.
- * 
- * @param container Container to free (can be NULL)
- */
 static void struct_container_free(struct struct_container* container) {
     if (container) {
         if (container->name) {
@@ -141,15 +83,6 @@ static void struct_container_free(struct struct_container* container) {
     }
 }
 
-/**
- * @brief Reverse a linked list of struct fields
- * 
- * Reverses the field list to restore original declaration order.
- * During parsing, fields are added to the head for efficiency,
- * but we need them in the original order for code generation.
- * 
- * @param head Pointer to list head (modified to point to new head)
- */
 static void struct_field_reverse(struct struct_field** head) {
     struct struct_field* prev = NULL;
     struct struct_field* cur = *head;

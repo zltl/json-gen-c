@@ -1,26 +1,10 @@
 /**
  * @file error_codes.c
  * @brief Implementation of error code utilities
- * 
- * Provides human-readable error messages for all json-gen-c error codes.
- * This enables consistent error reporting across the codebase and helps
- * with debugging and user error messages.
  */
 
 #include "error_codes.h"
 
-/**
- * @brief Convert error code to human-readable string
- * 
- * Returns a descriptive error message for the given error code.
- * All messages are statically allocated and do not need to be freed.
- * Used for logging, debugging, and error reporting to users.
- * 
- * @param error_code The error code to convert
- * @return Pointer to static string describing the error
- * @note The returned string should not be modified or freed
- * @note Returns "Unknown error" for unrecognized error codes
- */
 const char* json_gen_error_string(json_gen_error_t error_code) {
     switch (error_code) {
         case JSON_GEN_SUCCESS:
