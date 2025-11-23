@@ -95,9 +95,17 @@ run: $(ALL_TESTS)
 	$(NESTED_STRUCT_TEST)
 	@echo "=== Performance Tests ==="
 	$(PERFORMANCE_TEST)
+	@echo "=== Bugfix Tests ==="
+	$(MAKE) run-bugfix
 	@echo "All tests completed successfully!"
 
 # Individual test runs
+run-bugfix: $(JSON_GEN_C)
+	@echo "Running bugfix test (off-by-one)..."
+	@mkdir -p $(TEST_BUILD)/bugfix_out
+	$(JSON_GEN_C) -in bugfix_off_by_one.json-gen-c -out $(TEST_BUILD)/bugfix_out
+	@rm -rf $(TEST_BUILD)/bugfix_out
+
 run-unit: $(UNIT_TEST)
 	@echo "Running unit tests..."
 	$(UNIT_TEST)

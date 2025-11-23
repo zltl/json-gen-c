@@ -164,7 +164,7 @@ static void ptoken(struct struct_parser* parser, struct struct_token* token) {
 static int next_token_(struct struct_parser* parser, sstr_t content,
                        struct struct_token* token) {
     long i = 0;
-    if (parser->pos.offset >= (long)sstr_length(content) - 1) {
+    if (parser->pos.offset >= (long)sstr_length(content)) {
         parser->pos.offset++;
         token->type = TOKEN_EOF;
         return TOKEN_EOF;
