@@ -78,6 +78,7 @@ $(document).ready(function(){initNavTree('sstr_8c.html',''); initResizable(); })
 <code>#include &lt;ctype.h&gt;</code><br />
 <code>#include &lt;malloc.h&gt;</code><br />
 <code>#include &lt;stdarg.h&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
@@ -89,31 +90,34 @@ Include dependency graph for sstr.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="sstr_8c__incl.png" border="0" usemap="#asrc_2utils_2sstr_8c" alt=""/></div>
 <map name="asrc_2utils_2sstr_8c" id="asrc_2utils_2sstr_8c">
-<area shape="rect" title="Implementation of the sstr.h header file." alt="" coords="374,5,485,31"/>
-<area shape="rect" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="63,79,121,104"/>
-<area shape="poly" title=" " alt="" coords="374,33,141,81,135,83,134,77,139,76,373,28"/>
+<area shape="rect" title="Implementation of the sstr.h header file." alt="" coords="405,5,515,31"/>
+<area shape="rect" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="93,79,150,104"/>
+<area shape="poly" title=" " alt="" coords="405,33,170,81,164,83,163,77,169,76,404,28"/>
 <area shape="rect" title=" " alt="" coords="5,152,80,177"/>
-<area shape="poly" title=" " alt="" coords="374,23,290,27,194,36,108,53,76,66,54,81,46,93,41,108,41,138,35,138,36,107,41,91,50,77,73,61,107,48,193,31,290,21,374,17"/>
-<area shape="rect" title=" " alt="" coords="112,152,187,177"/>
-<area shape="poly" title=" " alt="" coords="374,22,329,25,279,35,230,53,186,81,175,93,166,108,156,139,151,137,161,106,170,90,182,77,227,48,278,30,328,20,373,16"/>
-<area shape="rect" title=" " alt="" coords="196,79,271,104"/>
-<area shape="poly" title=" " alt="" coords="399,33,279,76,277,71,397,28"/>
-<area shape="rect" title=" " alt="" coords="295,79,366,104"/>
-<area shape="poly" title=" " alt="" coords="415,33,359,73,356,68,412,29"/>
-<area shape="rect" title=" " alt="" coords="390,79,469,104"/>
-<area shape="poly" title=" " alt="" coords="432,31,432,65,427,65,427,31"/>
-<area shape="rect" title=" " alt="" coords="493,79,563,104"/>
-<area shape="poly" title=" " alt="" coords="447,29,502,68,499,73,444,33"/>
-<area shape="rect" title=" " alt="" coords="588,79,655,104"/>
-<area shape="poly" title=" " alt="" coords="461,28,578,71,576,76,459,33"/>
-<area shape="rect" title=" " alt="" coords="679,79,750,104"/>
-<area shape="poly" title=" " alt="" coords="476,28,667,75,665,81,475,33"/>
-<area shape="rect" title=" " alt="" coords="774,79,845,104"/>
-<area shape="poly" title=" " alt="" coords="485,26,761,76,760,81,485,31"/>
-<area shape="rect" title=" " alt="" coords="869,79,933,104"/>
-<area shape="poly" title=" " alt="" coords="485,22,648,42,856,76,856,81,647,47,484,28"/>
-<area shape="poly" title=" " alt="" coords="86,106,61,142,56,139,82,103"/>
-<area shape="poly" title=" " alt="" coords="104,103,133,139,129,143,99,106"/>
+<area shape="poly" title=" " alt="" coords="405,24,322,30,226,40,139,57,105,68,82,81,70,93,61,108,49,140,44,138,56,106,65,90,78,77,103,63,138,52,226,35,321,24,404,19"/>
+<area shape="rect" title=" " alt="" coords="104,152,179,177"/>
+<area shape="poly" title=" " alt="" coords="405,31,327,49,285,63,245,81,200,111,164,144,160,140,197,107,243,76,283,58,326,44,404,25"/>
+<area shape="rect" title=" " alt="" coords="203,152,285,177"/>
+<area shape="poly" title=" " alt="" coords="405,24,370,30,332,40,296,56,266,80,257,93,251,108,246,139,241,138,246,107,252,91,262,77,294,52,330,35,368,25,404,19"/>
+<area shape="rect" title=" " alt="" coords="276,79,351,104"/>
+<area shape="poly" title=" " alt="" coords="438,33,351,75,348,70,435,28"/>
+<area shape="rect" title=" " alt="" coords="375,79,446,104"/>
+<area shape="poly" title=" " alt="" coords="454,33,429,69,424,66,450,29"/>
+<area shape="rect" title=" " alt="" coords="470,79,549,104"/>
+<area shape="poly" title=" " alt="" coords="470,29,496,66,491,69,466,33"/>
+<area shape="rect" title=" " alt="" coords="573,79,643,104"/>
+<area shape="poly" title=" " alt="" coords="485,28,573,70,570,75,483,33"/>
+<area shape="rect" title=" " alt="" coords="668,79,735,104"/>
+<area shape="poly" title=" " alt="" coords="500,28,655,74,654,79,498,33"/>
+<area shape="rect" title=" " alt="" coords="759,79,830,104"/>
+<area shape="poly" title=" " alt="" coords="516,28,746,76,745,81,515,33"/>
+<area shape="rect" title=" " alt="" coords="854,79,925,104"/>
+<area shape="poly" title=" " alt="" coords="516,24,659,44,841,76,840,81,658,50,515,29"/>
+<area shape="rect" title=" " alt="" coords="949,79,1013,104"/>
+<area shape="poly" title=" " alt="" coords="516,21,699,40,815,56,936,76,935,81,815,61,698,46,515,27"/>
+<area shape="poly" title=" " alt="" coords="110,106,67,145,64,141,107,102"/>
+<area shape="poly" title=" " alt="" coords="127,104,137,138,132,140,122,105"/>
+<area shape="poly" title=" " alt="" coords="142,102,214,143,211,147,140,106"/>
 </map>
 </div>
 </div><table class="memberdecls">
@@ -227,9 +231,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_parse_double</b> 
 <tr class="memitem:a7b300c1b39752d5cddd73689320040b6" id="r_a7b300c1b39752d5cddd73689320040b6"><td class="memItemLeft" align="right" valign="top"><a id="a7b300c1b39752d5cddd73689320040b6" name="a7b300c1b39752d5cddd73689320040b6"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_json_escape_string_append</b> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> out, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> in)</td></tr>
 <tr class="separator:a7b300c1b39752d5cddd73689320040b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2d78409e863e5c0ba6da2ffbdcc4ff2b" id="r_a2d78409e863e5c0ba6da2ffbdcc4ff2b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#a2d78409e863e5c0ba6da2ffbdcc4ff2b">sstr_append_of_if</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> s, const void *data, size_t length, int cond)</td></tr>
-<tr class="memdesc:a2d78409e863e5c0ba6da2ffbdcc4ff2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append if cond is true, otherwise do nothing.  <br /></td></tr>
-<tr class="separator:a2d78409e863e5c0ba6da2ffbdcc4ff2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af72d6a3169dae417fd8cdf6c6d5156e8" id="r_af72d6a3169dae417fd8cdf6c6d5156e8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#af72d6a3169dae417fd8cdf6c6d5156e8">sstr_append_of_if</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> s, const void *data, size_t length, bool cond)</td></tr>
+<tr class="memdesc:af72d6a3169dae417fd8cdf6c6d5156e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append if cond is true, otherwise do nothing.  <br /></td></tr>
+<tr class="separator:af72d6a3169dae417fd8cdf6c6d5156e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abd1c074e4c7d2d69a4f3c9f52c8600f6" id="r_abd1c074e4c7d2d69a4f3c9f52c8600f6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8c.html#abd1c074e4c7d2d69a4f3c9f52c8600f6">sstr_append_indent</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> s, size_t indent)</td></tr>
 <tr class="memdesc:abd1c074e4c7d2d69a4f3c9f52c8600f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">append spaces at the end of the sstr_t.  <br /></td></tr>
 <tr class="separator:abd1c074e4c7d2d69a4f3c9f52c8600f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -443,8 +447,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_json_escape_strin
 
 </div>
 </div>
-<a id="a2d78409e863e5c0ba6da2ffbdcc4ff2b" name="a2d78409e863e5c0ba6da2ffbdcc4ff2b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2d78409e863e5c0ba6da2ffbdcc4ff2b">&#9670;&#160;</a></span>sstr_append_of_if()</h2>
+<a id="af72d6a3169dae417fd8cdf6c6d5156e8" name="af72d6a3169dae417fd8cdf6c6d5156e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af72d6a3169dae417fd8cdf6c6d5156e8">&#9670;&#160;</a></span>sstr_append_of_if()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -470,7 +474,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_json_escape_strin
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>cond</em>&#160;</td>
         </tr>
         <tr>

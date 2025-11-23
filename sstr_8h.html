@@ -77,16 +77,19 @@ $(document).ready(function(){initNavTree('sstr_8h.html',''); initResizable(); })
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdarg.h&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for sstr.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="sstr_8h__incl.png" border="0" usemap="#asrc_2utils_2sstr_8h" alt=""/></div>
 <map name="asrc_2utils_2sstr_8h" id="asrc_2utils_2sstr_8h">
-<area shape="rect" title="sstr_t are objects that represent sequences of characters." alt="" coords="36,5,148,31"/>
+<area shape="rect" title="sstr_t are objects that represent sequences of characters." alt="" coords="85,5,197,31"/>
 <area shape="rect" title=" " alt="" coords="5,79,80,104"/>
-<area shape="poly" title=" " alt="" coords="86,33,61,69,56,66,82,29"/>
+<area shape="poly" title=" " alt="" coords="127,33,71,73,68,68,124,29"/>
 <area shape="rect" title=" " alt="" coords="104,79,179,104"/>
-<area shape="poly" title=" " alt="" coords="102,29,128,66,123,69,98,33"/>
+<area shape="poly" title=" " alt="" coords="144,31,144,65,139,65,139,31"/>
+<area shape="rect" title=" " alt="" coords="203,79,285,104"/>
+<area shape="poly" title=" " alt="" coords="159,28,217,68,214,73,156,33"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -142,7 +145,7 @@ Macros</h2></td></tr>
 <tr class="memitem:a7f83884713d44719070e83e62639716c" id="r_a7f83884713d44719070e83e62639716c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8h.html#a7f83884713d44719070e83e62639716c">sstr_length</a>(s)&#160;&#160;&#160;((struct <a class="el" href="structsstr__s.html">sstr_s</a>*)s)-&gt;length</td></tr>
 <tr class="memdesc:a7f83884713d44719070e83e62639716c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the length of <em>s</em>, in terms of bytes.  <br /></td></tr>
 <tr class="separator:a7f83884713d44719070e83e62639716c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5290253c7b53c6a66ed07b782f68714" id="r_ad5290253c7b53c6a66ed07b782f68714"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8h.html#ad5290253c7b53c6a66ed07b782f68714">sstr_append_cstr_if</a>(dst,  src,  cond)&#160;&#160;&#160;    <a class="el" href="sstr_8c.html#a2d78409e863e5c0ba6da2ffbdcc4ff2b">sstr_append_of_if</a>(dst, src, strlen(src), cond)</td></tr>
+<tr class="memitem:ad5290253c7b53c6a66ed07b782f68714" id="r_ad5290253c7b53c6a66ed07b782f68714"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8h.html#ad5290253c7b53c6a66ed07b782f68714">sstr_append_cstr_if</a>(dst,  src,  cond)&#160;&#160;&#160;    <a class="el" href="sstr_8c.html#af72d6a3169dae417fd8cdf6c6d5156e8">sstr_append_of_if</a>(dst, src, strlen(src), cond)</td></tr>
 <tr class="memdesc:ad5290253c7b53c6a66ed07b782f68714"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append C style string if cond is true, otherwise do nothing.  <br /></td></tr>
 <tr class="separator:ad5290253c7b53c6a66ed07b782f68714"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -234,9 +237,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_append_double_st
 <tr class="memitem:a5e6f5b951022c69805506e4419c61f2b" id="r_a5e6f5b951022c69805506e4419c61f2b"><td class="memItemLeft" align="right" valign="top"><a id="a5e6f5b951022c69805506e4419c61f2b" name="a5e6f5b951022c69805506e4419c61f2b"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_parse_double</b> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> s, double *v)</td></tr>
 <tr class="separator:a5e6f5b951022c69805506e4419c61f2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2d78409e863e5c0ba6da2ffbdcc4ff2b" id="r_a2d78409e863e5c0ba6da2ffbdcc4ff2b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8h.html#a2d78409e863e5c0ba6da2ffbdcc4ff2b">sstr_append_of_if</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> s, const void *data, size_t length, int cond)</td></tr>
-<tr class="memdesc:a2d78409e863e5c0ba6da2ffbdcc4ff2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append if cond is true, otherwise do nothing.  <br /></td></tr>
-<tr class="separator:a2d78409e863e5c0ba6da2ffbdcc4ff2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af72d6a3169dae417fd8cdf6c6d5156e8" id="r_af72d6a3169dae417fd8cdf6c6d5156e8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sstr_8h.html#af72d6a3169dae417fd8cdf6c6d5156e8">sstr_append_of_if</a> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> s, const void *data, size_t length, bool cond)</td></tr>
+<tr class="memdesc:af72d6a3169dae417fd8cdf6c6d5156e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append if cond is true, otherwise do nothing.  <br /></td></tr>
+<tr class="separator:af72d6a3169dae417fd8cdf6c6d5156e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7b300c1b39752d5cddd73689320040b6" id="r_a7b300c1b39752d5cddd73689320040b6"><td class="memItemLeft" align="right" valign="top"><a id="a7b300c1b39752d5cddd73689320040b6" name="a7b300c1b39752d5cddd73689320040b6"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_json_escape_string_append</b> (<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> out, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> in)</td></tr>
 <tr class="separator:a7b300c1b39752d5cddd73689320040b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -295,7 +298,7 @@ sstr_free(stotal);
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td>&#160;&#160;&#160;    <a class="el" href="sstr_8c.html#a2d78409e863e5c0ba6da2ffbdcc4ff2b">sstr_append_of_if</a>(dst, src, strlen(src), cond)</td>
+          <td></td><td>&#160;&#160;&#160;    <a class="el" href="sstr_8c.html#af72d6a3169dae417fd8cdf6c6d5156e8">sstr_append_of_if</a>(dst, src, strlen(src), cond)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -565,8 +568,8 @@ sstr_free(stotal);
 
 </div>
 </div>
-<a id="a2d78409e863e5c0ba6da2ffbdcc4ff2b" name="a2d78409e863e5c0ba6da2ffbdcc4ff2b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2d78409e863e5c0ba6da2ffbdcc4ff2b">&#9670;&#160;</a></span>sstr_append_of_if()</h2>
+<a id="af72d6a3169dae417fd8cdf6c6d5156e8" name="af72d6a3169dae417fd8cdf6c6d5156e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af72d6a3169dae417fd8cdf6c6d5156e8">&#9670;&#160;</a></span>sstr_append_of_if()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -595,7 +598,7 @@ sstr_free(stotal);
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>cond</em>&#160;</td>
         </tr>
         <tr>

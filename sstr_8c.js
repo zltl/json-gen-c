@@ -6,7 +6,7 @@ var sstr_8c =
     [ "sstr_append_indent", "sstr_8c.html#abd1c074e4c7d2d69a4f3c9f52c8600f6", null ],
     [ "sstr_append_int_str", "sstr_8c.html#afa5dc9a3c19614c5cec61b530762c8af", null ],
     [ "sstr_append_of", "sstr_8c.html#ab55b8f697e21006921e191ca25dbcec5", null ],
-    [ "sstr_append_of_if", "sstr_8c.html#a2d78409e863e5c0ba6da2ffbdcc4ff2b", null ],
+    [ "sstr_append_of_if", "sstr_8c.html#af72d6a3169dae417fd8cdf6c6d5156e8", null ],
     [ "sstr_append_zero", "sstr_8c.html#affb41a505a69f235d647bec5f96165f8", null ],
     [ "sstr_clear", "sstr_8c.html#acb1410073b28bea451ab0be874d5875b", null ],
     [ "sstr_compare", "sstr_8c.html#ad27f624aa62f1f648e96cc195da7412f", null ],

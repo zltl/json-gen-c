@@ -96,7 +96,7 @@ Prerequisites</h1>
 <div class="line">    <a class="code hl_typedef" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> city;</div>
 <div class="line">    <a class="code hl_typedef" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> country;</div>
 <div class="line">};</div>
-<div class="ttc" id="asstr_8h_html_a8d28a1ce0ac6dd8b8e50af6f78e735e7"><div class="ttname"><a href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a></div><div class="ttdeci">void * sstr_t</div><div class="ttdoc">sstr_t are objects that represent sequences of characters.</div><div class="ttdef"><b>Definition</b> sstr.h:73</div></div>
+<div class="ttc" id="asstr_8h_html_a8d28a1ce0ac6dd8b8e50af6f78e735e7"><div class="ttname"><a href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a></div><div class="ttdeci">void * sstr_t</div><div class="ttdoc">sstr_t are objects that represent sequences of characters.</div><div class="ttdef"><b>Definition</b> sstr.h:74</div></div>
 </div><!-- fragment --><h1><a class="anchor" id="autotoc_md28"></a>
 3. Generate Code</h1>
 <div class="fragment"><div class="line">json-gen-c -in demo.json-gen-c -out gen</div>
@@ -124,10 +124,10 @@ Prerequisites</h1>
 <div class="line">    User_clear(&amp;user);</div>
 <div class="line">    <span class="keywordflow">return</span> 0;</div>
 <div class="line">}</div>
-<div class="ttc" id="asstr_8c_html_aa3b3c1563041f1323542f3e84f7817b1"><div class="ttname"><a href="sstr_8c.html#aa3b3c1563041f1323542f3e84f7817b1">sstr</a></div><div class="ttdeci">sstr_t sstr(const char *cstr)</div><div class="ttdoc">Create a sstr_t from C-style (NULL-terminated) string str.</div><div class="ttdef"><b>Definition</b> sstr.c:83</div></div>
-<div class="ttc" id="asstr_8c_html_ae04c530ce9fbdb9b517ca74ab5f3edbc"><div class="ttname"><a href="sstr_8c.html#ae04c530ce9fbdb9b517ca74ab5f3edbc">sstr_new</a></div><div class="ttdeci">sstr_t sstr_new()</div><div class="ttdoc">Create an empty sstr_t.</div><div class="ttdef"><b>Definition</b> sstr.c:41</div></div>
-<div class="ttc" id="asstr_8c_html_ae99d652d5a9d25fc79343d2ac18cb0e5"><div class="ttname"><a href="sstr_8c.html#ae99d652d5a9d25fc79343d2ac18cb0e5">sstr_free</a></div><div class="ttdeci">void sstr_free(sstr_t s)</div><div class="ttdoc">delete a sstr_t.</div><div class="ttdef"><b>Definition</b> sstr.c:47</div></div>
-<div class="ttc" id="asstr_8c_html_af45cbd228a22432910527e63c4b26b3b"><div class="ttname"><a href="sstr_8c.html#af45cbd228a22432910527e63c4b26b3b">sstr_cstr</a></div><div class="ttdeci">char * sstr_cstr(sstr_t s)</div><div class="ttdoc">Return C-style string representation of s.</div><div class="ttdef"><b>Definition</b> sstr.c:85</div></div>
+<div class="ttc" id="asstr_8c_html_aa3b3c1563041f1323542f3e84f7817b1"><div class="ttname"><a href="sstr_8c.html#aa3b3c1563041f1323542f3e84f7817b1">sstr</a></div><div class="ttdeci">sstr_t sstr(const char *cstr)</div><div class="ttdoc">Create a sstr_t from C-style (NULL-terminated) string str.</div><div class="ttdef"><b>Definition</b> sstr.c:84</div></div>
+<div class="ttc" id="asstr_8c_html_ae04c530ce9fbdb9b517ca74ab5f3edbc"><div class="ttname"><a href="sstr_8c.html#ae04c530ce9fbdb9b517ca74ab5f3edbc">sstr_new</a></div><div class="ttdeci">sstr_t sstr_new()</div><div class="ttdoc">Create an empty sstr_t.</div><div class="ttdef"><b>Definition</b> sstr.c:42</div></div>
+<div class="ttc" id="asstr_8c_html_ae99d652d5a9d25fc79343d2ac18cb0e5"><div class="ttname"><a href="sstr_8c.html#ae99d652d5a9d25fc79343d2ac18cb0e5">sstr_free</a></div><div class="ttdeci">void sstr_free(sstr_t s)</div><div class="ttdoc">delete a sstr_t.</div><div class="ttdef"><b>Definition</b> sstr.c:48</div></div>
+<div class="ttc" id="asstr_8c_html_af45cbd228a22432910527e63c4b26b3b"><div class="ttname"><a href="sstr_8c.html#af45cbd228a22432910527e63c4b26b3b">sstr_cstr</a></div><div class="ttdeci">char * sstr_cstr(sstr_t s)</div><div class="ttdoc">Return C-style string representation of s.</div><div class="ttdef"><b>Definition</b> sstr.c:86</div></div>
 </div><!-- fragment --><p>Link your program with the generated <code>json.gen.c</code> and <code><a class="el" href="sstr_8c.html" title="Implementation of the sstr.h header file.">sstr.c</a></code> files.</p>
 <h1><a class="anchor" id="autotoc_md30"></a>
 5. Regenerate on Schema Changes</h1>

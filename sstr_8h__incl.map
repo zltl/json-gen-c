@@ -1,7 +1,9 @@
 <map id="src/utils/sstr.h" name="src/utils/sstr.h">
-<area shape="rect" id="Node000001" title="sstr_t are objects that represent sequences of characters." alt="" coords="36,5,148,31"/>
+<area shape="rect" id="Node000001" title="sstr_t are objects that represent sequences of characters." alt="" coords="85,5,197,31"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,79,80,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="86,33,61,69,56,66,82,29"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="127,33,71,73,68,68,124,29"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="104,79,179,104"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="102,29,128,66,123,69,98,33"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="144,31,144,65,139,65,139,31"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="203,79,285,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="159,28,217,68,214,73,156,33"/>
 </map>
