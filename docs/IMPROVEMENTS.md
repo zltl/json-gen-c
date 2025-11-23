@@ -88,7 +88,7 @@ static void char_to_hex(unsigned char c, unsigned char* buf, int cap)
 Include `<stdbool.h>` and use `bool` type for clarity.
 **Status:** Completed. Refactored `sstr.c` and `sstr.h` to use `bool` for boolean parameters and flags.
 
-### 3.2. Robust Argument Parsing
+### 3.2. Robust Argument Parsing (Completed)
 **Location:** `src/main/main.c`
 
 **Issue:**
@@ -96,6 +96,7 @@ Manual `argv` parsing is brittle and hard to extend.
 
 **Solution:**
 Consider using `getopt_long` (standard on Linux) or a lightweight argument parsing library for better handling of flags, help messages, and validation.
+**Status:** Completed. Implemented `getopt_long_only` to support existing `-in` and `-out` flags as well as standard short/long options.
 
 ### 3.3. Error Handling Consistency (Completed)
 **Location:** `src/main/main.c`

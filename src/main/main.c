@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <getopt.h>
 
 #include "gencode/gencode.h"
 #include "struct/struct_parse.h"
@@ -38,31 +39,40 @@ struct options {
  * @param options Output options structure
  * @return JSON_GEN_SUCCESS on success, error code on failure
  */
-static json_gen_error_t options_parse(int argc, const char **argv, struct options *options) {
+static json_gen_error_t options_parse(int argc, char **argv, struct options *options) {
     if (options == NULL) {
         return JSON_GEN_ERROR_INVALID_PARAM;
     }
-    
-    int i;
-    for (i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-in") == 0) {
-            if (i + 1 >= argc) {
-                fprintf(stderr, "Error: -in option requires an argument\n");
+
+    static struct option long_options[] = {
+        {"in", required_argument, 0, 'i'},
+        {"out", required_argument, 0, 'o'},
+        {"help", no_argument, 0, 'h'},
+        {0, 0, 0, 0}
+    };
+
+    int c;
+    int option_index = 0;
+
+    // Reset getopt index
+    optind = 1;
+
+    while ((c = getopt_long_only(argc, argv, "i:o:h", long_options, &option_index)) != -1) {
+        switch (c) {
+            case 'i':
+                options->input_file = optarg;
+                break;
+            case 'o':
+                options->output_path = optarg;
+                break;
+            case 'h':
+                usage(stdout);
+                exit(JSON_GEN_SUCCESS);
+            case '?':
+                // getopt_long_only prints error message to stderr automatically
                 return JSON_GEN_ERROR_INVALID_PARAM;
-            }
-            options->input_file = (char *)argv[++i];
-        } else if (strcmp(argv[i], "-out") == 0) {
-            if (i + 1 >= argc) {
-                fprintf(stderr, "Error: -out option requires an argument\n");
+            default:
                 return JSON_GEN_ERROR_INVALID_PARAM;
-            }
-            options->output_path = (char *)argv[++i];
-        } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-            usage(stdout);
-            exit(JSON_GEN_SUCCESS);
-        } else {
-            fprintf(stderr, "Error: unknown option '%s'\n", argv[i]);
-            return JSON_GEN_ERROR_INVALID_PARAM;
         }
     }
     
@@ -91,7 +101,7 @@ static void cleanup_and_exit(sstr_t content, struct struct_parser *parser,
     exit(exit_code);
 }
 
-int main(int argc, const char **argv) {
+int main(int argc, char **argv) {
     // Initialize options structure
     struct options options = {NULL, NULL};
     
