@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include <malloc.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -25,7 +26,7 @@
          : (SSTR(s)->type == SSTR_TYPE_LONG ? (SSTR(s)->un.long_str.data) \
                                             : (SSTR(s)->un.ref_str.data)))
 
-static void char_to_hex(unsigned char c, unsigned char* buf, int cap) {
+static void char_to_hex(unsigned char c, unsigned char* buf, bool cap) {
     static const unsigned char hex[] = "0123456789abcdef";
     static const unsigned char HEX[] = "0123456789ABCDEF";
 
@@ -604,10 +605,10 @@ void sstr_append_int_str(sstr_t s, int i) {
     unsigned char buf[SSTR_INT32_LEN + 1];
     unsigned char* p = buf + SSTR_INT32_LEN;
     uint32_t ui32;
-    int negative = 0;
+    bool negative = false;
 
     if (i < 0) {
-        negative = 1;
+        negative = true;
         ui32 = (uint32_t)-i;
     } else {
         ui32 = (uint32_t)i;
@@ -625,7 +626,7 @@ void sstr_append_int_str(sstr_t s, int i) {
 
 int sstr_parse_long(sstr_t s, long* v) {
     size_t i = 0;
-    int negative = 0;
+    bool negative = false;
     *v = 0;
     unsigned char* p = (unsigned char*)STR_PTR(s);
     for (i = 0; i < sstr_length(s); ++i) {
@@ -633,7 +634,7 @@ int sstr_parse_long(sstr_t s, long* v) {
             continue;
         }
         if (p[i] == '-') {
-            negative = 1;
+            negative = true;
         }
     }
     for (; i < sstr_length(s); ++i) {
@@ -660,9 +661,9 @@ void sstr_append_long_str(sstr_t s, long l) {
     unsigned char buf[SSTR_INT64_LEN + 1];
     unsigned char* p = buf + SSTR_INT64_LEN;
     uint64_t ui64;
-    int negative = 0;
+    bool negative = false;
     if (l < 0) {
-        negative = 1;
+        negative = true;
         ui64 = (uint64_t)-l;
     } else {
         ui64 = (uint64_t)l;
@@ -710,7 +711,7 @@ void sstr_append_double_str(sstr_t s, double f, int precision) {
 
 int sstr_parse_double(sstr_t s, double* v) {
     size_t i = 0;
-    int negative = 0;
+    bool negative = false;
     *v = 0;
     unsigned char* p = (unsigned char*)STR_PTR(s);
     for (i = 0; i < sstr_length(s); ++i) {
@@ -718,7 +719,7 @@ int sstr_parse_double(sstr_t s, double* v) {
             continue;
         }
         if (p[i] == '-') {
-            negative = 1;
+            negative = true;
         }
     }
     for (; i < sstr_length(s); ++i) {
@@ -798,7 +799,7 @@ int sstr_json_escape_string_append(sstr_t out, sstr_t in) {
     return 0;
 }
 
-void sstr_append_of_if(sstr_t s, const void* data, size_t length, int cond) {
+void sstr_append_of_if(sstr_t s, const void* data, size_t length, bool cond) {
     if (cond) {
         size_t oldlen = sstr_length(s);
         sstr_append_zero(s, length);

@@ -75,7 +75,7 @@ Move the hash implementation to a common utility header (e.g., `src/utils/hash.h
 
 ## 3. Code Quality Improvements
 
-### 3.1. Use `stdbool.h`
+### 3.1. Use `stdbool.h` (Completed)
 **Location:** `src/utils/sstr.c` (and others)
 
 **Issue:**
@@ -86,6 +86,7 @@ static void char_to_hex(unsigned char c, unsigned char* buf, int cap)
 
 **Solution:**
 Include `<stdbool.h>` and use `bool` type for clarity.
+**Status:** Completed. Refactored `sstr.c` and `sstr.h` to use `bool` for boolean parameters and flags.
 
 ### 3.2. Robust Argument Parsing
 **Location:** `src/main/main.c`

@@ -37,6 +37,7 @@
 
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -315,7 +316,7 @@ extern int sstr_parse_double(sstr_t s, double* v);
  * @param length length of \a data.
  * @param cond condition
  */
-extern void sstr_append_of_if(sstr_t s, const void* data, size_t length, int cond);
+extern void sstr_append_of_if(sstr_t s, const void* data, size_t length, bool cond);
 /**
  * @brief Append C style string if cond is true, otherwise do nothing.
  * @param dst destination sstr_t to append to.
