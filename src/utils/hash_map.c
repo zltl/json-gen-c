@@ -1,5 +1,6 @@
 #include "utils/hash_map.h"
 #include "utils/error_codes.h"
+#include "utils/hash.h"
 
 #include <malloc.h>
 #include <string.h>
@@ -206,43 +207,9 @@ void hash_map_for_each(struct hash_map* map,
     }
 }
 
-unsigned int hash(const char* data, size_t n) {
-    unsigned int seed = 0xbc9f1d34;
-    // Similar to murmur hash
-    const unsigned int m = 0xc6a4a793;
-    const unsigned int r = 24;
-    const char* limit = data + n;
-    unsigned int h = seed ^ (n * m);
-
-    // Pick up four bytes at a time
-    while (data + 4 <= limit) {
-        unsigned int w = *(unsigned int*)(data);
-        data += 4;
-        h += w;
-        h *= m;
-        h ^= (h >> 16);
-    }
-
-    // Pick up remaining bytes
-    switch (limit - data) {
-        case 3:
-            h += (unsigned char)(data[2]) << 16;
-            __attribute__((fallthrough));
-        case 2:
-            h += (unsigned char)(data[1]) << 8;
-            __attribute__((fallthrough));
-        case 1:
-            h += (unsigned char)(data[0]);
-            h *= m;
-            h ^= (h >> r);
-            break;
-    }
-    return h;
-}
-
 unsigned int sstr_key_hash(void* key) {
     sstr_t s = (sstr_t)key;
-    return hash(sstr_cstr(s), sstr_length(s));
+    return hash_murmur(sstr_cstr(s), sstr_length(s), 0xbc9f1d34);
 }
 int sstr_key_cmp(void* a, void* b) {
     return sstr_compare((sstr_t)a, (sstr_t)b);

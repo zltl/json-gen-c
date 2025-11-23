@@ -69,13 +69,11 @@ static unsigned int hash_s(const char* data, size_t n, unsigned int seed) {
 }
 
 static unsigned int hash_2s_c(const char* key1, const char* key2) {
-    unsigned int res = 0xbc9f1d34;
-    sstr_t tmp = sstr(key1);
-    sstr_append_of(tmp, "#", 1);
-    sstr_append_cstr(tmp, key2);
-    res = hash_s(sstr_cstr(tmp), sstr_length(tmp), res);
-    sstr_free(tmp);
-    return res;
+    unsigned int h = 0xbc9f1d34;
+    h = hash_s(key1, strlen(key1), h);
+    h = hash_s("#", 1, h);
+    h = hash_s(key2, strlen(key2), h);
+    return h;
 }
 
 // find the index of json_field_offset_item by structname and field name
