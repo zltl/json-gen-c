@@ -61,6 +61,25 @@ var NAVTREE =
       [ "5. Regenerate on Schema Changes", "md_docs_2GETTING__STARTED.html#autotoc_md30", null ],
       [ "6. Learn More", "md_docs_2GETTING__STARTED.html#autotoc_md31", null ]
     ] ],
+    [ "Project Improvement Plan", "md_docs_2IMPROVEMENTS.html", [
+      [ "1. Critical Fixes", "md_docs_2IMPROVEMENTS.html#autotoc_md33", [
+        [ "1.1. Implement Hash Map Resizing", "md_docs_2IMPROVEMENTS.html#autotoc_md34", null ]
+      ] ],
+      [ "2. Performance Optimizations", "md_docs_2IMPROVEMENTS.html#autotoc_md35", [
+        [ "2.1. Optimize <tt>hash_2s</tt> Function", "md_docs_2IMPROVEMENTS.html#autotoc_md36", null ],
+        [ "2.2. Unify Hash Functions", "md_docs_2IMPROVEMENTS.html#autotoc_md37", null ]
+      ] ],
+      [ "3. Code Quality Improvements", "md_docs_2IMPROVEMENTS.html#autotoc_md38", [
+        [ "3.1. Use <tt>stdbool.h</tt>", "md_docs_2IMPROVEMENTS.html#autotoc_md39", null ],
+        [ "3.2. Robust Argument Parsing", "md_docs_2IMPROVEMENTS.html#autotoc_md40", null ],
+        [ "3.3. Error Handling Consistency", "md_docs_2IMPROVEMENTS.html#autotoc_md41", null ],
+        [ "3.4. Fix Off-by-One Error in Parser", "md_docs_2IMPROVEMENTS.html#autotoc_md42", null ]
+      ] ],
+      [ "4. Feature Requests", "md_docs_2IMPROVEMENTS.html#autotoc_md43", [
+        [ "4.1. Support for More Types", "md_docs_2IMPROVEMENTS.html#autotoc_md44", null ],
+        [ "4.2. Custom Allocators", "md_docs_2IMPROVEMENTS.html#autotoc_md45", null ]
+      ] ]
+    ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
