@@ -9,9 +9,10 @@
 
 /**
  * @brief Display usage information
+ * @param stream Output stream (stdout or stderr)
  */
-static void usage() {
-    printf(
+static void usage(FILE *stream) {
+    fprintf(stream,
         "Usage: json-gen-c -out <output_dir> -in <input_file>\n"
         "Generate JSON operating C codes from struct definition.\n\n"
         "Options:\n"
@@ -57,7 +58,7 @@ static json_gen_error_t options_parse(int argc, const char **argv, struct option
             }
             options->output_path = (char *)argv[++i];
         } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-            usage();
+            usage(stdout);
             exit(JSON_GEN_SUCCESS);
         } else {
             fprintf(stderr, "Error: unknown option '%s'\n", argv[i]);
@@ -97,14 +98,14 @@ int main(int argc, const char **argv) {
     // Parse command line options
     json_gen_error_t result = options_parse(argc, argv, &options);
     if (result != JSON_GEN_SUCCESS) {
-        usage();
+        usage(stderr);
         return result;
     }
     
     // Validate required input file parameter
     if (options.input_file == NULL) {
         fprintf(stderr, "Error: input file is required\n");
-        usage();
+        usage(stderr);
         return JSON_GEN_ERROR_INVALID_PARAM;
     }
 

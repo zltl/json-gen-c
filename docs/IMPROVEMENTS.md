@@ -97,7 +97,7 @@ Manual `argv` parsing is brittle and hard to extend.
 **Solution:**
 Consider using `getopt_long` (standard on Linux) or a lightweight argument parsing library for better handling of flags, help messages, and validation.
 
-### 3.3. Error Handling Consistency
+### 3.3. Error Handling Consistency (Completed)
 **Location:** `src/main/main.c`
 
 **Issue:**
@@ -105,6 +105,7 @@ Consider using `getopt_long` (standard on Linux) or a lightweight argument parsi
 
 **Solution:**
 Error messages and usage information (when triggered by an error) should ideally go to `stderr`.
+**Status:** Completed. Modified `usage()` to accept a `FILE* stream` and updated calls to send error messages to `stderr` and help messages to `stdout`.
 
 ### 3.4. Fix Off-by-One Error in Parser
 **Location:** `src/struct/struct_parse.c`
