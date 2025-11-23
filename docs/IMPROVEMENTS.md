@@ -128,6 +128,16 @@ Change the condition to:
     if (parser->pos.offset >= (long)sstr_length(content)) {
 ```
 
+### 3.5. Robust File I/O (Completed)
+**Location:** `src/utils/io.c`
+
+**Issue:**
+`read_file` and `write_file` do not check the return values of `fread` and `fwrite`. `ftell` return value is also not checked.
+
+**Solution:**
+Add error checking for file operations and return appropriate error codes.
+**Status:** Completed. Added error checking for `fopen`, `fseek`, `ftell`, `fread`, and `fwrite`.
+
 ## 4. Feature Requests
 
 ### 4.1. Support for More Types

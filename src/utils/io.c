@@ -8,14 +8,28 @@ int read_file(const char* filename, sstr_t content) {
     if (f == NULL) {
         return -1;
     }
-    fseek(f, 0, SEEK_END);
+    if (fseek(f, 0, SEEK_END) != 0) {
+        fclose(f);
+        return -1;
+    }
     long fsize = ftell(f);
-    fseek(f, 0, SEEK_SET);
+    if (fsize < 0) {
+        fclose(f);
+        return -1;
+    }
+    if (fseek(f, 0, SEEK_SET) != 0) {
+        fclose(f);
+        return -1;
+    }
 
     sstr_clear(content);
     sstr_append_zero(content, fsize);
-    fread(sstr_cstr(content), 1, fsize, f);
+    size_t read_size = fread(sstr_cstr(content), 1, fsize, f);
     fclose(f);
+
+    if (read_size != (size_t)fsize) {
+        return -1;
+    }
     return 0;
 }
 
@@ -24,7 +38,11 @@ int write_file(const char* filename, sstr_t content) {
     if (f == NULL) {
         return -1;
     }
-    fwrite(sstr_cstr(content), 1, sstr_length(content), f);
+    size_t written = fwrite(sstr_cstr(content), 1, sstr_length(content), f);
     fclose(f);
+    
+    if (written != sstr_length(content)) {
+        return -1;
+    }
     return 0;
 }
