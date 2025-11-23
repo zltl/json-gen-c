@@ -82,12 +82,37 @@ static int hash_map_resize_if_needed(struct hash_map* map) {
         return JSON_GEN_SUCCESS;  // No resize needed
     }
     
-    // TODO: Implement hash table expansion
-    // For now, just log that expansion would be beneficial
-    // In a full implementation, we would:
-    // 1. Allocate new bucket array with double the size
-    // 2. Rehash all existing entries
-    // 3. Replace old bucket array
+    int new_bucket_count = map->bucket_count * 2;
+    struct hash_map_entry** new_buckets = (struct hash_map_entry**)malloc(
+        sizeof(struct hash_map_entry*) * new_bucket_count);
+    if (new_buckets == NULL) {
+        return JSON_GEN_ERROR_MEMORY;
+    }
+    memset(new_buckets, 0, sizeof(struct hash_map_entry*) * new_bucket_count);
+
+    // Rehash all existing entries
+    for (int i = 0; i < map->bucket_count; i++) {
+        struct hash_map_entry* entry = map->buckets[i];
+        while (entry) {
+            struct hash_map_entry* next = entry->next;
+            
+            // Calculate new index
+            int new_index = map->hash_func(entry->key) % new_bucket_count;
+            
+            // Insert at head of new bucket
+            entry->next = new_buckets[new_index];
+            new_buckets[new_index] = entry;
+            
+            entry = next;
+        }
+    }
+
+    // Free old buckets array
+    free(map->buckets);
+    
+    // Update map
+    map->buckets = new_buckets;
+    map->bucket_count = new_bucket_count;
     
     return JSON_GEN_SUCCESS;
 }

@@ -8,7 +8,7 @@ include ../build.mk
 TEST_BUILD := $(BUILD_DIR)/test
 
 # Test source files
-TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc
+TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc
 TEST_OBJECTS := $(patsubst %.cc,$(TEST_BUILD)/%.o,$(TEST_SOURCES))
 
 # Generated files
@@ -22,9 +22,10 @@ EMPTY_ARRAY_TEST := $(TEST_BUILD)/empty_array_test
 COMPREHENSIVE_TEST := $(TEST_BUILD)/comprehensive_test
 NESTED_STRUCT_TEST := $(TEST_BUILD)/nested_struct_test
 PERFORMANCE_TEST := $(TEST_BUILD)/performance_test
+HASH_MAP_TEST := $(TEST_BUILD)/hash_map_test
 
 # All test targets
-ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST)
+ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST)
 
 #==============================================================================
 # Build rules
@@ -77,6 +78,11 @@ $(PERFORMANCE_TEST): $(TEST_BUILD)/performance_test.o $(GENERATED_OBJECTS)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
 
+$(HASH_MAP_TEST): $(TEST_BUILD)/hash_map_test.o $(GENERATED_OBJECTS)
+	@echo "Linking hash map tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread -L$(BUILD_DIR)/lib -lutils
+
 #==============================================================================
 # Test execution
 #==============================================================================
@@ -95,6 +101,8 @@ run: $(ALL_TESTS)
 	$(NESTED_STRUCT_TEST)
 	@echo "=== Performance Tests ==="
 	$(PERFORMANCE_TEST)
+	@echo "=== Hash Map Tests ==="
+	$(HASH_MAP_TEST)
 	@echo "=== Bugfix Tests ==="
 	$(MAKE) run-bugfix
 	@echo "All tests completed successfully!"
