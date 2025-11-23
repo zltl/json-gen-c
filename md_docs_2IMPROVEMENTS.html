@@ -153,16 +153,21 @@ $(document).ready(function(){initNavTree('md_docs_2IMPROVEMENTS.html',''); initR
 <div class="line">}</div>
 </div><!-- fragment --><p> This causes the last character of the file to be ignored. If the file ends with a significant character (like <code>}</code> or <code>;</code>) instead of a newline, parsing may fail.</p>
 <p><b>Solution:</b> Change the condition to: </p><div class="fragment"><div class="line"><span class="keywordflow">if</span> (parser-&gt;pos.offset &gt;= (<span class="keywordtype">long</span>)<a class="code hl_define" href="sstr_8h.html#a7f83884713d44719070e83e62639716c">sstr_length</a>(content)) {</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md43"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md43"></a>
+3.5. Robust File I/O (Completed)</h2>
+<p><b>Location:</b> <code>src/utils/io.c</code></p>
+<p><b>Issue:</b> <code>read_file</code> and <code>write_file</code> do not check the return values of <code>fread</code> and <code>fwrite</code>. <code>ftell</code> return value is also not checked.</p>
+<p><b>Solution:</b> Add error checking for file operations and return appropriate error codes. <b>Status:</b> Completed. Added error checking for <code>fopen</code>, <code>fseek</code>, <code>ftell</code>, <code>fread</code>, and <code>fwrite</code>.</p>
+<h1><a class="anchor" id="autotoc_md44"></a>
 4. Feature Requests</h1>
-<h2><a class="anchor" id="autotoc_md44"></a>
+<h2><a class="anchor" id="autotoc_md45"></a>
 4.1. Support for More Types</h2>
 <p>Currently, the project supports basic types and structs. Adding support for:</p><ul>
 <li>Enums</li>
 <li>Fixed-size arrays (e.g., <code>int data[10];</code>)</li>
 <li>Boolean type (mapping to <code>bool</code> or <code>int</code>)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md45"></a>
+<h2><a class="anchor" id="autotoc_md46"></a>
 4.2. Custom Allocators</h2>
 <p>Allow the generated code to use custom memory allocators instead of <code>malloc</code>/<code>free</code>, which is useful for embedded systems or high-performance applications. </p>
 </div></div><!-- contents -->

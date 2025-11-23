@@ -73,11 +73,12 @@ var NAVTREE =
         [ "3.1. Use <tt>stdbool.h</tt> (Completed)", "md_docs_2IMPROVEMENTS.html#autotoc_md39", null ],
         [ "3.2. Robust Argument Parsing (Completed)", "md_docs_2IMPROVEMENTS.html#autotoc_md40", null ],
         [ "3.3. Error Handling Consistency (Completed)", "md_docs_2IMPROVEMENTS.html#autotoc_md41", null ],
-        [ "3.4. Fix Off-by-One Error in Parser", "md_docs_2IMPROVEMENTS.html#autotoc_md42", null ]
+        [ "3.4. Fix Off-by-One Error in Parser", "md_docs_2IMPROVEMENTS.html#autotoc_md42", null ],
+        [ "3.5. Robust File I/O (Completed)", "md_docs_2IMPROVEMENTS.html#autotoc_md43", null ]
       ] ],
-      [ "4. Feature Requests", "md_docs_2IMPROVEMENTS.html#autotoc_md43", [
-        [ "4.1. Support for More Types", "md_docs_2IMPROVEMENTS.html#autotoc_md44", null ],
-        [ "4.2. Custom Allocators", "md_docs_2IMPROVEMENTS.html#autotoc_md45", null ]
+      [ "4. Feature Requests", "md_docs_2IMPROVEMENTS.html#autotoc_md44", [
+        [ "4.1. Support for More Types", "md_docs_2IMPROVEMENTS.html#autotoc_md45", null ],
+        [ "4.2. Custom Allocators", "md_docs_2IMPROVEMENTS.html#autotoc_md46", null ]
       ] ]
     ] ],
     [ "Classes", "annotated.html", [
