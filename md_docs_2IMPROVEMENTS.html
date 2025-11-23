@@ -139,10 +139,10 @@ $(document).ready(function(){initNavTree('md_docs_2IMPROVEMENTS.html',''); initR
 <p><b>Issue:</b> Manual <code>argv</code> parsing is brittle and hard to extend.</p>
 <p><b>Solution:</b> Consider using <code>getopt_long</code> (standard on Linux) or a lightweight argument parsing library for better handling of flags, help messages, and validation.</p>
 <h2><a class="anchor" id="autotoc_md41"></a>
-3.3. Error Handling Consistency</h2>
+3.3. Error Handling Consistency (Completed)</h2>
 <p><b>Location:</b> <code>src/main/main.c</code></p>
 <p><b>Issue:</b> <code>usage()</code> prints to <code>stdout</code>.</p>
-<p><b>Solution:</b> Error messages and usage information (when triggered by an error) should ideally go to <code>stderr</code>.</p>
+<p><b>Solution:</b> Error messages and usage information (when triggered by an error) should ideally go to <code>stderr</code>. <b>Status:</b> Completed. Modified <code>usage()</code> to accept a <code>FILE* stream</code> and updated calls to send error messages to <code>stderr</code> and help messages to <code>stdout</code>.</p>
 <h2><a class="anchor" id="autotoc_md42"></a>
 3.4. Fix Off-by-One Error in Parser</h2>
 <p><b>Location:</b> <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code></p>
