@@ -71,7 +71,7 @@ var NAVTREE =
       ] ],
       [ "3. Code Quality Improvements", "md_docs_2IMPROVEMENTS.html#autotoc_md38", [
         [ "3.1. Use <tt>stdbool.h</tt> (Completed)", "md_docs_2IMPROVEMENTS.html#autotoc_md39", null ],
-        [ "3.2. Robust Argument Parsing", "md_docs_2IMPROVEMENTS.html#autotoc_md40", null ],
+        [ "3.2. Robust Argument Parsing (Completed)", "md_docs_2IMPROVEMENTS.html#autotoc_md40", null ],
         [ "3.3. Error Handling Consistency (Completed)", "md_docs_2IMPROVEMENTS.html#autotoc_md41", null ],
         [ "3.4. Fix Off-by-One Error in Parser", "md_docs_2IMPROVEMENTS.html#autotoc_md42", null ]
       ] ],
