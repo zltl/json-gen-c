@@ -125,7 +125,7 @@ $(document).ready(function(){initNavTree('md_docs_2IMPROVEMENTS.html',''); initR
 2.2. Unify Hash Functions</h2>
 <p><b>Location:</b> <code>src/gencode/gencode.c</code> and <code>src/utils/hash_map.c</code></p>
 <p><b>Issue:</b> The MurmurHash-like algorithm is duplicated. <code>src/gencode/gencode.c</code> has <code>hash_s</code> and <code>src/utils/hash_map.c</code> has <code>hash</code>.</p>
-<p><b>Solution:</b> Move the hash implementation to a common utility header (e.g., <code>src/utils/hash.h</code> or expose it in <code><a class="el" href="hash__map_8h.html" title="A simple hash_map implementation.">src/utils/hash_map.h</a></code>) and reuse it across the project.</p>
+<p><b>Solution:</b> Move the hash implementation to a common utility header (e.g., <code><a class="el" href="hash_8h_source.html">src/utils/hash.h</a></code> or expose it in <code><a class="el" href="hash__map_8h.html" title="A simple hash_map implementation.">src/utils/hash_map.h</a></code>) and reuse it across the project.</p>
 <h1><a class="anchor" id="autotoc_md38"></a>
 3. Code Quality Improvements</h1>
 <h2><a class="anchor" id="autotoc_md39"></a>
