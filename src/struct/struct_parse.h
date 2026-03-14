@@ -27,6 +27,15 @@ extern "C" {
 #define FIELD_TYPE_ENUM 5
 #define FIELD_TYPE_STRUCT 6
 #define FIELD_TYPE_BOOL 7
+#define FIELD_TYPE_MAP 8
+#define FIELD_TYPE_INT8 9
+#define FIELD_TYPE_INT16 10
+#define FIELD_TYPE_INT32 11
+#define FIELD_TYPE_INT64 12
+#define FIELD_TYPE_UINT8 13
+#define FIELD_TYPE_UINT16 14
+#define FIELD_TYPE_UINT32 15
+#define FIELD_TYPE_UINT64 16
 
 #define TYPE_NAME_INT "int"
 #define TYPE_NAME_BOOL "bool"
@@ -34,6 +43,14 @@ extern "C" {
 #define TYPE_NAME_LONG "long"
 #define TYPE_NAME_FLOAT "float"
 #define TYPE_NAME_DOUBLE "double"
+#define TYPE_NAME_INT8 "int8_t"
+#define TYPE_NAME_INT16 "int16_t"
+#define TYPE_NAME_INT32 "int32_t"
+#define TYPE_NAME_INT64 "int64_t"
+#define TYPE_NAME_UINT8 "uint8_t"
+#define TYPE_NAME_UINT16 "uint16_t"
+#define TYPE_NAME_UINT32 "uint32_t"
+#define TYPE_NAME_UINT64 "uint64_t"
 
 /**
  * @brief We use a hash map to store parsed structs, and use the struct name
@@ -76,6 +93,14 @@ struct struct_field {
     int array_size;
     // the name of field type
     sstr_t type_name;
+    // for FIELD_TYPE_MAP: value type id
+    int map_value_type;
+    // for FIELD_TYPE_MAP: value type name
+    sstr_t map_value_type_name;
+    // 1 if field is optional (may be absent from JSON), 0 otherwise
+    int is_optional;
+    // 1 if field is nullable (JSON value may be null), 0 otherwise
+    int is_nullable;
     // linked list pointer to next field, NULL if this is the last field
     struct struct_field* next;
 };

@@ -1,6 +1,8 @@
 
 #include <ctype.h>
 #include <limits.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -763,6 +765,148 @@ static int json_unmarshal_scalar_enum(sstr_t content, struct json_pos* pos,
     }
 }
 
+// Macro for signed precise-width integer unmarshal (int8_t, int16_t, int32_t)
+#define DEFINE_UNMARSHAL_SCALAR_SIGNED(TYPE, MIN_VAL, MAX_VAL)                 \
+static int json_unmarshal_scalar_##TYPE(sstr_t content, struct json_pos* pos,  \
+                                        TYPE* val, sstr_t txt) {              \
+    int tk = json_next_token(content, pos, txt);                               \
+    if (tk == JSON_TOKEN_FALSE) {                                              \
+        *val = 0;                                                              \
+    } else if (tk == JSON_TOKEN_TRUE) {                                        \
+        *val = 1;                                                              \
+    } else if (tk != JSON_TOKEN_INT) {                                         \
+        sstr_t e = PERROR(pos, "expected integer but got '%s'",                \
+                          ptoken(tk, txt));                                     \
+        sstr_append(txt, e);                                                   \
+        sstr_free(e);                                                          \
+        return tk;                                                             \
+    } else {                                                                   \
+        char* endptr;                                                          \
+        long temp_val = strtol(sstr_cstr(txt), &endptr, 10);                   \
+        if (*endptr != '\0' || temp_val > (MAX_VAL) || temp_val < (MIN_VAL)) { \
+            sstr_t e = PERROR(pos, #TYPE " value out of range: '%s'",          \
+                              sstr_cstr(txt));                                 \
+            sstr_append(txt, e);                                               \
+            sstr_free(e);                                                      \
+            return JSON_ERROR;                                                 \
+        }                                                                      \
+        *val = (TYPE)temp_val;                                                 \
+    }                                                                          \
+    return 0;                                                                  \
+}
+
+DEFINE_UNMARSHAL_SCALAR_SIGNED(int8_t, INT8_MIN, INT8_MAX)
+DEFINE_UNMARSHAL_SCALAR_SIGNED(int16_t, INT16_MIN, INT16_MAX)
+DEFINE_UNMARSHAL_SCALAR_SIGNED(int32_t, INT32_MIN, INT32_MAX)
+
+static int json_unmarshal_scalar_int64_t(sstr_t content, struct json_pos* pos,
+                                         int64_t* val, sstr_t txt) {
+    int tk = json_next_token(content, pos, txt);
+    if (tk == JSON_TOKEN_FALSE) {
+        *val = 0;
+    } else if (tk == JSON_TOKEN_TRUE) {
+        *val = 1;
+    } else if (tk != JSON_TOKEN_INT) {
+        sstr_t e = PERROR(pos, "expected integer but got '%s'",
+                          ptoken(tk, txt));
+        sstr_append(txt, e);
+        sstr_free(e);
+        return tk;
+    } else {
+        char* endptr;
+        long long temp_val = strtoll(sstr_cstr(txt), &endptr, 10);
+        if (*endptr != '\0' || temp_val > INT64_MAX || temp_val < INT64_MIN) {
+            sstr_t e = PERROR(pos, "int64_t value out of range: '%s'",
+                              sstr_cstr(txt));
+            sstr_append(txt, e);
+            sstr_free(e);
+            return JSON_ERROR;
+        }
+        *val = (int64_t)temp_val;
+    }
+    return 0;
+}
+
+// Macro for unsigned precise-width integer unmarshal (uint8_t, uint16_t, uint32_t)
+#define DEFINE_UNMARSHAL_SCALAR_UNSIGNED(TYPE, MAX_VAL)                         \
+static int json_unmarshal_scalar_##TYPE(sstr_t content, struct json_pos* pos,  \
+                                        TYPE* val, sstr_t txt) {              \
+    int tk = json_next_token(content, pos, txt);                               \
+    if (tk == JSON_TOKEN_FALSE) {                                              \
+        *val = 0;                                                              \
+    } else if (tk == JSON_TOKEN_TRUE) {                                        \
+        *val = 1;                                                              \
+    } else if (tk != JSON_TOKEN_INT) {                                         \
+        sstr_t e = PERROR(pos, "expected integer but got '%s'",                \
+                          ptoken(tk, txt));                                     \
+        sstr_append(txt, e);                                                   \
+        sstr_free(e);                                                          \
+        return tk;                                                             \
+    } else {                                                                   \
+        const char* s = sstr_cstr(txt);                                        \
+        while (*s == ' ') s++;                                                 \
+        if (*s == '-') {                                                       \
+            sstr_t e = PERROR(pos, #TYPE " cannot be negative: '%s'",          \
+                              sstr_cstr(txt));                                 \
+            sstr_append(txt, e);                                               \
+            sstr_free(e);                                                      \
+            return JSON_ERROR;                                                 \
+        }                                                                      \
+        char* endptr;                                                          \
+        unsigned long temp_val = strtoul(sstr_cstr(txt), &endptr, 10);         \
+        if (*endptr != '\0' || temp_val > (MAX_VAL)) {                         \
+            sstr_t e = PERROR(pos, #TYPE " value out of range: '%s'",          \
+                              sstr_cstr(txt));                                 \
+            sstr_append(txt, e);                                               \
+            sstr_free(e);                                                      \
+            return JSON_ERROR;                                                 \
+        }                                                                      \
+        *val = (TYPE)temp_val;                                                 \
+    }                                                                          \
+    return 0;                                                                  \
+}
+
+DEFINE_UNMARSHAL_SCALAR_UNSIGNED(uint8_t, UINT8_MAX)
+DEFINE_UNMARSHAL_SCALAR_UNSIGNED(uint16_t, UINT16_MAX)
+DEFINE_UNMARSHAL_SCALAR_UNSIGNED(uint32_t, UINT32_MAX)
+
+static int json_unmarshal_scalar_uint64_t(sstr_t content, struct json_pos* pos,
+                                          uint64_t* val, sstr_t txt) {
+    int tk = json_next_token(content, pos, txt);
+    if (tk == JSON_TOKEN_FALSE) {
+        *val = 0;
+    } else if (tk == JSON_TOKEN_TRUE) {
+        *val = 1;
+    } else if (tk != JSON_TOKEN_INT) {
+        sstr_t e = PERROR(pos, "expected integer but got '%s'",
+                          ptoken(tk, txt));
+        sstr_append(txt, e);
+        sstr_free(e);
+        return tk;
+    } else {
+        const char* s = sstr_cstr(txt);
+        while (*s == ' ') s++;
+        if (*s == '-') {
+            sstr_t e = PERROR(pos, "uint64_t cannot be negative: '%s'",
+                              sstr_cstr(txt));
+            sstr_append(txt, e);
+            sstr_free(e);
+            return JSON_ERROR;
+        }
+        char* endptr;
+        unsigned long long temp_val = strtoull(sstr_cstr(txt), &endptr, 10);
+        if (*endptr != '\0' || temp_val > UINT64_MAX) {
+            sstr_t e = PERROR(pos, "uint64_t value out of range: '%s'",
+                              sstr_cstr(txt));
+            sstr_append(txt, e);
+            sstr_free(e);
+            return JSON_ERROR;
+        }
+        *val = (uint64_t)temp_val;
+    }
+    return 0;
+}
+
 // unmarshal array of enum values
 static int json_unmarshal_array_internal_enum(sstr_t content,
                                               struct json_pos* pos,
@@ -1057,6 +1201,59 @@ static int json_unmarshal_array_internal_sstr_t(sstr_t content,
     return 0;
 }
 
+#define DEFINE_UNMARSHAL_ARRAY_INTERNAL(TYPE)                                   \
+static int json_unmarshal_array_internal_##TYPE(sstr_t content,                \
+                                                struct json_pos* pos,          \
+                                                TYPE** ptr, int* ptrlen,       \
+                                                sstr_t txt) {                  \
+    int tk = json_next_token(content, pos, txt);                               \
+    if (tk != JSON_TOKEN_LEFT_BRACKET) {                                       \
+        sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));    \
+        sstr_append(txt, e);                                                   \
+        sstr_free(e);                                                          \
+        return -1;                                                             \
+    }                                                                          \
+    while (1) {                                                                \
+        TYPE res = 0;                                                          \
+        int r = json_unmarshal_scalar_##TYPE(content, pos, &res, txt);         \
+        if (r == JSON_TOKEN_RIGHT_BRACKET) {                                   \
+            return 0;                                                          \
+        }                                                                      \
+        if (r < 0) {                                                           \
+            return r;                                                          \
+        }                                                                      \
+        *ptr = (TYPE*)realloc(*ptr, (*ptrlen + 1) * sizeof(TYPE));             \
+        (*ptr)[*ptrlen] = res;                                                 \
+        *ptrlen = *ptrlen + 1;                                                 \
+        int tk2 = json_next_token(content, pos, txt);                          \
+        if (tk2 == JSON_TOKEN_RIGHT_BRACKET) {                                 \
+            return 0;                                                          \
+        }                                                                      \
+        if (tk2 == JSON_TOKEN_COMMA) {                                         \
+            continue;                                                          \
+        }                                                                      \
+        if (tk2 == JSON_ERROR) {                                               \
+            return -1;                                                         \
+        }                                                                      \
+        if (tk2 == JSON_TOKEN_EOF) {                                           \
+            sstr_t e = PERROR(pos, "parsing array, each EOF");                 \
+            sstr_append(txt, e);                                               \
+            sstr_free(e);                                                      \
+            return -1;                                                         \
+        }                                                                      \
+    }                                                                          \
+    return 0;                                                                  \
+}
+
+DEFINE_UNMARSHAL_ARRAY_INTERNAL(int8_t)
+DEFINE_UNMARSHAL_ARRAY_INTERNAL(int16_t)
+DEFINE_UNMARSHAL_ARRAY_INTERNAL(int32_t)
+DEFINE_UNMARSHAL_ARRAY_INTERNAL(int64_t)
+DEFINE_UNMARSHAL_ARRAY_INTERNAL(uint8_t)
+DEFINE_UNMARSHAL_ARRAY_INTERNAL(uint16_t)
+DEFINE_UNMARSHAL_ARRAY_INTERNAL(uint32_t)
+DEFINE_UNMARSHAL_ARRAY_INTERNAL(uint64_t)
+
 int json_unmarshal_array_int(sstr_t content, int** ptr, int* len) {
     struct json_pos pos;
     pos.line = 0;
@@ -1157,6 +1354,33 @@ int json_unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, int* len) {
     sstr_free(txt);
     return r;
 }
+
+#define DEFINE_UNMARSHAL_ARRAY_PUBLIC(TYPE)                                     \
+int json_unmarshal_array_##TYPE(sstr_t content, TYPE** ptr, int* len) {        \
+    struct json_pos pos;                                                        \
+    pos.line = 0;                                                              \
+    pos.col = 0;                                                               \
+    pos.offset = 0;                                                            \
+    sstr_t txt = sstr_new();                                                   \
+    int r = json_unmarshal_array_internal_##TYPE(content, &pos, ptr, len,      \
+                                                  txt);                        \
+    if (r != 0) {                                                              \
+        free(*ptr);                                                            \
+        *ptr = NULL;                                                           \
+        *len = 0;                                                              \
+    }                                                                          \
+    sstr_free(txt);                                                            \
+    return r;                                                                  \
+}
+
+DEFINE_UNMARSHAL_ARRAY_PUBLIC(int8_t)
+DEFINE_UNMARSHAL_ARRAY_PUBLIC(int16_t)
+DEFINE_UNMARSHAL_ARRAY_PUBLIC(int32_t)
+DEFINE_UNMARSHAL_ARRAY_PUBLIC(int64_t)
+DEFINE_UNMARSHAL_ARRAY_PUBLIC(uint8_t)
+DEFINE_UNMARSHAL_ARRAY_PUBLIC(uint16_t)
+DEFINE_UNMARSHAL_ARRAY_PUBLIC(uint32_t)
+DEFINE_UNMARSHAL_ARRAY_PUBLIC(uint64_t)
 
 static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                                           struct json_parse_param* param,
@@ -1273,6 +1497,166 @@ static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
     return JSON_GEN_SUCCESS;
 }
 
+// Unmarshal a single JSON object into a map container.
+// map_ptr points to the beginning of {entries_ptr, len} pair.
+// entry_size is sizeof(json_map_entry_<type>).
+// value_type is the FIELD_TYPE_* constant for the value.
+static int json_unmarshal_map_object(sstr_t content, struct json_pos* pos,
+                                     void* map_ptr,
+                                     int entry_size, int value_type,
+                                     const char* value_type_name,
+                                     const char** enum_strings, int enum_count,
+                                     sstr_t txt) {
+    int tk = json_next_token(content, pos, txt);
+    if (tk == JSON_TOKEN_NULL) {
+        return 0;
+    }
+    if (tk != JSON_TOKEN_LEFT_BRACE) {
+        sstr_t e = PERROR(pos, "expected '{' for map but got '%s'",
+                          ptoken(tk, txt));
+        sstr_append(txt, e);
+        sstr_free(e);
+        return -1;
+    }
+
+    char** entries_pp = (char**)map_ptr;
+    int* len_p = (int*)((char*)map_ptr + sizeof(void*));
+    int cap = *len_p;
+    char* entries = *entries_pp;
+
+    while (1) {
+        tk = json_next_token(content, pos, txt);
+        if (tk == JSON_TOKEN_RIGHT_BRACE) {
+            break;
+        }
+        if (tk == JSON_TOKEN_COMMA) {
+            continue;
+        }
+        if (tk == JSON_TOKEN_EOF || tk == JSON_ERROR) {
+            return -1;
+        }
+        if (tk != JSON_TOKEN_STRING) {
+            sstr_t e = PERROR(pos, "expected string key in map but got '%s'",
+                              ptoken(tk, txt));
+            sstr_append(txt, e);
+            sstr_free(e);
+            return -1;
+        }
+
+        // Save the key
+        sstr_t key = sstr_dup(txt);
+
+        // Expect colon
+        tk = json_next_token(content, pos, txt);
+        if (tk != JSON_TOKEN_COLON) {
+            sstr_t e = PERROR(pos, "expected ':' in map but got '%s'",
+                              ptoken(tk, txt));
+            sstr_append(txt, e);
+            sstr_free(e);
+            sstr_free(key);
+            return -1;
+        }
+
+        // Grow entries array
+        int idx = *len_p;
+        if (idx >= cap) {
+            cap = cap == 0 ? 4 : cap * 2;
+            entries = (char*)realloc(entries, (size_t)cap * entry_size);
+            if (!entries) {
+                sstr_free(key);
+                return -1;
+            }
+            *entries_pp = entries;
+        }
+
+        char* entry = entries + (size_t)idx * entry_size;
+        // Store key at offset 0 of entry
+        *(sstr_t*)entry = key;
+        // Value starts after the key (after sstr_t = sizeof(void*))
+        void* val_ptr = entry + sizeof(sstr_t);
+
+        int r = 0;
+        switch (value_type) {
+            case FIELD_TYPE_INT:
+            case FIELD_TYPE_BOOL:
+                r = json_unmarshal_scalar_int(content, pos, (int*)val_ptr, txt);
+                break;
+            case FIELD_TYPE_LONG:
+                r = json_unmarshal_scalar_long(content, pos, (long*)val_ptr,
+                                               txt);
+                break;
+            case FIELD_TYPE_INT8:
+                r = json_unmarshal_scalar_int8_t(content, pos, (int8_t*)val_ptr, txt);
+                break;
+            case FIELD_TYPE_INT16:
+                r = json_unmarshal_scalar_int16_t(content, pos, (int16_t*)val_ptr, txt);
+                break;
+            case FIELD_TYPE_INT32:
+                r = json_unmarshal_scalar_int32_t(content, pos, (int32_t*)val_ptr, txt);
+                break;
+            case FIELD_TYPE_INT64:
+                r = json_unmarshal_scalar_int64_t(content, pos, (int64_t*)val_ptr, txt);
+                break;
+            case FIELD_TYPE_UINT8:
+                r = json_unmarshal_scalar_uint8_t(content, pos, (uint8_t*)val_ptr, txt);
+                break;
+            case FIELD_TYPE_UINT16:
+                r = json_unmarshal_scalar_uint16_t(content, pos, (uint16_t*)val_ptr, txt);
+                break;
+            case FIELD_TYPE_UINT32:
+                r = json_unmarshal_scalar_uint32_t(content, pos, (uint32_t*)val_ptr, txt);
+                break;
+            case FIELD_TYPE_UINT64:
+                r = json_unmarshal_scalar_uint64_t(content, pos, (uint64_t*)val_ptr, txt);
+                break;
+            case FIELD_TYPE_FLOAT:
+                r = json_unmarshal_scalar_float(content, pos, (float*)val_ptr,
+                                                txt);
+                break;
+            case FIELD_TYPE_DOUBLE:
+                r = json_unmarshal_scalar_double(content, pos, (double*)val_ptr,
+                                                 txt);
+                break;
+            case FIELD_TYPE_SSTR: {
+                sstr_t s = NULL;
+                r = json_unmarshal_scalar_sstr_t(content, pos, &s, txt);
+                *(sstr_t*)val_ptr = s;
+                break;
+            }
+            case FIELD_TYPE_ENUM:
+                r = json_unmarshal_scalar_enum(content, pos, (int*)val_ptr,
+                                               enum_strings, enum_count, txt);
+                break;
+            case FIELD_TYPE_STRUCT: {
+                struct json_parse_param sub;
+                sub.instance_ptr = val_ptr;
+                sub.in_array = 0;
+                sub.in_struct = 1;
+                sub.struct_name = value_type_name;
+                sub.field_name = "";
+                r = json_unmarshal_struct_internal(content, pos, &sub, txt);
+                break;
+            }
+            default:
+                r = -1;
+                break;
+        }
+        if (r < 0) {
+            return r;
+        }
+        (*len_p)++;
+    }
+
+    // Shrink to fit
+    if (*len_p > 0 && *len_p < cap) {
+        entries = (char*)realloc(entries, (size_t)(*len_p) * entry_size);
+        if (entries) {
+            *entries_pp = entries;
+        }
+    }
+    return 0;
+}
+
 static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                                           struct json_parse_param* param,
                                           sstr_t txt) {
@@ -1362,6 +1746,114 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
             return -1;
         }
 
+        // Handle nullable fields: accept JSON null
+        if (fi->is_nullable) {
+            struct json_pos peek = *pos;
+            sstr_t peek_txt = sstr_new();
+            int peek_tk = json_next_token(content, &peek, peek_txt);
+            sstr_free(peek_txt);
+            if (peek_tk == JSON_TOKEN_NULL) {
+                *pos = peek;
+                // has_field remains false from init
+                continue;
+            }
+        }
+
+        if (fi->field_type == FIELD_TYPE_MAP) {
+            if (fi->is_array) {
+                // array of maps: "field": [{...}, {...}, ...]
+                sstr_t field_len_name = sstr(fi->field_name);
+                sstr_append_cstr(field_len_name, "_len");
+                struct json_field_offset_item* len_fi =
+                    json_field_offset_item_find(param->struct_name,
+                                                sstr_cstr(field_len_name));
+                sstr_free(field_len_name);
+                if (len_fi == NULL) {
+                    return -1;
+                }
+
+                int tk2 = json_next_token(content, pos, txt);
+                if (tk2 == JSON_TOKEN_NULL) {
+                    continue;
+                }
+                if (tk2 != JSON_TOKEN_LEFT_BRACKET) {
+                    sstr_t e = PERROR(pos, "expected '[' for map array but got '%s'",
+                                      ptoken(tk2, txt));
+                    sstr_append(txt, e);
+                    sstr_free(e);
+                    return -1;
+                }
+
+                // pointer to the map array pointer
+                char** arr_pp = (char**)((char*)param->instance_ptr + fi->offset);
+                char* arr = *arr_pp;
+                int arr_len = 0;
+                int arr_cap = 0;
+
+                while (1) {
+                    // peek for ] or ,
+                    struct json_pos peek = *pos;
+                    sstr_t peek_txt = sstr_new();
+                    tk2 = json_next_token(content, &peek, peek_txt);
+                    sstr_free(peek_txt);
+                    if (tk2 == JSON_TOKEN_RIGHT_BRACKET) {
+                        *pos = peek;
+                        break;
+                    }
+
+                    // grow array
+                    if (arr_len >= arr_cap) {
+                        arr_cap = arr_cap == 0 ? 4 : arr_cap * 2;
+                        arr = (char*)realloc(arr, (size_t)arr_cap * fi->type_size);
+                        if (!arr) return -1;
+                        *arr_pp = arr;
+                    }
+
+                    // Init the new map container: entries=NULL, len=0
+                    char* map_ptr = arr + (size_t)arr_len * fi->type_size;
+                    *(void**)map_ptr = NULL;
+                    *(int*)(map_ptr + sizeof(void*)) = 0;
+
+                    int r = json_unmarshal_map_object(
+                        content, pos, map_ptr,
+                        fi->map_entry_size, fi->map_value_type,
+                        fi->field_type_name,
+                        fi->enum_strings, fi->enum_count, txt);
+                    if (r < 0) return r;
+                    arr_len++;
+
+                    tk2 = json_next_token(content, pos, txt);
+                    if (tk2 == JSON_TOKEN_RIGHT_BRACKET) {
+                        break;
+                    }
+                    if (tk2 == JSON_TOKEN_COMMA) {
+                        continue;
+                    }
+                    return -1;
+                }
+
+                // Shrink to fit
+                if (arr_len > 0 && arr_len < arr_cap) {
+                    arr = (char*)realloc(arr, (size_t)arr_len * fi->type_size);
+                    if (arr) *arr_pp = arr;
+                }
+                *(int*)((char*)param->instance_ptr + len_fi->offset) = arr_len;
+            } else {
+                // scalar map: "field": {...}
+                void* map_ptr = (char*)param->instance_ptr + fi->offset;
+                int r = json_unmarshal_map_object(
+                    content, pos, map_ptr,
+                    fi->map_entry_size, fi->map_value_type,
+                    fi->field_type_name,
+                    fi->enum_strings, fi->enum_count, txt);
+                if (r < 0) return r;
+            }
+            if (fi->has_field_offset >= 0) {
+                *(bool*)((char*)param->instance_ptr + fi->has_field_offset) = true;
+            }
+            continue;
+        }
+
         if (fi->is_array && fi->array_size > 0) {
             // fixed-size array: parse directly into inline buffer
             int count = 0;
@@ -1406,6 +1898,38 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                     case FIELD_TYPE_LONG:
                         r = json_unmarshal_scalar_long(content, pos,
                             &((long*)base)[count], txt);
+                        break;
+                    case FIELD_TYPE_INT8:
+                        r = json_unmarshal_scalar_int8_t(content, pos,
+                            &((int8_t*)base)[count], txt);
+                        break;
+                    case FIELD_TYPE_INT16:
+                        r = json_unmarshal_scalar_int16_t(content, pos,
+                            &((int16_t*)base)[count], txt);
+                        break;
+                    case FIELD_TYPE_INT32:
+                        r = json_unmarshal_scalar_int32_t(content, pos,
+                            &((int32_t*)base)[count], txt);
+                        break;
+                    case FIELD_TYPE_INT64:
+                        r = json_unmarshal_scalar_int64_t(content, pos,
+                            &((int64_t*)base)[count], txt);
+                        break;
+                    case FIELD_TYPE_UINT8:
+                        r = json_unmarshal_scalar_uint8_t(content, pos,
+                            &((uint8_t*)base)[count], txt);
+                        break;
+                    case FIELD_TYPE_UINT16:
+                        r = json_unmarshal_scalar_uint16_t(content, pos,
+                            &((uint16_t*)base)[count], txt);
+                        break;
+                    case FIELD_TYPE_UINT32:
+                        r = json_unmarshal_scalar_uint32_t(content, pos,
+                            &((uint32_t*)base)[count], txt);
+                        break;
+                    case FIELD_TYPE_UINT64:
+                        r = json_unmarshal_scalar_uint64_t(content, pos,
+                            &((uint64_t*)base)[count], txt);
                         break;
                     case FIELD_TYPE_FLOAT:
                         r = json_unmarshal_scalar_float(content, pos,
@@ -1461,6 +1985,9 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                     return -1;
                 }
             }
+            if (fi->has_field_offset >= 0) {
+                *(bool*)((char*)param->instance_ptr + fi->has_field_offset) = true;
+            }
             continue;
         }
 
@@ -1506,6 +2033,46 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                         content, pos, fi->offset + param->instance_ptr, &len,
                         txt);
                     break;
+                case FIELD_TYPE_INT8:
+                    json_unmarshal_array_internal_int8_t(
+                        content, pos, fi->offset + param->instance_ptr, &len,
+                        txt);
+                    break;
+                case FIELD_TYPE_INT16:
+                    json_unmarshal_array_internal_int16_t(
+                        content, pos, fi->offset + param->instance_ptr, &len,
+                        txt);
+                    break;
+                case FIELD_TYPE_INT32:
+                    json_unmarshal_array_internal_int32_t(
+                        content, pos, fi->offset + param->instance_ptr, &len,
+                        txt);
+                    break;
+                case FIELD_TYPE_INT64:
+                    json_unmarshal_array_internal_int64_t(
+                        content, pos, fi->offset + param->instance_ptr, &len,
+                        txt);
+                    break;
+                case FIELD_TYPE_UINT8:
+                    json_unmarshal_array_internal_uint8_t(
+                        content, pos, fi->offset + param->instance_ptr, &len,
+                        txt);
+                    break;
+                case FIELD_TYPE_UINT16:
+                    json_unmarshal_array_internal_uint16_t(
+                        content, pos, fi->offset + param->instance_ptr, &len,
+                        txt);
+                    break;
+                case FIELD_TYPE_UINT32:
+                    json_unmarshal_array_internal_uint32_t(
+                        content, pos, fi->offset + param->instance_ptr, &len,
+                        txt);
+                    break;
+                case FIELD_TYPE_UINT64:
+                    json_unmarshal_array_internal_uint64_t(
+                        content, pos, fi->offset + param->instance_ptr, &len,
+                        txt);
+                    break;
                 case FIELD_TYPE_FLOAT:
                     json_unmarshal_array_internal_float(
                         content, pos, fi->offset + param->instance_ptr, &len,
@@ -1537,6 +2104,9 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
             }
             *(int*)(param->instance_ptr + len_fi->offset) = len;
 
+            if (fi->has_field_offset >= 0) {
+                *(bool*)((char*)param->instance_ptr + fi->has_field_offset) = true;
+            }
             continue;
         }
 
@@ -1556,6 +2126,70 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                 r = json_unmarshal_scalar_long(
                     content, pos,
                     (long*)((char*)param->instance_ptr + fi->offset), txt);
+                if (r != 0) {
+                    return r;
+                }
+                break;
+            case FIELD_TYPE_INT8:
+                r = json_unmarshal_scalar_int8_t(
+                    content, pos,
+                    (int8_t*)((char*)param->instance_ptr + fi->offset), txt);
+                if (r != 0) {
+                    return r;
+                }
+                break;
+            case FIELD_TYPE_INT16:
+                r = json_unmarshal_scalar_int16_t(
+                    content, pos,
+                    (int16_t*)((char*)param->instance_ptr + fi->offset), txt);
+                if (r != 0) {
+                    return r;
+                }
+                break;
+            case FIELD_TYPE_INT32:
+                r = json_unmarshal_scalar_int32_t(
+                    content, pos,
+                    (int32_t*)((char*)param->instance_ptr + fi->offset), txt);
+                if (r != 0) {
+                    return r;
+                }
+                break;
+            case FIELD_TYPE_INT64:
+                r = json_unmarshal_scalar_int64_t(
+                    content, pos,
+                    (int64_t*)((char*)param->instance_ptr + fi->offset), txt);
+                if (r != 0) {
+                    return r;
+                }
+                break;
+            case FIELD_TYPE_UINT8:
+                r = json_unmarshal_scalar_uint8_t(
+                    content, pos,
+                    (uint8_t*)((char*)param->instance_ptr + fi->offset), txt);
+                if (r != 0) {
+                    return r;
+                }
+                break;
+            case FIELD_TYPE_UINT16:
+                r = json_unmarshal_scalar_uint16_t(
+                    content, pos,
+                    (uint16_t*)((char*)param->instance_ptr + fi->offset), txt);
+                if (r != 0) {
+                    return r;
+                }
+                break;
+            case FIELD_TYPE_UINT32:
+                r = json_unmarshal_scalar_uint32_t(
+                    content, pos,
+                    (uint32_t*)((char*)param->instance_ptr + fi->offset), txt);
+                if (r != 0) {
+                    return r;
+                }
+                break;
+            case FIELD_TYPE_UINT64:
+                r = json_unmarshal_scalar_uint64_t(
+                    content, pos,
+                    (uint64_t*)((char*)param->instance_ptr + fi->offset), txt);
                 if (r != 0) {
                     return r;
                 }
@@ -1609,6 +2243,9 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                     return r;
                 }
                 break;
+        }
+        if (fi->has_field_offset >= 0) {
+            *(bool*)((char*)param->instance_ptr + fi->has_field_offset) = true;
         }
     }
     //

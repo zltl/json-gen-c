@@ -10,10 +10,10 @@ This document tracks the current maturity of `json-gen-c`, completed foundationa
 | Test coverage | Good | Multiple Google Test suites, benchmark coverage, `-Werror`, bugfix regression tests |
 | Documentation | Good | README, getting started guide, Doxygen, and man page exist |
 | CI/CD | Good | GitHub Actions test workflow and Doxygen deployment are present |
-| Type system | Growing | Enums and fixed-size arrays supported; no maps, optional fields, or precise-width integer families yet |
+| Type system | Growing | Enums, fixed-size arrays, maps, optional/nullable fields, and precise-width integers supported |
 | Ecosystem integration | Limited | No CMake, pkg-config, package manager distribution, or Windows support |
 
-Summary: the project is already usable and reasonably mature at the core. Enum type support has been added, expanding the type system. It still needs broader type support (maps, optionals, precise-width integers), better ecosystem integration, and stronger developer ergonomics to reach a polished 1.0.
+Summary: the project is already usable and reasonably mature at the core. Enum type support has been added, expanding the type system. It still needs broader type support (tagged unions), better ecosystem integration, and stronger developer ergonomics to reach a polished 1.0.
 
 ## Completed Foundational Work
 
@@ -117,6 +117,28 @@ Implemented fixed-size array support, distinguished from existing dynamically al
 
 **Status:** Completed.
 
+### Add Map/Dictionary Support
+**Location:** `src/struct/struct_parse.h`, `src/struct/struct_parse.c`, `src/gencode/gencode.c`, `src/gencode/codes/json_parse.h`, `src/gencode/codes/json_parse.c`
+
+Implemented map/dictionary field support that marshals to/from JSON objects:
+
+- **Schema syntax:** `map<sstr_t, V> field;` for scalar maps, `map<sstr_t, V> field[];` for arrays of maps. Supported value types: `int`, `long`, `float`, `double`, `bool`, `sstr_t`, enum, and struct.
+- **Key type:** Always `sstr_t` (JSON object keys are strings).
+- **C representation:** Each map value type generates a pair of structs via `#ifndef` guards to avoid duplication:
+  - `struct json_map_entry_<V> { sstr_t key; V value; };`
+  - `struct json_map_<V> { struct json_map_entry_<V>* entries; int len; };`
+  - Bool and enum value types share `json_map_int` since both are stored as `int`.
+- **Parser:** Detects `map` keyword, reads `<key_type, value_type>` via the existing angle-bracket tokenizer, validates key is `sstr_t`, and determines value type (builtin, enum, or struct). Also fixed a pre-existing tokenizer bug where the `<...>` string parser did not advance the offset correctly past the closing `>`.
+- **Init:** Scalar maps initialize `entries = NULL, len = 0`. Array-of-maps initializes the pointer to NULL and `_len` to 0.
+- **Clear:** Frees each entry's key, clears sstr_t/struct values, frees the entries array. Array-of-maps adds an outer loop over each map container.
+- **Marshal:** Scalar maps output `{"key1":val1,"key2":val2}`. Array-of-maps outputs `[{...},{...}]`. Enum values marshal as strings via string table lookup.
+- **Unmarshal (runtime):** New `json_unmarshal_map_object()` function parses a JSON `{...}` into a map container, dynamically growing the entries array with realloc. Array-of-maps parses `[{...},{...}]` by growing the outer array. Uses `map_value_type` and `map_entry_size` from the offset table for type-safe dispatch.
+- **Offset table:** Extended `json_field_offset_item` with `map_value_type` and `map_entry_size` fields. Enum map values include `enum_strings`/`enum_count` references for runtime string lookup.
+
+**Test coverage:** 10 dedicated tests covering init/clear, empty map marshal, int map marshal, int map unmarshal, round-trip, empty map unmarshal, all-types round-trip (int, long, float, double, bool, sstr_t, enum, struct), array-of-maps round-trip, empty array-of-maps, and null map handling.
+
+**Status:** Completed.
+
 ## Roadmap
 
 ### Phase 1: Bug Fixes and Technical Debt Cleanup
@@ -138,13 +160,24 @@ Implemented fixed-size array support, distinguished from existing dynamically al
     - ~~Example: `int data[10];`~~
     - ~~Distinguish them from dynamically allocated arrays.~~
     - **Completed.** Fixed-size arrays are supported with `type name[N];` syntax. See "Add Fixed-Size Array Support" in the completed section above.
-3. Add map or dictionary-like support.
-    - Example direction: `map<sstr_t, int>`
-    - Map naturally to JSON objects.
-4. Add optional or nullable fields.
-    - Missing fields during unmarshal should not always be treated as hard errors.
-5. Add precise-width integer families.
-    - `int8`, `int16`, `uint16`, `uint32`, `uint64`, `int64`, and related forms.
+3. ~~Add map or dictionary-like support.~~
+    - ~~Example direction: `map<sstr_t, int>`~~
+    - ~~Map naturally to JSON objects.~~
+    - **Completed.** Map/dictionary fields are supported with `map<sstr_t, V>` syntax. See "Add Map/Dictionary Support" in the completed section above.
+4. ~~Add optional or nullable fields.~~
+    - ~~Missing fields during unmarshal should not always be treated as hard errors.~~
+    - **Completed.** Two independent prefix keywords `optional` and `nullable` can be used individually or combined.
+      - `optional int x;` — field may be absent; marshal skips when `has_x == false`; unmarshal sets `has_x = true` on presence.
+      - `nullable sstr_t y;` — field always appears in JSON; marshal emits `"y":null` when `has_y == false`; unmarshal accepts JSON `null`.
+      - `optional nullable int z;` — combined: marshal skips when absent; unmarshal accepts both missing and null.
+      - Each generates a `bool has_<field>;` companion in the C struct. Non-decorated fields keep exact backward-compatible behavior.
+5. ~~Add precise-width integer families.~~
+    - ~~`int8`, `int16`, `uint16`, `uint32`, `uint64`, `int64`, and related forms.~~
+    - **Completed.** All 8 standard C precise-width integer types are supported as first-class types:
+      `int8_t`, `int16_t`, `int32_t`, `int64_t`, `uint8_t`, `uint16_t`, `uint32_t`, `uint64_t`.
+      - Usable as scalar fields, fixed-size arrays, dynamic arrays, and map values.
+      - Marshal uses efficient sstr_append helpers; unmarshal performs strict range checking.
+      - Generated header includes `<stdint.h>` automatically.
 6. Evaluate a tagged union or `oneof` style feature as a longer-term extension.
 
 **Exit criteria:** each new type has parser coverage, generator coverage, runtime coverage, and example schemas.

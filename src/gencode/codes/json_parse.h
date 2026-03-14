@@ -53,6 +53,17 @@ enum json_token {
 #define FIELD_TYPE_ENUM 5
 #define FIELD_TYPE_STRUCT 6
 #define FIELD_TYPE_BOOL 7
+#define FIELD_TYPE_MAP 8
+#define FIELD_TYPE_INT8 9
+#define FIELD_TYPE_INT16 10
+#define FIELD_TYPE_INT32 11
+#define FIELD_TYPE_INT64 12
+#define FIELD_TYPE_UINT8 13
+#define FIELD_TYPE_UINT16 14
+#define FIELD_TYPE_UINT32 15
+#define FIELD_TYPE_UINT64 16
+
+#include <stdint.h>
 
 struct json_parse_param {
     void* instance_ptr;
@@ -92,6 +103,38 @@ static int json_unmarshal_array_internal_double(sstr_t content,
                                                 struct json_pos* pos,
                                                 double** ptr, int* ptrlen,
                                                 sstr_t txt);
+static int json_unmarshal_array_internal_int8_t(sstr_t content,
+                                                struct json_pos* pos,
+                                                int8_t** ptr, int* ptrlen,
+                                                sstr_t txt);
+static int json_unmarshal_array_internal_int16_t(sstr_t content,
+                                                 struct json_pos* pos,
+                                                 int16_t** ptr, int* ptrlen,
+                                                 sstr_t txt);
+static int json_unmarshal_array_internal_int32_t(sstr_t content,
+                                                 struct json_pos* pos,
+                                                 int32_t** ptr, int* ptrlen,
+                                                 sstr_t txt);
+static int json_unmarshal_array_internal_int64_t(sstr_t content,
+                                                 struct json_pos* pos,
+                                                 int64_t** ptr, int* ptrlen,
+                                                 sstr_t txt);
+static int json_unmarshal_array_internal_uint8_t(sstr_t content,
+                                                 struct json_pos* pos,
+                                                 uint8_t** ptr, int* ptrlen,
+                                                 sstr_t txt);
+static int json_unmarshal_array_internal_uint16_t(sstr_t content,
+                                                  struct json_pos* pos,
+                                                  uint16_t** ptr, int* ptrlen,
+                                                  sstr_t txt);
+static int json_unmarshal_array_internal_uint32_t(sstr_t content,
+                                                  struct json_pos* pos,
+                                                  uint32_t** ptr, int* ptrlen,
+                                                  sstr_t txt);
+static int json_unmarshal_array_internal_uint64_t(sstr_t content,
+                                                  struct json_pos* pos,
+                                                  uint64_t** ptr, int* ptrlen,
+                                                  sstr_t txt);
 
 int json_marshal_array_indent_int(int* obj, int len, int indent, int curindent,
                                   sstr_t out) {
@@ -194,3 +237,33 @@ int json_marshal_array_indent_sstr_t(sstr_t* obj, int len, int indent,
     sstr_append_of(out, "]", 1);
     return 0;
 }
+
+#define DEFINE_MARSHAL_ARRAY_INDENT_INTTYPE(TYPE, APPEND_FN, CAST)             \
+int json_marshal_array_indent_##TYPE(TYPE* obj, int len, int indent,           \
+                                     int curindent, sstr_t out) {              \
+    int i;                                                                     \
+    sstr_append_of(out, "[", 1);                                               \
+    sstr_append_of_if(out, "\n", 1, indent);                                   \
+    curindent += indent;                                                        \
+    for (i = 0; i < len; i++) {                                                \
+        sstr_append_indent(out, curindent);                                     \
+        APPEND_FN(out, (CAST)obj[i]);                                          \
+        if (i != len - 1) {                                                    \
+            sstr_append_of(out, ",", 1);                                       \
+        }                                                                      \
+        sstr_append_of_if(out, "\n", 1, indent);                               \
+    }                                                                          \
+    curindent -= indent;                                                        \
+    sstr_append_indent(out, curindent);                                         \
+    sstr_append_of(out, "]", 1);                                               \
+    return 0;                                                                  \
+}
+
+DEFINE_MARSHAL_ARRAY_INDENT_INTTYPE(int8_t, sstr_append_int_str, int)
+DEFINE_MARSHAL_ARRAY_INDENT_INTTYPE(int16_t, sstr_append_int_str, int)
+DEFINE_MARSHAL_ARRAY_INDENT_INTTYPE(int32_t, sstr_append_int_str, int)
+DEFINE_MARSHAL_ARRAY_INDENT_INTTYPE(int64_t, sstr_append_long_str, long)
+DEFINE_MARSHAL_ARRAY_INDENT_INTTYPE(uint8_t, sstr_append_int_str, int)
+DEFINE_MARSHAL_ARRAY_INDENT_INTTYPE(uint16_t, sstr_append_int_str, int)
+DEFINE_MARSHAL_ARRAY_INDENT_INTTYPE(uint32_t, sstr_append_uint32_str, uint32_t)
+DEFINE_MARSHAL_ARRAY_INDENT_INTTYPE(uint64_t, sstr_append_uint64_str, uint64_t)

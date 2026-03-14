@@ -680,6 +680,24 @@ void sstr_append_long_str(sstr_t s, long l) {
     sstr_append_of(s, p, buf + SSTR_INT64_LEN - p);
 }
 
+void sstr_append_uint32_str(sstr_t s, uint32_t u) {
+    unsigned char buf[SSTR_INT32_LEN + 1];
+    unsigned char* p = buf + SSTR_INT32_LEN;
+    do {
+        *--p = (unsigned char)(u % 10 + '0');
+    } while (u /= 10);
+    sstr_append_of(s, p, buf + SSTR_INT32_LEN - p);
+}
+
+void sstr_append_uint64_str(sstr_t s, uint64_t u) {
+    unsigned char buf[SSTR_INT64_LEN + 1];
+    unsigned char* p = buf + SSTR_INT64_LEN;
+    do {
+        *--p = (unsigned char)(u % 10 + '0');
+    } while (u /= 10);
+    sstr_append_of(s, p, buf + SSTR_INT64_LEN - p);
+}
+
 void sstr_append_float_str(sstr_t s, float f, int precission) {
     (void)precission;  // Suppress unused parameter warning
     char buf[64];  // Sufficient for float representation

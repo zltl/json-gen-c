@@ -8,7 +8,7 @@ include ../build.mk
 TEST_BUILD := $(BUILD_DIR)/test
 
 # Test source files
-TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc enum_test.cc fixed_array_test.cc
+TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc enum_test.cc fixed_array_test.cc map_test.cc optional_test.cc precise_int_test.cc
 TEST_OBJECTS := $(patsubst %.cc,$(TEST_BUILD)/%.o,$(TEST_SOURCES))
 
 # Generated files
@@ -25,9 +25,12 @@ PERFORMANCE_TEST := $(TEST_BUILD)/performance_test
 HASH_MAP_TEST := $(TEST_BUILD)/hash_map_test
 ENUM_TEST := $(TEST_BUILD)/enum_test
 FIXED_ARRAY_TEST := $(TEST_BUILD)/fixed_array_test
+MAP_TEST := $(TEST_BUILD)/map_test
+OPTIONAL_TEST := $(TEST_BUILD)/optional_test
+PRECISE_INT_TEST := $(TEST_BUILD)/precise_int_test
 
 # All test targets
-ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST)
+ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST)
 
 #==============================================================================
 # Build rules
@@ -95,6 +98,21 @@ $(FIXED_ARRAY_TEST): $(TEST_BUILD)/fixed_array_test.o $(GENERATED_OBJECTS)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
 
+$(MAP_TEST): $(TEST_BUILD)/map_test.o $(GENERATED_OBJECTS)
+	@echo "Linking map tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
+$(OPTIONAL_TEST): $(TEST_BUILD)/optional_test.o $(GENERATED_OBJECTS)
+	@echo "Linking optional tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
+$(PRECISE_INT_TEST): $(TEST_BUILD)/precise_int_test.o $(GENERATED_OBJECTS)
+	@echo "Linking precise int tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
 #==============================================================================
 # Test execution
 #==============================================================================
@@ -119,6 +137,12 @@ run: $(ALL_TESTS)
 	$(ENUM_TEST)
 	@echo "=== Fixed Array Tests ==="
 	$(FIXED_ARRAY_TEST)
+	@echo "=== Map Tests ==="
+	$(MAP_TEST)
+	@echo "=== Optional Tests ==="
+	$(OPTIONAL_TEST)
+	@echo "=== Precise Int Tests ==="
+	$(PRECISE_INT_TEST)
 	@echo "=== Bugfix Tests ==="
 	$(MAKE) run-bugfix
 	@echo "All tests completed successfully!"

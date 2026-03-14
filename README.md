@@ -208,9 +208,26 @@ The field type can be one of the following:
 - `double`
 - `sstr_t`
 - `bool`
+- an enum name
 - a struct name
+- `map<sstr_t, V>` where V is any of the above types
 
 If a field is a dynamic array, just append `[]` after the field name. For fixed-size arrays, use `[N]` where N is a positive integer (e.g., `int data[10];`).
+
+### Map fields
+
+Map fields marshal to/from JSON objects. The key type is always `sstr_t` (JSON keys are strings). Example:
+
+```
+map<sstr_t, int> scores;       // single map: {"alice":95,"bob":87}
+map<sstr_t, int> tags[];       // array of maps: [{"x":1},{"y":2}]
+```
+
+In generated C code, each map is represented as a dynamic array of key-value entries:
+
+```c
+struct json_map_int { struct json_map_entry_int* entries; int len; };
+```
 
 ## The JSON API
 

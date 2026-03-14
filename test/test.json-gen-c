@@ -98,3 +98,76 @@ struct EdgeCaseStruct {
     sstr_t empty_string;
     sstr_t special_chars_string;
 }
+
+struct MapIntStruct {
+    map<sstr_t, int> scores;
+}
+
+struct MapAllTypesStruct {
+    map<sstr_t, int> int_map;
+    map<sstr_t, long> long_map;
+    map<sstr_t, float> float_map;
+    map<sstr_t, double> double_map;
+    map<sstr_t, bool> bool_map;
+    map<sstr_t, sstr_t> str_map;
+    map<sstr_t, Color> enum_map;
+    map<sstr_t, Person> struct_map;
+}
+
+struct MapArrayStruct {
+    map<sstr_t, int> tags[];
+}
+
+struct OptionalOnlyStruct {
+    int id;
+    optional sstr_t name;
+    optional int score;
+    optional bool active;
+    optional float rating;
+    optional double precise;
+    optional long big_num;
+}
+
+struct NullableOnlyStruct {
+    int id;
+    nullable sstr_t name;
+    nullable int score;
+    nullable bool active;
+}
+
+struct OptionalNullableStruct {
+    int id;
+    optional nullable sstr_t name;
+    optional nullable int score;
+}
+
+struct NullableNestedStruct {
+    int id;
+    nullable Person person;
+    optional Color color;
+    optional nullable Status status;
+}
+
+// Precise-width integer test structures
+struct PreciseInts {
+    int8_t i8;
+    int16_t i16;
+    int32_t i32;
+    int64_t i64;
+    uint8_t u8;
+    uint16_t u16;
+    uint32_t u32;
+    uint64_t u64;
+}
+
+struct PreciseIntArrays {
+    int8_t i8_arr[4];
+    uint32_t u32_dyn[];
+    int64_t i64_dyn[];
+    uint64_t u64_fixed[2];
+}
+
+struct PreciseIntMap {
+    map<sstr_t, int32_t> i32_map;
+    map<sstr_t, uint64_t> u64_map;
+}

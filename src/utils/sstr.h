@@ -38,6 +38,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -304,6 +305,8 @@ extern void sstr_append_int_str(sstr_t s, int i);
 extern int sstr_parse_long(sstr_t s, long* v);
 extern int sstr_parse_int(sstr_t* s, int* v);
 extern void sstr_append_long_str(sstr_t s, long l);
+extern void sstr_append_uint32_str(sstr_t s, uint32_t u);
+extern void sstr_append_uint64_str(sstr_t s, uint64_t u);
 extern void sstr_append_float_str(sstr_t s, float f, int precission);
 extern void sstr_append_double_str(sstr_t s, double f, int precision);
 extern int sstr_parse_double(sstr_t s, double* v);
