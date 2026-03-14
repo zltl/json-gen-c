@@ -2,14 +2,16 @@
 <area shape="rect" id="Node000001" title="generate json manipulate codes." alt="" coords="39,5,209,31"/>
 <area shape="rect" id="Node000002" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="5,79,139,104"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="118,33,91,69,86,66,113,29"/>
-<area shape="rect" id="Node000004" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="126,152,215,177"/>
-<area shape="poly" id="edge7_Node000001_Node000004" title=" " alt="" coords="132,30,153,78,169,138,163,139,148,80,128,32"/>
+<area shape="rect" id="Node000004" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="129,152,218,177"/>
+<area shape="poly" id="edge8_Node000001_Node000004" title=" " alt="" coords="132,30,153,78,170,138,165,139,148,80,127,32"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="35,225,109,251"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="75,104,75,212,69,212,69,104"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="89,102,145,142,142,146,86,106"/>
-<area shape="poly" id="edge5_Node000004_Node000003" title=" " alt="" coords="156,180,101,219,98,215,153,175"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="90,102,147,142,144,146,87,106"/>
+<area shape="poly" id="edge5_Node000004_Node000003" title=" " alt="" coords="159,180,101,219,98,215,156,175"/>
 <area shape="rect" id="Node000005" title=" " alt="" coords="133,225,208,251"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="173,178,173,212,168,212,168,178"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="176,178,174,212,169,212,170,178"/>
 <area shape="rect" id="Node000006" title=" " alt="" coords="232,225,315,251"/>
-<area shape="poly" id="edge6_Node000004_Node000006" title=" " alt="" coords="189,175,247,215,244,219,186,180"/>
+<area shape="poly" id="edge6_Node000004_Node000006" title=" " alt="" coords="191,175,247,215,244,219,188,180"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="339,225,410,251"/>
+<area shape="poly" id="edge7_Node000004_Node000007" title=" " alt="" coords="207,175,330,218,328,223,205,180"/>
 </map>

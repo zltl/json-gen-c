@@ -79,6 +79,7 @@ $(document).ready(function(){initNavTree('struct__parse_8c.html',''); initResiza
 <code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="diag_8h_source.html">utils/diag.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="hash__map_8h_source.html">utils/hash_map.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="io_8h_source.html">utils/io.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="sstr_8h_source.html">utils/sstr.h</a>&quot;</code><br />
@@ -88,39 +89,45 @@ Include dependency graph for struct_parse.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="struct__parse_8c__incl.png" border="0" usemap="#asrc_2struct_2struct__parse_8c" alt=""/></div>
 <map name="asrc_2struct_2struct__parse_8c" id="asrc_2struct_2struct__parse_8c">
-<area shape="rect" title="parse struct definition file." alt="" coords="415,5,593,31"/>
-<area shape="rect" href="struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="125,79,280,104"/>
-<area shape="poly" title=" " alt="" coords="456,33,265,78,264,73,455,28"/>
-<area shape="rect" href="hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="5,152,139,177"/>
-<area shape="poly" title=" " alt="" coords="415,26,332,32,245,43,167,59,137,69,115,81,102,93,93,108,80,140,75,138,88,105,98,90,112,77,135,64,165,54,244,38,332,27,415,21"/>
-<area shape="rect" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="223,225,313,251"/>
-<area shape="poly" title=" " alt="" coords="479,33,444,53,410,80,393,105,384,129,376,153,358,179,332,202,305,221,302,216,329,198,354,176,371,150,379,127,388,103,406,77,441,48,476,28"/>
-<area shape="rect" title=" " alt="" coords="419,79,490,104"/>
-<area shape="poly" title=" " alt="" coords="498,33,473,69,468,66,494,29"/>
-<area shape="rect" title=" " alt="" coords="514,79,593,104"/>
-<area shape="poly" title=" " alt="" coords="514,29,540,66,535,69,510,33"/>
-<area shape="rect" title=" " alt="" coords="617,79,684,104"/>
-<area shape="poly" title=" " alt="" coords="529,28,616,70,613,75,526,33"/>
-<area shape="rect" title=" " alt="" coords="709,79,779,104"/>
-<area shape="poly" title=" " alt="" coords="543,28,696,73,695,78,542,33"/>
-<area shape="rect" title=" " alt="" coords="803,79,874,104"/>
-<area shape="poly" title=" " alt="" coords="563,28,790,76,789,81,562,33"/>
-<area shape="rect" href="io_8h.html" title="file operation helper functions." alt="" coords="265,152,343,177"/>
-<area shape="poly" title=" " alt="" coords="461,33,412,52,364,81,337,110,318,141,313,138,333,107,361,77,410,47,459,28"/>
-<area shape="rect" href="error__codes_8h.html" title="Unified error code definitions for json&#45;gen&#45;c." alt="" coords="898,79,1041,104"/>
-<area shape="poly" title=" " alt="" coords="579,28,885,74,884,80,578,33"/>
-<area shape="rect" title=" " alt="" coords="128,299,203,324"/>
-<area shape="poly" title=" " alt="" coords="203,105,172,285,167,285,198,104"/>
-<area shape="poly" title=" " alt="" coords="183,106,106,148,104,143,180,102"/>
-<area shape="poly" title=" " alt="" coords="210,103,260,212,255,214,206,106"/>
-<area shape="poly" title=" " alt="" coords="82,176,153,286,148,289,77,179"/>
-<area shape="poly" title=" " alt="" coords="104,175,224,218,222,223,103,180"/>
-<area shape="poly" title=" " alt="" coords="253,253,195,293,192,288,250,248"/>
-<area shape="rect" title=" " alt="" coords="333,299,408,324"/>
-<area shape="poly" title=" " alt="" coords="286,248,344,288,341,293,283,253"/>
-<area shape="rect" title=" " alt="" coords="227,299,309,324"/>
-<area shape="poly" title=" " alt="" coords="271,251,271,285,265,285,265,251"/>
-<area shape="poly" title=" " alt="" coords="300,179,282,214,278,212,296,176"/>
+<area shape="rect" title="parse struct definition file." alt="" coords="362,5,539,31"/>
+<area shape="rect" href="struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="135,79,289,104"/>
+<area shape="poly" title=" " alt="" coords="413,33,265,77,263,72,412,28"/>
+<area shape="rect" href="diag_8h.html" title="Diagnostic engine for clang&#45;style error reporting." alt="" coords="34,152,129,177"/>
+<area shape="poly" title=" " alt="" coords="362,29,225,48,165,62,124,81,112,93,102,108,89,140,84,138,97,106,108,90,121,76,163,57,224,43,361,24"/>
+<area shape="rect" title=" " alt="" coords="5,225,72,251"/>
+<area shape="poly" title=" " alt="" coords="362,22,301,27,233,37,163,54,97,81,71,95,52,109,37,127,24,153,20,168,21,183,29,212,24,214,16,184,15,167,19,151,33,124,48,105,68,91,95,76,161,49,232,32,300,22,362,17"/>
+<area shape="rect" href="hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="255,152,388,177"/>
+<area shape="poly" title=" " alt="" coords="426,33,393,53,361,80,342,110,330,140,325,138,337,107,357,77,390,48,424,28"/>
+<area shape="rect" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="321,225,410,251"/>
+<area shape="poly" title=" " alt="" coords="440,33,421,53,406,80,401,106,404,127,406,150,403,178,384,215,380,213,397,177,401,150,398,128,396,105,402,78,417,50,436,29"/>
+<area shape="rect" title=" " alt="" coords="415,79,486,104"/>
+<area shape="poly" title=" " alt="" coords="453,31,453,65,448,65,448,31"/>
+<area shape="rect" title=" " alt="" coords="510,79,589,104"/>
+<area shape="poly" title=" " alt="" coords="468,29,524,68,521,73,465,33"/>
+<area shape="rect" title=" " alt="" coords="613,79,683,104"/>
+<area shape="poly" title=" " alt="" coords="483,28,604,71,602,76,481,33"/>
+<area shape="rect" title=" " alt="" coords="707,79,778,104"/>
+<area shape="poly" title=" " alt="" coords="498,28,695,76,693,81,497,33"/>
+<area shape="rect" href="io_8h.html" title="file operation helper functions." alt="" coords="617,152,695,177"/>
+<area shape="poly" title=" " alt="" coords="540,20,612,25,687,36,752,52,776,63,793,77,800,90,799,103,792,115,780,125,747,141,710,154,708,149,745,137,778,120,788,111,794,102,795,92,789,80,773,68,750,57,686,41,612,31,539,25"/>
+<area shape="rect" href="error__codes_8h.html" title="Unified error code definitions for json&#45;gen&#45;c." alt="" coords="854,79,997,104"/>
+<area shape="poly" title=" " alt="" coords="527,28,841,75,840,80,527,33"/>
+<area shape="rect" title=" " alt="" coords="157,299,232,324"/>
+<area shape="poly" title=" " alt="" coords="214,105,199,285,194,284,208,104"/>
+<area shape="poly" title=" " alt="" coords="192,106,116,148,113,143,190,102"/>
+<area shape="poly" title=" " alt="" coords="231,102,293,142,290,147,228,106"/>
+<area shape="poly" title=" " alt="" coords="216,104,224,139,233,158,245,176,276,201,312,218,309,223,273,205,241,179,228,161,219,141,211,105"/>
+<area shape="poly" title=" " alt="" coords="77,179,55,215,50,212,72,176"/>
+<area shape="poly" title=" " alt="" coords="313,180,216,290,212,287,309,176"/>
+<area shape="poly" title=" " alt="" coords="331,176,353,212,349,215,326,179"/>
+<area shape="poly" title=" " alt="" coords="339,253,236,296,234,291,337,248"/>
+<area shape="rect" title=" " alt="" coords="256,299,331,324"/>
+<area shape="poly" title=" " alt="" coords="355,253,317,291,313,287,352,249"/>
+<area shape="rect" title=" " alt="" coords="355,299,437,324"/>
+<area shape="poly" title=" " alt="" coords="373,250,388,285,383,287,368,252"/>
+<area shape="rect" title=" " alt="" coords="462,299,533,324"/>
+<area shape="poly" title=" " alt="" coords="388,248,465,290,463,294,385,253"/>
+<area shape="poly" title=" " alt="" coords="617,178,424,225,423,220,616,173"/>
 </map>
 </div>
 </div><table class="memberdecls">
@@ -175,8 +182,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">    fprintf(stderr, <span class="stringliteral">&quot;file %s, line %d, col %d: &quot;</span> fmt, parser-&gt;name, \</div>
-<div class="line">            parser-&gt;pos.line, parser-&gt;pos.col, ##__VA_ARGS__)</div>
+<b>Value:</b><div class="fragment"><div class="line">    diag_emit(parser-&gt;diag, DIAG_ERROR, parser-&gt;pos.line, parser-&gt;pos.col, \</div>
+<div class="line">              fmt, ##__VA_ARGS__)</div>
 </div><!-- fragment -->
 </div>
 </div>

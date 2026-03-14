@@ -1,5 +1,7 @@
 var dir_313caf1132e152dd9b58bea13a4052ca =
 [
+    [ "diag.c", "diag_8c.html", "diag_8c" ],
+    [ "diag.h", "diag_8h.html", "diag_8h" ],
     [ "error_codes.c", "error__codes_8c.html", "error__codes_8c" ],
     [ "error_codes.h", "error__codes_8h.html", "error__codes_8h" ],
     [ "hash.h", "hash_8h_source.html", null ],

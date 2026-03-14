@@ -76,6 +76,7 @@ $(document).ready(function(){initNavTree('struct__parse_8h.html',''); initResiza
 double, sstr_t), arrays, structs.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stddef.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="diag_8h_source.html">utils/diag.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="hash__map_8h_source.html">utils/hash_map.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="sstr_8h_source.html">utils/sstr.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
@@ -83,20 +84,26 @@ Include dependency graph for struct_parse.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="struct__parse_8h__incl.png" border="0" usemap="#asrc_2struct_2struct__parse_8h" alt=""/></div>
 <map name="asrc_2struct_2struct__parse_8h" id="asrc_2struct_2struct__parse_8h">
-<area shape="rect" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="5,5,184,31"/>
-<area shape="rect" title=" " alt="" coords="23,225,97,251"/>
-<area shape="poly" title=" " alt="" coords="70,33,41,52,28,65,18,80,12,97,11,114,16,151,30,185,46,213,41,215,25,187,11,152,5,115,7,96,14,77,24,62,38,48,68,29"/>
-<area shape="rect" href="hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="28,79,161,104"/>
-<area shape="poly" title=" " alt="" coords="97,31,97,65,92,65,92,31"/>
-<area shape="rect" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="114,152,203,177"/>
-<area shape="poly" title=" " alt="" coords="122,29,151,48,165,62,176,78,180,93,181,110,173,140,168,139,175,109,175,94,171,80,161,65,148,52,119,33"/>
-<area shape="poly" title=" " alt="" coords="94,105,69,213,63,211,89,104"/>
-<area shape="poly" title=" " alt="" coords="107,103,141,140,137,144,103,106"/>
-<area shape="poly" title=" " alt="" coords="144,180,89,219,86,215,141,175"/>
-<area shape="rect" title=" " alt="" coords="121,225,196,251"/>
-<area shape="poly" title=" " alt="" coords="161,178,161,212,156,212,156,178"/>
-<area shape="rect" title=" " alt="" coords="220,225,303,251"/>
-<area shape="poly" title=" " alt="" coords="177,175,235,215,232,219,174,180"/>
+<area shape="rect" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="52,5,231,31"/>
+<area shape="rect" title=" " alt="" coords="94,225,168,251"/>
+<area shape="poly" title=" " alt="" coords="85,33,45,51,28,64,15,80,9,100,10,126,17,153,29,176,54,200,85,218,82,222,51,204,25,179,12,155,5,127,3,99,10,77,25,60,43,46,83,28"/>
+<area shape="rect" href="diag_8h.html" title="Diagnostic engine for clang&#45;style error reporting." alt="" coords="25,79,120,104"/>
+<area shape="poly" title=" " alt="" coords="132,33,95,71,91,67,128,29"/>
+<area shape="rect" href="hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="144,79,278,104"/>
+<area shape="poly" title=" " alt="" coords="155,29,192,67,188,71,151,33"/>
+<area shape="rect" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="242,152,332,177"/>
+<area shape="poly" title=" " alt="" coords="216,28,258,46,276,60,292,77,298,92,301,108,297,139,292,139,296,109,293,94,287,80,273,64,255,51,214,33"/>
+<area shape="rect" title=" " alt="" coords="39,152,106,177"/>
+<area shape="poly" title=" " alt="" coords="75,104,75,138,70,138,70,104"/>
+<area shape="poly" title=" " alt="" coords="207,106,146,215,141,212,202,103"/>
+<area shape="poly" title=" " alt="" coords="225,102,266,141,263,144,221,106"/>
+<area shape="poly" title=" " alt="" coords="263,180,170,222,168,217,261,175"/>
+<area shape="rect" title=" " alt="" coords="192,225,267,251"/>
+<area shape="poly" title=" " alt="" coords="279,179,250,216,245,213,275,176"/>
+<area shape="rect" title=" " alt="" coords="291,225,374,251"/>
+<area shape="poly" title=" " alt="" coords="297,176,320,212,315,215,292,179"/>
+<area shape="rect" title=" " alt="" coords="398,225,469,251"/>
+<area shape="poly" title=" " alt="" coords="312,175,399,217,396,222,309,180"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -162,6 +169,33 @@ Macros</h2></td></tr>
 <tr class="memitem:a160f779fbfaec67fda3f110ccf433cd7" id="r_a160f779fbfaec67fda3f110ccf433cd7"><td class="memItemLeft" align="right" valign="top"><a id="a160f779fbfaec67fda3f110ccf433cd7" name="a160f779fbfaec67fda3f110ccf433cd7"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_BOOL</b>&#160;&#160;&#160;7</td></tr>
 <tr class="separator:a160f779fbfaec67fda3f110ccf433cd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae10a97bb94dece74cef972747543ffae" id="r_ae10a97bb94dece74cef972747543ffae"><td class="memItemLeft" align="right" valign="top"><a id="ae10a97bb94dece74cef972747543ffae" name="ae10a97bb94dece74cef972747543ffae"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_MAP</b>&#160;&#160;&#160;8</td></tr>
+<tr class="separator:ae10a97bb94dece74cef972747543ffae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abcf89c90259a0d2c9b1c1767e43009b4" id="r_abcf89c90259a0d2c9b1c1767e43009b4"><td class="memItemLeft" align="right" valign="top"><a id="abcf89c90259a0d2c9b1c1767e43009b4" name="abcf89c90259a0d2c9b1c1767e43009b4"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_INT8</b>&#160;&#160;&#160;9</td></tr>
+<tr class="separator:abcf89c90259a0d2c9b1c1767e43009b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c66afede30de0ff743582a43d67ed03" id="r_a1c66afede30de0ff743582a43d67ed03"><td class="memItemLeft" align="right" valign="top"><a id="a1c66afede30de0ff743582a43d67ed03" name="a1c66afede30de0ff743582a43d67ed03"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_INT16</b>&#160;&#160;&#160;10</td></tr>
+<tr class="separator:a1c66afede30de0ff743582a43d67ed03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab26899331f5de170ff5f00c44bf151d0" id="r_ab26899331f5de170ff5f00c44bf151d0"><td class="memItemLeft" align="right" valign="top"><a id="ab26899331f5de170ff5f00c44bf151d0" name="ab26899331f5de170ff5f00c44bf151d0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_INT32</b>&#160;&#160;&#160;11</td></tr>
+<tr class="separator:ab26899331f5de170ff5f00c44bf151d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87375cc54a7c36dad24e164082c188db" id="r_a87375cc54a7c36dad24e164082c188db"><td class="memItemLeft" align="right" valign="top"><a id="a87375cc54a7c36dad24e164082c188db" name="a87375cc54a7c36dad24e164082c188db"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_INT64</b>&#160;&#160;&#160;12</td></tr>
+<tr class="separator:a87375cc54a7c36dad24e164082c188db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f20925c244f794d51509245daae9362" id="r_a2f20925c244f794d51509245daae9362"><td class="memItemLeft" align="right" valign="top"><a id="a2f20925c244f794d51509245daae9362" name="a2f20925c244f794d51509245daae9362"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_UINT8</b>&#160;&#160;&#160;13</td></tr>
+<tr class="separator:a2f20925c244f794d51509245daae9362"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6e8c6a88fc8e9f0266bce9f142c6d96" id="r_aa6e8c6a88fc8e9f0266bce9f142c6d96"><td class="memItemLeft" align="right" valign="top"><a id="aa6e8c6a88fc8e9f0266bce9f142c6d96" name="aa6e8c6a88fc8e9f0266bce9f142c6d96"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_UINT16</b>&#160;&#160;&#160;14</td></tr>
+<tr class="separator:aa6e8c6a88fc8e9f0266bce9f142c6d96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55c03307877956095b66c0e2c64b1d6a" id="r_a55c03307877956095b66c0e2c64b1d6a"><td class="memItemLeft" align="right" valign="top"><a id="a55c03307877956095b66c0e2c64b1d6a" name="a55c03307877956095b66c0e2c64b1d6a"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_UINT32</b>&#160;&#160;&#160;15</td></tr>
+<tr class="separator:a55c03307877956095b66c0e2c64b1d6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac459395c4416883211763236eb69fea8" id="r_ac459395c4416883211763236eb69fea8"><td class="memItemLeft" align="right" valign="top"><a id="ac459395c4416883211763236eb69fea8" name="ac459395c4416883211763236eb69fea8"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_UINT64</b>&#160;&#160;&#160;16</td></tr>
+<tr class="separator:ac459395c4416883211763236eb69fea8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab9840f857dc4416a1c14e8d8bab92746" id="r_ab9840f857dc4416a1c14e8d8bab92746"><td class="memItemLeft" align="right" valign="top"><a id="ab9840f857dc4416a1c14e8d8bab92746" name="ab9840f857dc4416a1c14e8d8bab92746"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>TYPE_NAME_INT</b>&#160;&#160;&#160;&quot;int&quot;</td></tr>
 <tr class="separator:ab9840f857dc4416a1c14e8d8bab92746"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -180,6 +214,30 @@ Macros</h2></td></tr>
 <tr class="memitem:a5f4e360f8de317341877e76c439e3372" id="r_a5f4e360f8de317341877e76c439e3372"><td class="memItemLeft" align="right" valign="top"><a id="a5f4e360f8de317341877e76c439e3372" name="a5f4e360f8de317341877e76c439e3372"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>TYPE_NAME_DOUBLE</b>&#160;&#160;&#160;&quot;double&quot;</td></tr>
 <tr class="separator:a5f4e360f8de317341877e76c439e3372"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb0f5174d3758c83ecb2afa72a03fcbc" id="r_acb0f5174d3758c83ecb2afa72a03fcbc"><td class="memItemLeft" align="right" valign="top"><a id="acb0f5174d3758c83ecb2afa72a03fcbc" name="acb0f5174d3758c83ecb2afa72a03fcbc"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>TYPE_NAME_INT8</b>&#160;&#160;&#160;&quot;int8_t&quot;</td></tr>
+<tr class="separator:acb0f5174d3758c83ecb2afa72a03fcbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7625041fe262212f88fb575750dfdd21" id="r_a7625041fe262212f88fb575750dfdd21"><td class="memItemLeft" align="right" valign="top"><a id="a7625041fe262212f88fb575750dfdd21" name="a7625041fe262212f88fb575750dfdd21"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>TYPE_NAME_INT16</b>&#160;&#160;&#160;&quot;int16_t&quot;</td></tr>
+<tr class="separator:a7625041fe262212f88fb575750dfdd21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b0f0e26976f52d9c7f5671d19d4c2b0" id="r_a8b0f0e26976f52d9c7f5671d19d4c2b0"><td class="memItemLeft" align="right" valign="top"><a id="a8b0f0e26976f52d9c7f5671d19d4c2b0" name="a8b0f0e26976f52d9c7f5671d19d4c2b0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>TYPE_NAME_INT32</b>&#160;&#160;&#160;&quot;int32_t&quot;</td></tr>
+<tr class="separator:a8b0f0e26976f52d9c7f5671d19d4c2b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8106ff5e0a747255fab68d84a2b7e64c" id="r_a8106ff5e0a747255fab68d84a2b7e64c"><td class="memItemLeft" align="right" valign="top"><a id="a8106ff5e0a747255fab68d84a2b7e64c" name="a8106ff5e0a747255fab68d84a2b7e64c"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>TYPE_NAME_INT64</b>&#160;&#160;&#160;&quot;int64_t&quot;</td></tr>
+<tr class="separator:a8106ff5e0a747255fab68d84a2b7e64c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a379dbc8f765fca324bd61515de6e0b93" id="r_a379dbc8f765fca324bd61515de6e0b93"><td class="memItemLeft" align="right" valign="top"><a id="a379dbc8f765fca324bd61515de6e0b93" name="a379dbc8f765fca324bd61515de6e0b93"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>TYPE_NAME_UINT8</b>&#160;&#160;&#160;&quot;uint8_t&quot;</td></tr>
+<tr class="separator:a379dbc8f765fca324bd61515de6e0b93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ae9ee8bda52a80b9ceefe79e75e2126" id="r_a2ae9ee8bda52a80b9ceefe79e75e2126"><td class="memItemLeft" align="right" valign="top"><a id="a2ae9ee8bda52a80b9ceefe79e75e2126" name="a2ae9ee8bda52a80b9ceefe79e75e2126"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>TYPE_NAME_UINT16</b>&#160;&#160;&#160;&quot;uint16_t&quot;</td></tr>
+<tr class="separator:a2ae9ee8bda52a80b9ceefe79e75e2126"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9973dbf541ba1342dcf6bf8151d254e8" id="r_a9973dbf541ba1342dcf6bf8151d254e8"><td class="memItemLeft" align="right" valign="top"><a id="a9973dbf541ba1342dcf6bf8151d254e8" name="a9973dbf541ba1342dcf6bf8151d254e8"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>TYPE_NAME_UINT32</b>&#160;&#160;&#160;&quot;uint32_t&quot;</td></tr>
+<tr class="separator:a9973dbf541ba1342dcf6bf8151d254e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64c6c97bbd55b91b01631487809c0d81" id="r_a64c6c97bbd55b91b01631487809c0d81"><td class="memItemLeft" align="right" valign="top"><a id="a64c6c97bbd55b91b01631487809c0d81" name="a64c6c97bbd55b91b01631487809c0d81"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>TYPE_NAME_UINT64</b>&#160;&#160;&#160;&quot;uint64_t&quot;</td></tr>
+<tr class="separator:a64c6c97bbd55b91b01631487809c0d81"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a21d7e92f5ff8e6f151bcbb297f8c509a" id="r_a21d7e92f5ff8e6f151bcbb297f8c509a"><td class="memItemLeft" align="right" valign="top"><a id="a21d7e92f5ff8e6f151bcbb297f8c509a" name="a21d7e92f5ff8e6f151bcbb297f8c509a"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>STRUCT_MAP_BUCKET_SIZE</b>&#160;&#160;&#160;4096</td></tr>
 <tr class="memdesc:a21d7e92f5ff8e6f151bcbb297f8c509a"><td class="mdescLeft">&#160;</td><td class="mdescRight">We use a hash map to store parsed structs, and use the struct name as the key. This is the size of the hash map's bucket. <br /></td></tr>

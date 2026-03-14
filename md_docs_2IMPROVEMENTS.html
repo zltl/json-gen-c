@@ -67,8 +67,8 @@ $(document).ready(function(){initNavTree('md_docs_2IMPROVEMENTS.html',''); initR
   <div class="headertitle"><div class="title">Project Improvement Plan</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md32"></a> This document tracks the current maturity of <code>json-gen-c</code>, completed foundational work, and the long-term roadmap for making it a more complete production-grade schema-first JSON code generator for C.</p>
-<h1><a class="anchor" id="autotoc_md33"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md33"></a> This document tracks the current maturity of <code>json-gen-c</code>, completed foundational work, and the long-term roadmap for making it a more complete production-grade schema-first JSON code generator for C.</p>
+<h1><a class="anchor" id="autotoc_md34"></a>
 Current Assessment</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -82,59 +82,59 @@ Current Assessment</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">CI/CD   </td><td class="markdownTableBodyNone">Good   </td><td class="markdownTableBodyNone">GitHub Actions test workflow and Doxygen deployment are present    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone">Type system   </td><td class="markdownTableBodyNone">Growing   </td><td class="markdownTableBodyNone">Enums and fixed-size arrays supported; no maps, optional fields, or precise-width integer families yet    </td></tr>
+<td class="markdownTableBodyNone">Type system   </td><td class="markdownTableBodyNone">Growing   </td><td class="markdownTableBodyNone">Enums, fixed-size arrays, maps, optional/nullable fields, and precise-width integers supported    </td></tr>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">Ecosystem integration   </td><td class="markdownTableBodyNone">Limited   </td><td class="markdownTableBodyNone">No CMake, pkg-config, package manager distribution, or Windows support   </td></tr>
 </table>
-<p>Summary: the project is already usable and reasonably mature at the core. Enum type support has been added, expanding the type system. It still needs broader type support (maps, optionals, precise-width integers), better ecosystem integration, and stronger developer ergonomics to reach a polished 1.0.</p>
-<h1><a class="anchor" id="autotoc_md34"></a>
+<p>Summary: the project is already usable and reasonably mature at the core. Enum type support has been added, expanding the type system. It still needs broader type support (tagged unions), better ecosystem integration, and stronger developer ergonomics to reach a polished 1.0.</p>
+<h1><a class="anchor" id="autotoc_md35"></a>
 Completed Foundational Work</h1>
-<h2><a class="anchor" id="autotoc_md35"></a>
+<h2><a class="anchor" id="autotoc_md36"></a>
 Implement Hash Map Resizing</h2>
 <p><b>Location:</b> <code>src/utils/hash_map.c</code></p>
 <p>Implemented resizing logic in <code>hash_map_resize_if_needed()</code>: allocate a larger bucket array, rehash existing entries, free the old buckets, and update map metadata. Resizing is triggered when the load factor exceeds 0.75.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md36"></a>
+<h2><a class="anchor" id="autotoc_md37"></a>
 Optimize &lt;tt&gt;hash_2s&lt;/tt&gt;</h2>
 <p><b>Location:</b> <code>src/gencode/gencode.c</code></p>
 <p>Removed temporary string concatenation from the composite hash path. The implementation now chains <code>hash_murmur()</code> calls with a seed, avoiding per-call allocation overhead.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md37"></a>
+<h2><a class="anchor" id="autotoc_md38"></a>
 Unify Hash Functions</h2>
 <p><b>Location:</b> <code><a class="el" href="hash_8h_source.html">src/utils/hash.h</a></code>, <code>src/utils/hash.c</code></p>
 <p>Consolidated the MurmurHash-like implementation into a shared utility function, <code>hash_murmur()</code>, and reused it across code generation and hash map logic.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md38"></a>
+<h2><a class="anchor" id="autotoc_md39"></a>
 Use &lt;tt&gt;stdbool.h&lt;/tt&gt;</h2>
 <p><b>Location:</b> <code><a class="el" href="sstr_8c.html" title="Implementation of the sstr.h header file.">src/utils/sstr.c</a></code>, <code><a class="el" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters.">src/utils/sstr.h</a></code>, related files</p>
 <p>Refactored boolean-like integer flags to use <code>bool</code> where appropriate for clarity and consistency.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md39"></a>
+<h2><a class="anchor" id="autotoc_md40"></a>
 Improve Argument Parsing</h2>
 <p><b>Location:</b> <code>src/main/main.c</code></p>
 <p>Replaced brittle manual argument parsing with <code>getopt_long_only</code>, improving flag handling and future extensibility.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md40"></a>
+<h2><a class="anchor" id="autotoc_md41"></a>
 Improve Error Handling Consistency</h2>
 <p><b>Location:</b> <code>src/main/main.c</code></p>
 <p>Adjusted <code>usage()</code> handling so error-triggered output goes to <code>stderr</code> while normal help output goes to <code>stdout</code>.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md41"></a>
+<h2><a class="anchor" id="autotoc_md42"></a>
 Fix Parser Off-by-One Bug</h2>
 <p><b>Location:</b> <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code></p>
 <p>Fixed the parser EOF condition from <code>offset &gt;= length - 1</code> to <code>offset &gt;= length</code>, preventing the last significant character of a schema file from being ignored.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md42"></a>
+<h2><a class="anchor" id="autotoc_md43"></a>
 Refactor Top-Level &lt;tt&gt;#include&lt;/tt&gt; Parsing</h2>
 <p><b>Location:</b> <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code></p>
 <p>Restructured top-level parsing so <code>#include</code> directives and <code>struct</code> declarations are handled independently in <code><a class="el" href="struct__parse_8c.html#a3b1cfbb20875351e5264df1490a76818" title="parse a struct definition file, and store the parsed structs in struct_parser.">struct_parser_parse()</a></code>. This fixes failures when <code>#include</code> appears before struct definitions in the same schema file.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md43"></a>
+<h2><a class="anchor" id="autotoc_md44"></a>
 Harden File I/O</h2>
 <p><b>Location:</b> <code>src/utils/io.c</code></p>
 <p>Added proper error checking for <code>fopen</code>, <code>fseek</code>, <code>ftell</code>, <code>fread</code>, and <code>fwrite</code>.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md44"></a>
+<h2><a class="anchor" id="autotoc_md45"></a>
 Add Enum Type Support</h2>
 <p><b>Location:</b> <code><a class="el" href="struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,...">src/struct/struct_parse.h</a></code>, <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code>, <code><a class="el" href="gencode_8h.html" title="generate json manipulate codes.">src/gencode/gencode.h</a></code>, <code>src/gencode/gencode.c</code>, <code><a class="el" href="json__parse_8h_source.html">src/gencode/codes/json_parse.h</a></code>, <code>src/gencode/codes/json_parse.c</code>, <code>src/main/main.c</code></p>
 <p>Implemented full enum type support across the schema parser, code generator, and generated runtime:</p>
@@ -151,7 +151,7 @@ Add Enum Type Support</h2>
 </ul>
 <p><b>Test coverage:</b> 11 dedicated enum tests covering scalar marshal/unmarshal, array marshal/unmarshal, round-trip, integer fallback, unknown value errors, out-of-range marshal, generated constants verification, and empty array. Empty enum regression test added to bugfix suite.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md45"></a>
+<h2><a class="anchor" id="autotoc_md46"></a>
 Add Fixed-Size Array Support</h2>
 <p><b>Location:</b> <code><a class="el" href="struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,...">src/struct/struct_parse.h</a></code>, <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code>, <code>src/gencode/gencode.c</code>, <code>src/gencode/codes/json_parse.c</code></p>
 <p>Implemented fixed-size array support, distinguished from existing dynamically allocated arrays:</p>
@@ -167,9 +167,31 @@ Add Fixed-Size Array Support</h2>
 </ul>
 <p><b>Test coverage:</b> 17 dedicated tests covering init zeros, clear resets, marshal (int array, zero-init), round-trip for all supported types (int, long, float, double, string, bool, enum, struct), partial fill unmarshal, empty array unmarshal, overflow error detection, struct layout verification, and full round-trip with all field types.</p>
 <p><b>Status:</b> Completed.</p>
-<h1><a class="anchor" id="autotoc_md46"></a>
-Roadmap</h1>
 <h2><a class="anchor" id="autotoc_md47"></a>
+Add Map/Dictionary Support</h2>
+<p><b>Location:</b> <code><a class="el" href="struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,...">src/struct/struct_parse.h</a></code>, <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code>, <code>src/gencode/gencode.c</code>, <code><a class="el" href="json__parse_8h_source.html">src/gencode/codes/json_parse.h</a></code>, <code>src/gencode/codes/json_parse.c</code></p>
+<p>Implemented map/dictionary field support that marshals to/from JSON objects:</p>
+<ul>
+<li><b>Schema syntax:</b> <code>map&lt;sstr_t, V&gt; field;</code> for scalar maps, <code>map&lt;sstr_t, V&gt; field[];</code> for arrays of maps. Supported value types: <code>int</code>, <code>long</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>sstr_t</code>, enum, and struct.</li>
+<li><b>Key type:</b> Always <code>sstr_t</code> (JSON object keys are strings).</li>
+<li><b>C representation:</b> Each map value type generates a pair of structs via <code>#ifndef</code> guards to avoid duplication:<ul>
+<li><code>struct json_map_entry_&lt;V&gt; { sstr_t key; V value; };</code></li>
+<li><code>struct json_map_&lt;V&gt; { struct json_map_entry_&lt;V&gt;* entries; int len; };</code></li>
+<li>Bool and enum value types share <code>json_map_int</code> since both are stored as <code>int</code>.</li>
+</ul>
+</li>
+<li><b>Parser:</b> Detects <code>map</code> keyword, reads <code>&lt;key_type, value_type&gt;</code> via the existing angle-bracket tokenizer, validates key is <code>sstr_t</code>, and determines value type (builtin, enum, or struct). Also fixed a pre-existing tokenizer bug where the <code>&lt;...&gt;</code> string parser did not advance the offset correctly past the closing <code>&gt;</code>.</li>
+<li><b>Init:</b> Scalar maps initialize <code>entries = NULL, len = 0</code>. Array-of-maps initializes the pointer to NULL and <code>_len</code> to 0.</li>
+<li><b>Clear:</b> Frees each entry's key, clears sstr_t/struct values, frees the entries array. Array-of-maps adds an outer loop over each map container.</li>
+<li><b>Marshal:</b> Scalar maps output <code>{"key1":val1,"key2":val2}</code>. Array-of-maps outputs <code>[{...},{...}]</code>. Enum values marshal as strings via string table lookup.</li>
+<li><b>Unmarshal (runtime):</b> New <code>json_unmarshal_map_object()</code> function parses a JSON <code>{...}</code> into a map container, dynamically growing the entries array with realloc. Array-of-maps parses <code>[{...},{...}]</code> by growing the outer array. Uses <code>map_value_type</code> and <code>map_entry_size</code> from the offset table for type-safe dispatch.</li>
+<li><b>Offset table:</b> Extended <code><a class="el" href="structjson__field__offset__item.html" title="Field offset item structure for JSON parsing.">json_field_offset_item</a></code> with <code>map_value_type</code> and <code>map_entry_size</code> fields. Enum map values include <code>enum_strings</code>/<code>enum_count</code> references for runtime string lookup.</li>
+</ul>
+<p><b>Test coverage:</b> 10 dedicated tests covering init/clear, empty map marshal, int map marshal, int map unmarshal, round-trip, empty map unmarshal, all-types round-trip (int, long, float, double, bool, sstr_t, enum, struct), array-of-maps round-trip, empty array-of-maps, and null map handling.</p>
+<p><b>Status:</b> Completed.</p>
+<h1><a class="anchor" id="autotoc_md48"></a>
+Roadmap</h1>
+<h2><a class="anchor" id="autotoc_md49"></a>
 Phase 1: Bug Fixes and Technical Debt Cleanup</h2>
 <ol type="1">
 <li>Keep parser regression coverage growing for edge cases around comments, includes, empty files, and malformed trailing tokens.</li>
@@ -178,7 +200,7 @@ Phase 1: Bug Fixes and Technical Debt Cleanup</h2>
 <li>Audit the generated code template for duplicated logic and simplify where possible.</li>
 </ol>
 <p><b>Exit criteria:</b> CI stays green, regression tests cover recent parser and generator fixes, and the parsing/codegen core is stable enough for feature work.</p>
-<h2><a class="anchor" id="autotoc_md48"></a>
+<h2><a class="anchor" id="autotoc_md50"></a>
 Phase 2: Type System Expansion</h2>
 <ol type="1">
 <li>Add enum support.<ul>
@@ -193,27 +215,42 @@ Phase 2: Type System Expansion</h2>
 <li><b>Completed.</b> Fixed-size arrays are supported with <code>type name[N];</code> syntax. See "Add Fixed-Size Array Support" in the completed section above.</li>
 </ul>
 </li>
-<li>Add map or dictionary-like support.<ul>
-<li>Example direction: <code>map&lt;sstr_t, int&gt;</code></li>
-<li>Map naturally to JSON objects.</li>
+<li><strike>Add map or dictionary-like support.</strike><ul>
+<li><strike>Example direction: <code>map&lt;sstr_t, int&gt;</code></strike></li>
+<li><strike>Map naturally to JSON objects.</strike></li>
+<li><b>Completed.</b> Map/dictionary fields are supported with <code>map&lt;sstr_t, V&gt;</code> syntax. See "Add Map/Dictionary Support" in the completed section above.</li>
 </ul>
 </li>
-<li>Add optional or nullable fields.<ul>
-<li>Missing fields during unmarshal should not always be treated as hard errors.</li>
+<li><strike>Add optional or nullable fields.</strike><ul>
+<li><strike>Missing fields during unmarshal should not always be treated as hard errors.</strike></li>
+<li><b>Completed.</b> Two independent prefix keywords <code>optional</code> and <code>nullable</code> can be used individually or combined.<ul>
+<li><code>optional int x;</code> — field may be absent; marshal skips when <code>has_x == false</code>; unmarshal sets <code>has_x = true</code> on presence.</li>
+<li><code>nullable sstr_t y;</code> — field always appears in JSON; marshal emits <code>"y":null</code> when <code>has_y == false</code>; unmarshal accepts JSON <code>null</code>.</li>
+<li><code>optional nullable int z;</code> — combined: marshal skips when absent; unmarshal accepts both missing and null.</li>
+<li>Each generates a <code>bool has_&lt;field&gt;;</code> companion in the C struct. Non-decorated fields keep exact backward-compatible behavior.</li>
 </ul>
 </li>
-<li>Add precise-width integer families.<ul>
-<li><code>int8</code>, <code>int16</code>, <code>uint16</code>, <code>uint32</code>, <code>uint64</code>, <code>int64</code>, and related forms.</li>
+</ul>
+</li>
+<li><strike>Add precise-width integer families.</strike><ul>
+<li>~~<code>int8</code>, <code>int16</code>, <code>uint16</code>, <code>uint32</code>, <code>uint64</code>, <code>int64</code>, and related forms.~~</li>
+<li><b>Completed.</b> All 8 standard C precise-width integer types are supported as first-class types: <code>int8_t</code>, <code>int16_t</code>, <code>int32_t</code>, <code>int64_t</code>, <code>uint8_t</code>, <code>uint16_t</code>, <code>uint32_t</code>, <code>uint64_t</code>.<ul>
+<li>Usable as scalar fields, fixed-size arrays, dynamic arrays, and map values.</li>
+<li>Marshal uses efficient sstr_append helpers; unmarshal performs strict range checking.</li>
+<li>Generated header includes <code>&lt;stdint.h&gt;</code> automatically.</li>
+</ul>
+</li>
 </ul>
 </li>
 <li>Evaluate a tagged union or <code>oneof</code> style feature as a longer-term extension.</li>
 </ol>
 <p><b>Exit criteria:</b> each new type has parser coverage, generator coverage, runtime coverage, and example schemas.</p>
-<h2><a class="anchor" id="autotoc_md49"></a>
+<h2><a class="anchor" id="autotoc_md51"></a>
 Phase 3: Developer Experience</h2>
 <ol type="1">
-<li>Improve diagnostics.<ul>
-<li>Show filename, line, column, and a short source snippet in a clang-like format.</li>
+<li><strike>Improve diagnostics.</strike> <b>Done.</b><ul>
+<li><strike>Show filename, line, column, and a short source snippet in a clang-like format.</strike></li>
+<li>New diagnostic engine (<code><a class="el" href="diag_8h.html" title="Diagnostic engine for clang-style error reporting.">src/utils/diag.h</a></code>, <code><a class="el" href="diag_8c.html" title="Diagnostic engine implementation.">diag.c</a></code>) with clang-style output: <code>filename:line:col: error: message</code>, source code snippet with caret indicator, severity levels (error/warning/note), ANSI color auto-detection via <code>isatty()</code>, and multi-error recovery in the schema parser. Runtime JSON parser format enhanced with "error:" label.</li>
 </ul>
 </li>
 <li>Add schema validation before code generation.<ul>
@@ -236,7 +273,7 @@ Phase 3: Developer Experience</h2>
 <li>Update the man page to match the current feature set and CLI behavior.</li>
 </ol>
 <p><b>Exit criteria:</b> the tool is easier to debug, easier to learn, and easier to integrate into scripted workflows.</p>
-<h2><a class="anchor" id="autotoc_md50"></a>
+<h2><a class="anchor" id="autotoc_md52"></a>
 Phase 4: Build Ecosystem and Cross-Platform Support</h2>
 <ol type="1">
 <li>Add CMake support.<ul>
@@ -258,7 +295,7 @@ Phase 4: Build Ecosystem and Cross-Platform Support</h2>
 <li>Consider Meson as an additional build integration option.</li>
 </ol>
 <p><b>Exit criteria:</b> building and consuming the tool becomes straightforward on Linux, macOS, and Windows, with standard project integration paths.</p>
-<h2><a class="anchor" id="autotoc_md51"></a>
+<h2><a class="anchor" id="autotoc_md53"></a>
 Phase 5: Performance and Reliability</h2>
 <ol type="1">
 <li>Add custom allocator support.<ul>
@@ -281,7 +318,7 @@ Phase 5: Performance and Reliability</h2>
 <li>Investigate selective parsing or SIMD-assisted fast paths only after correctness and coverage are strong.</li>
 </ol>
 <p><b>Exit criteria:</b> the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments.</p>
-<h2><a class="anchor" id="autotoc_md52"></a>
+<h2><a class="anchor" id="autotoc_md54"></a>
 Phase 6: Long-Term Vision</h2>
 <ol type="1">
 <li>Add schema evolution support.<ul>
@@ -307,7 +344,7 @@ Phase 6: Long-Term Vision</h2>
 </li>
 <li>Consider an online playground for schema editing and generated code preview.</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md53"></a>
+<h1><a class="anchor" id="autotoc_md55"></a>
 Key Files</h1>
 <ul>
 <li><code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code>: schema parser and top-level language handling</li>
@@ -318,7 +355,7 @@ Key Files</h1>
 <li><code>src/main/main.c</code>: CLI entry point</li>
 <li><code>docs/IMPROVEMENTS.md</code>: this roadmap and improvement tracker</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md54"></a>
+<h1><a class="anchor" id="autotoc_md56"></a>
 Project Direction Notes</h1>
 <ol type="1">
 <li>Phase 1 and Phase 2 remain the highest-value work because parser correctness and type coverage define the tool's usefulness.</li>
@@ -326,7 +363,7 @@ Project Direction Notes</h1>
 <li>Phase 5 and Phase 6 should be driven by real user demand once the core language and build story are stronger.</li>
 <li>Current licensing direction remains reasonable: GPL-3.0 for the generator while generated output stays user-controlled.</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md55"></a>
+<h1><a class="anchor" id="autotoc_md57"></a>
 Open Design Questions</h1>
 <ol type="1">
 <li>Enum JSON representation should default to strings or integers.<ul>

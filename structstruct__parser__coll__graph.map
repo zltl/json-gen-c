@@ -1,10 +1,14 @@
 <map id="struct_parser" name="struct_parser">
-<area shape="rect" id="Node000001" title="parser context" alt="" coords="71,196,177,221"/>
+<area shape="rect" id="Node000001" title="parser context" alt="" coords="125,196,232,221"/>
 <area shape="rect" id="Node000002" href="$structhash__map.html" title=" " alt="" coords="26,93,115,119"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="69,132,69,152,74,171,85,184,99,194,96,198,81,188,70,173,64,153,63,132"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="78,131,85,152,98,170,116,184,136,194,134,198,113,188,94,174,81,154,73,133"/>
 <area shape="rect" id="Node000003" href="$structhash__map__entry.html" title=" " alt="" coords="5,5,136,31"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="73,45,73,93,68,93,68,45"/>
 <area shape="poly" id="edge3_Node000003_Node000003" title=" " alt="" coords="151,10,163,18,154,26,136,28,136,23,152,21,157,18,148,14"/>
 <area shape="rect" id="Node000004" href="$structpos.html" title="position of string" alt="" coords="156,93,201,119"/>
-<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="171,133,152,173,135,197,131,194,147,171,167,130"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="181,133,181,196,176,196,176,133"/>
+<area shape="rect" id="Node000005" href="$structdiag__engine.html" title=" " alt="" coords="225,93,327,119"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="257,130,192,198,188,194,253,127"/>
+<area shape="rect" id="Node000006" href="$structdiag__entry.html" title=" " alt="" coords="231,5,321,31"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="279,45,279,93,273,93,273,45"/>
 </map>
