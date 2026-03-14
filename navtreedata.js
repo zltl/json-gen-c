@@ -72,19 +72,20 @@ var NAVTREE =
         [ "Improve Error Handling Consistency", "md_docs_2IMPROVEMENTS.html#autotoc_md40", null ],
         [ "Fix Parser Off-by-One Bug", "md_docs_2IMPROVEMENTS.html#autotoc_md41", null ],
         [ "Refactor Top-Level <tt>#include</tt> Parsing", "md_docs_2IMPROVEMENTS.html#autotoc_md42", null ],
-        [ "Harden File I/O", "md_docs_2IMPROVEMENTS.html#autotoc_md43", null ]
+        [ "Harden File I/O", "md_docs_2IMPROVEMENTS.html#autotoc_md43", null ],
+        [ "Add Enum Type Support", "md_docs_2IMPROVEMENTS.html#autotoc_md44", null ]
       ] ],
-      [ "Roadmap", "md_docs_2IMPROVEMENTS.html#autotoc_md44", [
-        [ "Phase 1: Bug Fixes and Technical Debt Cleanup", "md_docs_2IMPROVEMENTS.html#autotoc_md45", null ],
-        [ "Phase 2: Type System Expansion", "md_docs_2IMPROVEMENTS.html#autotoc_md46", null ],
-        [ "Phase 3: Developer Experience", "md_docs_2IMPROVEMENTS.html#autotoc_md47", null ],
-        [ "Phase 4: Build Ecosystem and Cross-Platform Support", "md_docs_2IMPROVEMENTS.html#autotoc_md48", null ],
-        [ "Phase 5: Performance and Reliability", "md_docs_2IMPROVEMENTS.html#autotoc_md49", null ],
-        [ "Phase 6: Long-Term Vision", "md_docs_2IMPROVEMENTS.html#autotoc_md50", null ]
+      [ "Roadmap", "md_docs_2IMPROVEMENTS.html#autotoc_md45", [
+        [ "Phase 1: Bug Fixes and Technical Debt Cleanup", "md_docs_2IMPROVEMENTS.html#autotoc_md46", null ],
+        [ "Phase 2: Type System Expansion", "md_docs_2IMPROVEMENTS.html#autotoc_md47", null ],
+        [ "Phase 3: Developer Experience", "md_docs_2IMPROVEMENTS.html#autotoc_md48", null ],
+        [ "Phase 4: Build Ecosystem and Cross-Platform Support", "md_docs_2IMPROVEMENTS.html#autotoc_md49", null ],
+        [ "Phase 5: Performance and Reliability", "md_docs_2IMPROVEMENTS.html#autotoc_md50", null ],
+        [ "Phase 6: Long-Term Vision", "md_docs_2IMPROVEMENTS.html#autotoc_md51", null ]
       ] ],
-      [ "Key Files", "md_docs_2IMPROVEMENTS.html#autotoc_md51", null ],
-      [ "Project Direction Notes", "md_docs_2IMPROVEMENTS.html#autotoc_md52", null ],
-      [ "Open Design Questions", "md_docs_2IMPROVEMENTS.html#autotoc_md53", null ]
+      [ "Key Files", "md_docs_2IMPROVEMENTS.html#autotoc_md52", null ],
+      [ "Project Direction Notes", "md_docs_2IMPROVEMENTS.html#autotoc_md53", null ],
+      [ "Open Design Questions", "md_docs_2IMPROVEMENTS.html#autotoc_md54", null ]
     ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],

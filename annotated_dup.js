@@ -1,6 +1,8 @@
 var annotated_dup =
 [
     [ "do_each_struct_gen_code_param", "structdo__each__struct__gen__code__param.html", null ],
+    [ "enum_container", "structenum__container.html", null ],
+    [ "enum_value", "structenum__value.html", null ],
     [ "gen_fields_list_fn_param", "structgen__fields__list__fn__param.html", null ],
     [ "hash_map", "structhash__map.html", null ],
     [ "hash_map_entry", "structhash__map__entry.html", null ],

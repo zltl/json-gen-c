@@ -114,6 +114,12 @@ This graph shows which files directly or indirectly include this file:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structenum__value.html">enum_value</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">structure to store a single enum value (name-index pair). Enum values are stored as a linked list.  <a href="structenum__value.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structenum__container.html">enum_container</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">structure to store a parsed enum definition.  <a href="structenum__container.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstruct__field.html">struct_field</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">structure to store field list of parsed structs. A struct may have multiple field, and each field may be an array, or a struct. We use a single linked list to store the fields of a struct.  <a href="structstruct__field.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -147,6 +153,9 @@ Macros</h2></td></tr>
 <tr class="memitem:acfe4d4069b276475c7175a734fe4b02b" id="r_acfe4d4069b276475c7175a734fe4b02b"><td class="memItemLeft" align="right" valign="top"><a id="acfe4d4069b276475c7175a734fe4b02b" name="acfe4d4069b276475c7175a734fe4b02b"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_SSTR</b>&#160;&#160;&#160;4</td></tr>
 <tr class="separator:acfe4d4069b276475c7175a734fe4b02b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a724fed1271c6279b32b3cac2f3883430" id="r_a724fed1271c6279b32b3cac2f3883430"><td class="memItemLeft" align="right" valign="top"><a id="a724fed1271c6279b32b3cac2f3883430" name="a724fed1271c6279b32b3cac2f3883430"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_ENUM</b>&#160;&#160;&#160;5</td></tr>
+<tr class="separator:a724fed1271c6279b32b3cac2f3883430"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6525f1e13cfd7e65361f91f4cb4a16ef" id="r_a6525f1e13cfd7e65361f91f4cb4a16ef"><td class="memItemLeft" align="right" valign="top"><a id="a6525f1e13cfd7e65361f91f4cb4a16ef" name="a6525f1e13cfd7e65361f91f4cb4a16ef"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_STRUCT</b>&#160;&#160;&#160;6</td></tr>
 <tr class="separator:a6525f1e13cfd7e65361f91f4cb4a16ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -190,6 +199,9 @@ Macros</h2></td></tr>
 <tr class="memitem:ab9d8cc976e2f0cc3ed7f51df426cefeb" id="r_ab9d8cc976e2f0cc3ed7f51df426cefeb"><td class="memItemLeft" align="right" valign="top"><a id="ab9d8cc976e2f0cc3ed7f51df426cefeb" name="ab9d8cc976e2f0cc3ed7f51df426cefeb"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>TOKEN_SEMICOLON</b>&#160;&#160;&#160;';'</td></tr>
 <tr class="separator:ab9d8cc976e2f0cc3ed7f51df426cefeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f3aef56f59fdefa7d0d4a00528d0cf4" id="r_a7f3aef56f59fdefa7d0d4a00528d0cf4"><td class="memItemLeft" align="right" valign="top"><a id="a7f3aef56f59fdefa7d0d4a00528d0cf4" name="a7f3aef56f59fdefa7d0d4a00528d0cf4"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>TOKEN_COMMA</b>&#160;&#160;&#160;','</td></tr>
+<tr class="separator:a7f3aef56f59fdefa7d0d4a00528d0cf4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca774a210ac4d7dbccb134e3a76e30d3" id="r_aca774a210ac4d7dbccb134e3a76e30d3"><td class="memItemLeft" align="right" valign="top"><a id="aca774a210ac4d7dbccb134e3a76e30d3" name="aca774a210ac4d7dbccb134e3a76e30d3"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>TOKEN_SHARPE</b>&#160;&#160;&#160;'#'</td></tr>
 <tr class="separator:aca774a210ac4d7dbccb134e3a76e30d3"><td class="memSeparator" colspan="2">&#160;</td></tr>

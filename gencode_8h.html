@@ -109,16 +109,16 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a0b9df81f181caafe28f28032bd2dca69" id="r_a0b9df81f181caafe28f28032bd2dca69"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gencode_8h.html#a0b9df81f181caafe28f28032bd2dca69">gencode_source</a> (struct <a class="el" href="structhash__map.html">hash_map</a> *struct_map, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> source, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> header)</td></tr>
-<tr class="memdesc:a0b9df81f181caafe28f28032bd2dca69"><td class="mdescLeft">&#160;</td><td class="mdescRight">generate json manipulate codes by struct_map into source and header.  <br /></td></tr>
-<tr class="separator:a0b9df81f181caafe28f28032bd2dca69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a077b23b72dbd9e8bb26fa9b4d6eceaf4" id="r_a077b23b72dbd9e8bb26fa9b4d6eceaf4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gencode_8h.html#a077b23b72dbd9e8bb26fa9b4d6eceaf4">gencode_source</a> (struct <a class="el" href="structhash__map.html">hash_map</a> *struct_map, struct <a class="el" href="structhash__map.html">hash_map</a> *enum_map, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> source, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> header)</td></tr>
+<tr class="memdesc:a077b23b72dbd9e8bb26fa9b4d6eceaf4"><td class="mdescLeft">&#160;</td><td class="mdescRight">generate json manipulate codes by struct_map and enum_map into source and header.  <br /></td></tr>
+<tr class="separator:a077b23b72dbd9e8bb26fa9b4d6eceaf4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>generate json manipulate codes. </p>
 <dl class="section author"><dt>Author</dt><dd>your name (<a href="#" onclick="location.href='mai'+'lto:'+'you'+'@d'+'oma'+'in'+'.co'+'m'; return false;">you@d<span class="obfuscator">.nosp@m.</span>omai<span class="obfuscator">.nosp@m.</span>n.com</a>) </dd></dl>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a0b9df81f181caafe28f28032bd2dca69" name="a0b9df81f181caafe28f28032bd2dca69"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0b9df81f181caafe28f28032bd2dca69">&#9670;&#160;</a></span>gencode_source()</h2>
+<a id="a077b23b72dbd9e8bb26fa9b4d6eceaf4" name="a077b23b72dbd9e8bb26fa9b4d6eceaf4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a077b23b72dbd9e8bb26fa9b4d6eceaf4">&#9670;&#160;</a></span>gencode_source()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -131,6 +131,12 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structhash__map.html">hash_map</a> *&#160;</td>
           <td class="paramname"><em>struct_map</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">struct <a class="el" href="structhash__map.html">hash_map</a> *&#160;</td>
+          <td class="paramname"><em>enum_map</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -157,10 +163,11 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>generate json manipulate codes by struct_map into source and header. </p>
+<p>generate json manipulate codes by struct_map and enum_map into source and header. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">struct_map</td><td>the hash map that store all structs parsed from struct defintion files. </td></tr>
+    <tr><td class="paramname">enum_map</td><td>the hash map that store all enums parsed from enum definitions. </td></tr>
     <tr><td class="paramname">source</td><td>the output source code. </td></tr>
     <tr><td class="paramname">header</td><td>the output header code. </td></tr>
   </table>

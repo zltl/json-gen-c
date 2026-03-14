@@ -1,5 +1,7 @@
 var struct__parse_8h =
 [
+    [ "enum_value", "structenum__value.html", null ],
+    [ "enum_container", "structenum__container.html", null ],
     [ "struct_field", "structstruct__field.html", null ],
     [ "struct_container", "structstruct__container.html", null ],
     [ "pos", "structpos.html", null ],
