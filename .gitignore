@@ -13,3 +13,4 @@ __pycache__
 /package.json
 /compile_commands.json
 build/
+build-*/

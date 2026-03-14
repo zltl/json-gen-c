@@ -74,6 +74,27 @@ All build artifacts are organized under the `build/` directory:
 - `build/test/` - Test executables
 - `build/benchmark/` - Benchmark executable
 
+### Alternative Build Systems
+
+**CMake** (3.16+):
+
+```bash
+mkdir build-cmake && cd build-cmake
+cmake ..
+cmake --build . -j$(nproc)
+sudo cmake --install .
+```
+
+**Meson**:
+
+```bash
+meson setup builddir
+ninja -C builddir
+sudo ninja -C builddir install
+```
+
+See [BUILD_SYSTEM.md](BUILD_SYSTEM.md) for pkg-config integration, `find_package(JsonGenC)`, and the `json_gen_c_generate()` CMake macro.
+
 ## Quick Start
 
 [example](./example/example.json-gen-c)

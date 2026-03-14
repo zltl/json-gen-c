@@ -1,0 +1,8 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+bindir=${exec_prefix}/@CMAKE_INSTALL_BINDIR@
+
+Name: json-gen-c
+Description: Generate C code for JSON serialization and deserialization
+Version: @PROJECT_VERSION@
+generator=${bindir}/json-gen-c

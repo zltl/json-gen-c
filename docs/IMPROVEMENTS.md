@@ -11,7 +11,7 @@ This document tracks the current maturity of `json-gen-c`, completed foundationa
 | Documentation | Good | README, getting started guide, Doxygen, and man page exist |
 | CI/CD | Good | GitHub Actions test workflow and Doxygen deployment are present |
 | Type system | Growing | Enums, fixed-size arrays, maps, optional/nullable fields, and precise-width integers supported |
-| Ecosystem integration | Limited | No CMake, pkg-config, package manager distribution, or Windows support |
+| Ecosystem integration | Good | CMake, Meson, and pkg-config support; package manager distribution and Windows remaining |
 
 Summary: the project is already usable and reasonably mature at the core. Enum type support has been added, expanding the type system. It still needs broader type support (tagged unions), better ecosystem integration, and stronger developer ergonomics to reach a polished 1.0.
 
@@ -231,9 +231,14 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 
 ### Phase 4: Build Ecosystem and Cross-Platform Support
 
-1. Add CMake support.
-    - Enable `find_package` or easy `add_custom_command` integration.
-2. Add pkg-config metadata.
+1. ~~Add CMake support.~~  **Done.**
+    - Root `CMakeLists.txt` builds the executable with the same source layout and `xxd` embedding as the Makefile.
+    - `cmake/JsonGenCConfig.cmake.in` enables `find_package(JsonGenC)` for downstream consumers.
+    - `cmake/JsonGenCMacro.cmake` provides `json_gen_c_generate(TARGET SCHEMA OUTPUT_DIR)` wrapping `add_custom_command`.
+    - Installs binary, man page, CMake package config, and pkg-config `.pc` file via `GNUInstallDirs`.
+2. ~~Add pkg-config metadata.~~  **Done.**
+    - `json-gen-c.pc.in` template installed to `${libdir}/pkgconfig/json-gen-c.pc`.
+    - Exposes `generator` variable pointing to the installed binary, plus standard `Name`, `Description`, and `Version` fields.
 3. Add package-manager-friendly distribution paths.
     - Homebrew
     - Debian packaging
@@ -241,7 +246,8 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 4. Add Windows support.
     - Validate GCC/Clang on Windows
     - Validate MSVC compatibility where practical
-5. Consider Meson as an additional build integration option.
+5. ~~Consider Meson as an additional build integration option.~~  **Done.**
+    - Root `meson.build` builds the executable with `custom_target` for `xxd` embedding, three static libraries, and install rules for the binary and man page.
 
 **Exit criteria:** building and consuming the tool becomes straightforward on Linux, macOS, and Windows, with standard project integration paths.
 
