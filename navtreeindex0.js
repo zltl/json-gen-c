@@ -194,12 +194,14 @@ var NAVTREEINDEX0 =
 "sstr_8h.html#affb41a505a69f235d647bec5f96165f8":[15,0,0,2,10,11],
 "sstr_8h_source.html":[15,0,0,2,10],
 "struct__parse_8c.html":[15,0,0,1,0],
-"struct__parse_8c.html#a3b1cfbb20875351e5264df1490a76818":[15,0,0,1,0,2],
-"struct__parse_8c.html#aaa3fff08f4024b870a6d4c2994a61434":[15,0,0,1,0,1],
-"struct__parse_8c.html#ab6f19e3dd49d297bb304a5cd00457781":[15,0,0,1,0,0],
+"struct__parse_8c.html#a3b1cfbb20875351e5264df1490a76818":[15,0,0,1,0,3],
+"struct__parse_8c.html#a65ea1dd56ddc5af8d44c6b036e7ec9eb":[15,0,0,1,0,4],
+"struct__parse_8c.html#aaa3fff08f4024b870a6d4c2994a61434":[15,0,0,1,0,2],
+"struct__parse_8c.html#ab6f19e3dd49d297bb304a5cd00457781":[15,0,0,1,0,1],
 "struct__parse_8h.html":[15,0,0,1,1],
 "struct__parse_8h.html#a21d7e92f5ff8e6f151bcbb297f8c509a":[15,0,0,1,1,7],
 "struct__parse_8h.html#a3b1cfbb20875351e5264df1490a76818":[15,0,0,1,1,10],
+"struct__parse_8h.html#a65ea1dd56ddc5af8d44c6b036e7ec9eb":[15,0,0,1,1,11],
 "struct__parse_8h.html#aaa3fff08f4024b870a6d4c2994a61434":[15,0,0,1,1,9],
 "struct__parse_8h.html#ab6f19e3dd49d297bb304a5cd00457781":[15,0,0,1,1,8],
 "struct__parse_8h_source.html":[15,0,0,1,1],
@@ -228,5 +230,6 @@ var NAVTREEINDEX0 =
 "structstruct__container.html":[14,0,15],
 "structstruct__field.html":[14,0,16],
 "structstruct__parser.html":[14,0,17],
-"structstruct__token.html":[14,0,18]
+"structstruct__token.html":[14,0,18],
+"structvalidate__ctx.html":[14,0,19]
 };

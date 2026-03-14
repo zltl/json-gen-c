@@ -18,5 +18,6 @@ var annotated_dup =
     [ "struct_container", "structstruct__container.html", null ],
     [ "struct_field", "structstruct__field.html", null ],
     [ "struct_parser", "structstruct__parser.html", null ],
-    [ "struct_token", "structstruct__token.html", null ]
+    [ "struct_token", "structstruct__token.html", null ],
+    [ "validate_ctx", "structvalidate__ctx.html", null ]
 ];

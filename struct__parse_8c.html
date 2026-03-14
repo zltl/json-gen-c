@@ -65,6 +65,7 @@ $(document).ready(function(){initNavTree('struct__parse_8c.html',''); initResiza
 <div id="doc-content">
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">struct_parse.c File Reference</div></div>
@@ -131,6 +132,11 @@ Include dependency graph for struct_parse.c:</div>
 </map>
 </div>
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structvalidate__ctx.html">validate_ctx</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a29b8d3d1f54721c9bcc298b29103d84f" id="r_a29b8d3d1f54721c9bcc298b29103d84f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct__parse_8c.html#a29b8d3d1f54721c9bcc298b29103d84f">PERROR</a>(parser,  fmt, ...)</td></tr>
@@ -147,6 +153,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a3b1cfbb20875351e5264df1490a76818" id="r_a3b1cfbb20875351e5264df1490a76818"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct__parse_8c.html#a3b1cfbb20875351e5264df1490a76818">struct_parser_parse</a> (struct <a class="el" href="structstruct__parser.html">struct_parser</a> *parser, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> content)</td></tr>
 <tr class="memdesc:a3b1cfbb20875351e5264df1490a76818"><td class="mdescLeft">&#160;</td><td class="mdescRight">parse a struct definition file, and store the parsed structs in <a class="el" href="structstruct__parser.html" title="parser context">struct_parser</a>.  <br /></td></tr>
 <tr class="separator:a3b1cfbb20875351e5264df1490a76818"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65ea1dd56ddc5af8d44c6b036e7ec9eb" id="r_a65ea1dd56ddc5af8d44c6b036e7ec9eb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct__parse_8c.html#a65ea1dd56ddc5af8d44c6b036e7ec9eb">struct_parser_validate</a> (struct <a class="el" href="structstruct__parser.html">struct_parser</a> *parser)</td></tr>
+<tr class="memdesc:a65ea1dd56ddc5af8d44c6b036e7ec9eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate parsed schema for semantic errors.  <br /></td></tr>
+<tr class="separator:a65ea1dd56ddc5af8d44c6b036e7ec9eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>parse struct definition file. </p>
@@ -269,6 +278,34 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>int 0 if success, -1 otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a65ea1dd56ddc5af8d44c6b036e7ec9eb" name="a65ea1dd56ddc5af8d44c6b036e7ec9eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a65ea1dd56ddc5af8d44c6b036e7ec9eb">&#9670;&#160;</a></span>struct_parser_validate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int struct_parser_validate </td>
+          <td>(</td>
+          <td class="paramtype">struct <a class="el" href="structstruct__parser.html">struct_parser</a> *&#160;</td>
+          <td class="paramname"><em>parser</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Validate parsed schema for semantic errors. </p>
+<p>Checks for: undefined type references, duplicate field names, duplicate enum values, and C keyword usage.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">parser</td><td>Parser with populated struct_map and enum_map. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if no errors, -1 if validation errors found. </dd></dl>
 
 </div>
 </div>

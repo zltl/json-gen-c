@@ -253,15 +253,27 @@ Phase 3: Developer Experience</h2>
 <li>New diagnostic engine (<code><a class="el" href="diag_8h.html" title="Diagnostic engine for clang-style error reporting.">src/utils/diag.h</a></code>, <code><a class="el" href="diag_8c.html" title="Diagnostic engine implementation.">diag.c</a></code>) with clang-style output: <code>filename:line:col: error: message</code>, source code snippet with caret indicator, severity levels (error/warning/note), ANSI color auto-detection via <code>isatty()</code>, and multi-error recovery in the schema parser. Runtime JSON parser format enhanced with "error:" label.</li>
 </ul>
 </li>
-<li>Add schema validation before code generation.<ul>
-<li>Undefined type references</li>
-<li>Duplicate field names</li>
-<li>Duplicate struct names</li>
-<li>Invalid naming patterns</li>
+<li><strike>Add schema validation before code generation.</strike> <b>Done.</b><ul>
+<li><strike>Undefined type references</strike></li>
+<li><strike>Duplicate field names</strike></li>
+<li><strike>Duplicate struct names</strike></li>
+<li><strike>Invalid naming patterns</strike></li>
+<li>Implemented as hybrid approach: inline duplicate struct/enum name checks during parsing (using <code>hash_map_insert</code> return value), plus post-parse <code><a class="el" href="struct__parse_8c.html#a65ea1dd56ddc5af8d44c6b036e7ec9eb" title="Validate parsed schema for semantic errors.">struct_parser_validate()</a></code> for undefined type references, duplicate field names, duplicate enum values, and C keyword usage warnings.</li>
+<li>Duplicate struct/enum names and struct-enum name collisions caught at parse time with clang-style diagnostics.</li>
+<li>Undefined type references (both direct struct fields and map value types) detected in validation pass.</li>
+<li>Duplicate field names within a struct and duplicate enum value names detected in validation pass.</li>
+<li>C11 keyword usage as struct/enum/field names emits <code>DIAG_WARNING</code> (does not block code generation).</li>
+<li>All validation errors block code generation; warnings are informational only.</li>
+<li>Position tracking added to <code><a class="el" href="structstruct__container.html" title="structure to store parsed structs. A struct may have multiple fields, we put fields in a linked list.">struct_container</a></code>, <code><a class="el" href="structenum__container.html" title="structure to store a parsed enum definition.">enum_container</a></code>, and <code><a class="el" href="structstruct__field.html" title="structure to store field list of parsed structs. A struct may have multiple field,...">struct_field</a></code> for precise error locations.</li>
+<li>16 new unit tests in <code>SchemaValidationTest</code> class; 7 new malformed schema negative tests wired into Makefile.</li>
 </ul>
 </li>
-<li>Add JSON field alias support.<ul>
-<li>Example direction: annotation-style comments such as <code>@json:"field_name"</code></li>
+<li><strike>Add JSON field alias support.</strike> <b>Done.</b><ul>
+<li>Annotation syntax: <code>@json "json_key_name"</code> before the field type.</li>
+<li>Aliases control the JSON key used in marshal output, unmarshal input matching, and the offset table hash lookup.</li>
+<li>C struct member names remain unchanged (aliases only affect JSON representation).</li>
+<li>Works with all field types: primitives, strings, structs, enums, fixed/dynamic arrays, maps, optional/nullable fields.</li>
+<li>9 new unit tests in <code>AliasTest</code> class covering marshal, unmarshal, round-trip, mixed alias/non-alias, optional, arrays, and nested structs.</li>
 </ul>
 </li>
 <li>Add default value support.<ul>
@@ -269,7 +281,11 @@ Phase 3: Developer Experience</h2>
 <li>Missing JSON fields can initialize to declared defaults.</li>
 </ul>
 </li>
-<li>Add <code>--version</code> output and centralize version definition in the build and source tree.</li>
+<li><strike>Add <code>--version</code> output and centralize version definition in the build and source tree.</strike> <b>Done.</b><ul>
+<li>Version <code>0.9.0</code> defined in <code>build.mk</code> as <code>JSON_GEN_C_VERSION</code>, passed to compiler via <code>-DJSON_GEN_C_VERSION</code>.</li>
+<li><code>json-gen-c --version</code> / <code>json-gen-c -v</code> prints version string.</li>
+</ul>
+</li>
 <li>Update the man page to match the current feature set and CLI behavior.</li>
 </ol>
 <p><b>Exit criteria:</b> the tool is easier to debug, easier to learn, and easier to integrate into scripted workflows.</p>
