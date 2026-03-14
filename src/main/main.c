@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
     // Parse the struct definition
     r = struct_parser_parse(parser, content);
     if (r < 0) {
-        fprintf(stderr, "Error: struct parsing failed\n");
+        // Diagnostics already printed by the parser's diag engine
         cleanup_and_exit(content, parser, NULL, NULL, JSON_GEN_ERROR_PARSE);
     }
 

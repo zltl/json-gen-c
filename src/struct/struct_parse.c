@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/diag.h"
 #include "utils/hash_map.h"
 #include "utils/io.h"
 #include "utils/sstr.h"
@@ -153,6 +154,7 @@ struct struct_parser* struct_parser_new() {
     parser->pos.line = 1;
     parser->pos.offset = 0;
     parser->name = NULL;
+    parser->diag = NULL;
 
     return parser;
 }
@@ -161,6 +163,10 @@ void struct_parser_free(struct struct_parser* parser) {
     if (parser) {
         hash_map_free(parser->struct_map);
         hash_map_free(parser->enum_map);
+        if (parser->diag) {
+            diag_engine_free(parser->diag);
+            parser->diag = NULL;
+        }
         free(parser);
     }
 }
@@ -177,8 +183,10 @@ static void token_clear(struct struct_token* token) {
 static void ptoken(struct struct_parser* parser, struct struct_token* token) {
     int tk = token->type;
     if (tk == TOKEN_ERROR) {
-        fprintf(stderr, "error at line %d, col %d, expected identifier\n",
-                parser->pos.line, parser->pos.col);
+        if (parser->diag) {
+            diag_emit(parser->diag, DIAG_ERROR, parser->pos.line,
+                      parser->pos.col, "expected identifier");
+        }
         return;
     }
 #ifdef JSON_DEBUG
@@ -384,9 +392,33 @@ static char* token_type_str(struct struct_token* token) {
     return "--UNKNOWN--";
 }
 
-#define PERROR(parser, fmt, ...)                                    \
-    fprintf(stderr, "file %s, line %d, col %d: " fmt, parser->name, \
-            parser->pos.line, parser->pos.col, ##__VA_ARGS__)
+#define PERROR(parser, fmt, ...)                                          \
+    diag_emit(parser->diag, DIAG_ERROR, parser->pos.line, parser->pos.col, \
+              fmt, ##__VA_ARGS__)
+
+/* Recovery helpers: skip tokens to synchronization points */
+static void skip_to_semicolon(struct struct_parser* parser, sstr_t content,
+                              struct struct_token* token) {
+    while (token->type != TOKEN_SEMICOLON && token->type != TOKEN_EOF &&
+           token->type != TOKEN_RIGHT_BRACE) {
+        next_token(parser, content, token);
+    }
+}
+
+static void skip_to_top_level(struct struct_parser* parser, sstr_t content,
+                              struct struct_token* token) {
+    /* Skip tokens until we find struct/enum/# or EOF */
+    while (1) {
+        int tk = next_token(parser, content, token);
+        if (tk == TOKEN_EOF) return;
+        if (tk == TOKEN_SHARPE) return;
+        if (tk == TOKEN_IDENTIFY &&
+            (sstr_compare_c(token->txt, "struct") == 0 ||
+             sstr_compare_c(token->txt, "enum") == 0)) {
+            return;
+        }
+    }
+}
 
 // '#include "filename"'
 /**
@@ -406,7 +438,7 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     // 'include'
     int tk = next_token(parser, content, token);
     if (tk != TOKEN_IDENTIFY || sstr_compare_c(token->txt, "include") != 0) {
-        PERROR(parser, "expect #include, but found %s\n",
+        PERROR(parser, "expect #include, but found %s",
                token_type_str(token));
         return JSON_GEN_ERROR_PARSE;
     }
@@ -414,7 +446,7 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     // '"filename"', or '<filename>'
     tk = next_token(parser, content, token);
     if (tk != TOKEN_STRING) {
-        PERROR(parser, "expect string file name, but found %s\n",
+        PERROR(parser, "expect string file name, but found %s",
                token_type_str(token));
         return JSON_GEN_ERROR_PARSE;
     }
@@ -423,13 +455,13 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     // get the real path of the file.
     char* filename = sstr_cstr(token->txt);
     if (filename == NULL) {
-        PERROR(parser, "invalid filename in include directive\n");
+        PERROR(parser, "invalid filename in include directive");
         return JSON_GEN_ERROR_INVALID_PARAM;
     }
     
     sstr_t file = sstr_new();
     if (file == NULL) {
-        PERROR(parser, "memory allocation failed for file path\n");
+        PERROR(parser, "memory allocation failed for file path");
         return JSON_GEN_ERROR_MEMORY;
     }
     
@@ -451,14 +483,14 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     // read the contents of the file
     sstr_t sub_content = sstr_new();
     if (sub_content == NULL) {
-        PERROR(parser, "memory allocation failed for file content\n");
+        PERROR(parser, "memory allocation failed for file content");
         sstr_free(file);
         return JSON_GEN_ERROR_MEMORY;
     }
     
     int r = read_file(sstr_cstr(file), sub_content);
     if (r != 0) {
-        PERROR(parser, "include file \"%s\" not found\n", sstr_cstr(file));
+        PERROR(parser, "include file \"%s\" not found", sstr_cstr(file));
         sstr_free(sub_content);
         sstr_free(file);
         return JSON_GEN_ERROR_FILE_IO;
@@ -474,7 +506,19 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     sub_parser.struct_map = parser->struct_map;
     // then we step into the sub file.
     sub_parser.enum_map = parser->enum_map;
+    // sub-parser gets its own diag engine for correct filename/source
+    sub_parser.diag = diag_engine_new(sstr_cstr(file), sstr_cstr(sub_content),
+                                      (long)sstr_length(sub_content));
     r = struct_parser_parse(&sub_parser, sub_content);
+    // print sub-parser diagnostics immediately (sub-file context)
+    if (sub_parser.diag) {
+        diag_print_all(sub_parser.diag, stderr);
+        if (diag_has_errors(sub_parser.diag)) {
+            r = JSON_GEN_ERROR_PARSE;
+        }
+        diag_engine_free(sub_parser.diag);
+        sub_parser.diag = NULL;
+    }
     sstr_free(sub_content);
     sstr_free(file);
 
@@ -510,13 +554,13 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
 
     // field type
     if (tk != TOKEN_IDENTIFY) {
-        PERROR(parser, "expected type name, found \'%s\'\n",
+        PERROR(parser, "expected type name, found '%s'",
                token_type_str(token));
         return -1;
     }
 
     if (sstr_length(token->txt) == 0) {
-        PERROR(parser, "expected type name, found empty string\n");
+        PERROR(parser, "expected type name, found empty string");
         return -1;
     }
 
@@ -532,7 +576,7 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
         token->txt = NULL;
         tk = next_token(parser, content, token);
         if (tk != TOKEN_IDENTIFY) {
-            PERROR(parser, "expected type name after modifier, found \'%s\'\n",
+            PERROR(parser, "expected type name after modifier, found '%s'",
                    token_type_str(token));
             return -1;
         }
@@ -543,7 +587,8 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
     // field type MUST not be 'struct', it's a reserved keyword.
     if (sstr_compare_c(type_name, "struct") == 0) {
         PERROR(parser,
-               "expected field type, found reserve keyworkd 'struct'\n");
+               "expected field type, found reserve keyword 'struct'");
+        token->txt = NULL;
         sstr_free(type_name);
         return -1;
     }
@@ -551,10 +596,11 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
     // handle map<key_type, value_type> syntax
     if (sstr_compare_c(type_name, "map") == 0) {
         type_id = FIELD_TYPE_MAP;
+        token->txt = NULL;
         // next token should be TOKEN_STRING from <...> (tokenizer treats <> like quotes)
         tk = next_token(parser, content, token);
         if (token->type != TOKEN_STRING) {
-            PERROR(parser, "expected '<key_type, value_type>' after 'map'\n");
+            PERROR(parser, "expected '<key_type, value_type>' after 'map'");
             sstr_free(type_name);
             return -1;
         }
@@ -563,7 +609,7 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
         char* params = sstr_cstr(token->txt);
         char* comma = strchr(params, ',');
         if (comma == NULL) {
-            PERROR(parser, "expected ',' in map type parameters\n");
+            PERROR(parser, "expected ',' in map type parameters");
             sstr_free(type_name);
             return -1;
         }
@@ -580,7 +626,7 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
         // validate key type is sstr_t
         int key_len = (int)(key_end - params);
         if (key_len != 6 || strncmp(params, "sstr_t", 6) != 0) {
-            PERROR(parser, "map key type must be 'sstr_t', got '%.*s'\n",
+            PERROR(parser, "map key type must be 'sstr_t', got '%.*s'",
                    key_len, params);
             sstr_free(type_name);
             return -1;
@@ -637,6 +683,7 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
         }
         // type_name for map fields: "map" (used for identification)
         field->type_name = type_name;
+        sstr_free(token->txt);
         token->txt = NULL;
         goto parse_field_name;
     }
@@ -692,9 +739,8 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
 parse_field_name:
     tk = next_token(parser, content, token);
     if (tk != TOKEN_IDENTIFY) {
-        PERROR(parser, "expected field name, found \'%s\'\n",
+        PERROR(parser, "expected field name, found '%s'",
                token_type_str(token));
-        sstr_free(type_name);
         return -1;
     }
     field->name = token->txt;
@@ -709,14 +755,14 @@ parse_field_name:
             // fixed-size array: parse the size
             long sz = strtol(sstr_cstr(token->txt), NULL, 10);
             if (sz <= 0) {
-                PERROR(parser, "array size must be a positive integer\n");
+                PERROR(parser, "array size must be a positive integer");
                 return -1;
             }
             field->array_size = (int)sz;
             tk = next_token(parser, content, token);
         }
         if (tk != TOKEN_RIGHT_BRACKET) {
-            PERROR(parser, "expected \']\', found \'%s\'\n",
+            PERROR(parser, "expected ']', found '%s'",
                    token_type_str(token));
             return -1;
         }
@@ -724,7 +770,7 @@ parse_field_name:
         tk = next_token(parser, content, token);
     }
     if (tk != TOKEN_SEMICOLON) {
-        PERROR(parser, "expected \';\', found \'%s\'\n", token_type_str(token));
+        PERROR(parser, "expected ';', found '%s'", token_type_str(token));
         return -1;
     }
     return 0;
@@ -737,7 +783,7 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
     // 'name'
     int tk = next_token(parser, content, token);
     if (tk != TOKEN_IDENTIFY) {
-        PERROR(parser, "expected enum name, found \'%s\'\n",
+        PERROR(parser, "expected enum name, found '%s'",
                token_type_str(token));
         return -1;
     }
@@ -747,7 +793,7 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
     // '{'
     tk = next_token(parser, content, token);
     if (tk != TOKEN_LEFT_BRACE) {
-        PERROR(parser, "expected \'{\', found \'%s\'\n",
+        PERROR(parser, "expected '{', found '%s'",
                token_type_str(token));
         sstr_free(enum_name);
         return -1;
@@ -764,16 +810,31 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
     ec->count = 0;
 
     // parse enum values: IDENT [, IDENT]* '}'
+    int had_error = 0;
     while (1) {
         tk = next_meaningful_token(parser, content, token);
         if (tk == TOKEN_RIGHT_BRACE) {
             break;
         }
-        if (tk != TOKEN_IDENTIFY) {
-            PERROR(parser, "expected enum value name, found \'%s\'\n",
-                   token_type_str(token));
+        if (tk == TOKEN_EOF) {
+            PERROR(parser, "unexpected end of file in enum '%s'",
+                   sstr_cstr(enum_name));
             enum_container_free(ec);
             return -1;
+        }
+        if (tk != TOKEN_IDENTIFY) {
+            PERROR(parser, "expected enum value name, found '%s'",
+                   token_type_str(token));
+            had_error = 1;
+            /* skip to next comma, semicolon, or closing brace */
+            while (token->type != TOKEN_COMMA &&
+                   token->type != TOKEN_SEMICOLON &&
+                   token->type != TOKEN_RIGHT_BRACE &&
+                   token->type != TOKEN_EOF) {
+                next_token(parser, content, token);
+            }
+            if (token->type == TOKEN_RIGHT_BRACE) break;
+            continue;
         }
         struct enum_value* ev =
             (struct enum_value*)malloc(sizeof(struct enum_value));
@@ -794,10 +855,17 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
             break;
         }
         if (tk != TOKEN_SEMICOLON && tk != TOKEN_COMMA) {
-            PERROR(parser, "expected ',' or ';' or '}' in enum, found '%s'\n",
+            PERROR(parser, "expected ',' or ';' or '}' in enum, found '%s'",
                    token_type_str(token));
-            enum_container_free(ec);
-            return -1;
+            had_error = 1;
+            /* skip to next comma, semicolon, or closing brace */
+            while (token->type != TOKEN_COMMA &&
+                   token->type != TOKEN_SEMICOLON &&
+                   token->type != TOKEN_RIGHT_BRACE &&
+                   token->type != TOKEN_EOF) {
+                next_token(parser, content, token);
+            }
+            if (token->type == TOKEN_RIGHT_BRACE) break;
         }
     }
 
@@ -818,7 +886,7 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
     }
 
     hash_map_insert(parser->enum_map, sstr_dup(ec->name), ec);
-    return 0;
+    return had_error ? -1 : 0;
 }
 
 // parse a struct body: name '{' fields '}'
@@ -833,7 +901,7 @@ static int parse_struct_body(struct struct_parser* parser, sstr_t content,
     }
 
     if (tk != TOKEN_IDENTIFY) {
-        PERROR(parser, "expected struct name, found \'%s\'\n",
+        PERROR(parser, "expected struct name, found '%s'",
                token_type_str(token));
         return -1;
     }
@@ -844,11 +912,12 @@ static int parse_struct_body(struct struct_parser* parser, sstr_t content,
     // '{'
     tk = next_token(parser, content, token);
     if (tk != TOKEN_LEFT_BRACE) {
-        PERROR(parser, "expected \'{\', found \'%s\'\n", token_type_str(token));
+        PERROR(parser, "expected '{', found '%s'", token_type_str(token));
         return -1;
     }
 
     // struct fields
+    int had_error = 0;
     while (token->type != TOKEN_RIGHT_BRACE && token->type != TOKEN_EOF &&
            token->type != TOKEN_ERROR) {
         // field
@@ -856,7 +925,10 @@ static int parse_struct_body(struct struct_parser* parser, sstr_t content,
         int r = struct_parse_field(parser, content, token, field);
         if (r != 0) {
             struct_field_free(field);
-            return r;
+            had_error = 1;
+            // recovery: skip to next semicolon or closing brace
+            skip_to_semicolon(parser, content, token);
+            continue;
         }
         if (token->type == TOKEN_RIGHT_BRACE) {
             struct_field_free(field);
@@ -871,7 +943,7 @@ static int parse_struct_body(struct struct_parser* parser, sstr_t content,
     }
     // fields until '}'
 
-    return 0;
+    return had_error ? -1 : 0;
 }
 
 // parse a struct definition file.
@@ -881,6 +953,18 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
     struct struct_token token;
     token.txt = NULL;
     token.type = 0;
+
+    // Create diag engine if not already set (top-level parse)
+    int owns_diag = 0;
+    if (parser->diag == NULL) {
+        parser->diag = diag_engine_new(
+            parser->name, sstr_cstr(content), (long)sstr_length(content));
+        if (parser->diag == NULL) {
+            fprintf(stderr, "fatal: failed to allocate diagnostic engine\n");
+            return JSON_GEN_ERROR_MEMORY;
+        }
+        owns_diag = 1;
+    }
 
     while (1) {
         int tk = next_meaningful_token(parser, content, &token);
@@ -892,8 +976,8 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
             // handle '#include "filename"'
             int r = struct_parse_include(parser, content, &token);
             if (r != 0) {
-                token_clear(&token);
-                return r;
+                // include failed; continue to next top-level construct
+                continue;
             }
             continue;
         }
@@ -902,17 +986,25 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
         if (tk != TOKEN_IDENTIFY ||
             (sstr_compare_c(token.txt, "struct") != 0 &&
              sstr_compare_c(token.txt, "enum") != 0)) {
-            PERROR(parser, "expected \'struct\', \'enum\' or \'#include\', found \'%s\'\n",
+            PERROR(parser, "expected 'struct', 'enum' or '#include', found '%s'",
                    token_type_str(&token));
-            token_clear(&token);
-            return JSON_GEN_ERROR_PARSE;
+            // recovery: skip to next top-level keyword
+            skip_to_top_level(parser, content, &token);
+            // Re-check what we landed on
+            if (token.type == TOKEN_EOF) break;
+            if (token.type == TOKEN_SHARPE) {
+                int r = struct_parse_include(parser, content, &token);
+                if (r != 0) continue;
+                continue;
+            }
+            // Fall through: token is 'struct' or 'enum'
         }
 
-        if (sstr_compare_c(token.txt, "enum") == 0) {
+        if (token.txt && sstr_compare_c(token.txt, "enum") == 0) {
             int r = parse_enum_body(parser, content, &token);
             if (r != 0) {
-                token_clear(&token);
-                return r;
+                // error already recorded; continue parsing
+                continue;
             }
             continue;
         }
@@ -922,8 +1014,8 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
         int r = parse_struct_body(parser, content, &token, sct);
         if (r != 0) {
             struct_container_free(sct);
-            token_clear(&token);
-            return r;
+            // error already recorded; continue parsing
+            continue;
         }
         if (sct->name) {
             // we insert fields into sct->fields to the head of the list,
@@ -936,6 +1028,14 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
         }
     }
     token_clear(&token);
+
+    // Print diagnostics and return error status
+    if (owns_diag) {
+        diag_print_all(parser->diag, stderr);
+    }
+    if (diag_has_errors(parser->diag)) {
+        return JSON_GEN_ERROR_PARSE;
+    }
 
     return 0;
 }

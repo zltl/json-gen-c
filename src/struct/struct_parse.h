@@ -9,6 +9,7 @@
 
 #include <stddef.h>
 
+#include "utils/diag.h"
 #include "utils/hash_map.h"
 #include "utils/sstr.h"
 
@@ -138,6 +139,8 @@ struct struct_parser {
     struct pos pos;
     // name of parser
     char *name;
+    // diagnostic engine (owned by top-level parser, shared with sub-parsers)
+    struct diag_engine *diag;
 };
 
 // token types of struct definitions, return by next_token()

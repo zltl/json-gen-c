@@ -184,8 +184,9 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 
 ### Phase 3: Developer Experience
 
-1. Improve diagnostics.
-    - Show filename, line, column, and a short source snippet in a clang-like format.
+1. ~~Improve diagnostics.~~  **Done.**
+    - ~~Show filename, line, column, and a short source snippet in a clang-like format.~~
+    - New diagnostic engine (`src/utils/diag.h`, `diag.c`) with clang-style output: `filename:line:col: error: message`, source code snippet with caret indicator, severity levels (error/warning/note), ANSI color auto-detection via `isatty()`, and multi-error recovery in the schema parser. Runtime JSON parser format enhanced with "error:" label.
 2. Add schema validation before code generation.
     - Undefined type references
     - Duplicate field names

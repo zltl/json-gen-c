@@ -149,7 +149,7 @@ static char* ptoken(int type, sstr_t txt) {
 
 // print error messages, for debugs
 #define PERROR(pos, msg, ...) \
-    sstr_printf("line %d col %d: " msg, pos->line, pos->col, ##__VA_ARGS__)
+    sstr_printf("line %d col %d: error: " msg, pos->line, pos->col, ##__VA_ARGS__)
 
 static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt);
 

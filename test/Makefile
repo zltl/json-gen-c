@@ -8,7 +8,7 @@ include ../build.mk
 TEST_BUILD := $(BUILD_DIR)/test
 
 # Test source files
-TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc enum_test.cc fixed_array_test.cc map_test.cc optional_test.cc precise_int_test.cc
+TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc enum_test.cc fixed_array_test.cc map_test.cc optional_test.cc precise_int_test.cc diagnostic_test.cc
 TEST_OBJECTS := $(patsubst %.cc,$(TEST_BUILD)/%.o,$(TEST_SOURCES))
 
 # Generated files
@@ -28,9 +28,10 @@ FIXED_ARRAY_TEST := $(TEST_BUILD)/fixed_array_test
 MAP_TEST := $(TEST_BUILD)/map_test
 OPTIONAL_TEST := $(TEST_BUILD)/optional_test
 PRECISE_INT_TEST := $(TEST_BUILD)/precise_int_test
+DIAGNOSTIC_TEST := $(TEST_BUILD)/diagnostic_test
 
 # All test targets
-ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST)
+ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST) $(DIAGNOSTIC_TEST)
 
 #==============================================================================
 # Build rules
@@ -113,6 +114,11 @@ $(PRECISE_INT_TEST): $(TEST_BUILD)/precise_int_test.o $(GENERATED_OBJECTS)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
 
+$(DIAGNOSTIC_TEST): $(TEST_BUILD)/diagnostic_test.o
+	@echo "Linking diagnostic tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread -L$(BUILD_DIR)/lib -lstruct -lutils
+
 #==============================================================================
 # Test execution
 #==============================================================================
@@ -143,6 +149,8 @@ run: $(ALL_TESTS)
 	$(OPTIONAL_TEST)
 	@echo "=== Precise Int Tests ==="
 	$(PRECISE_INT_TEST)
+	@echo "=== Diagnostic Tests ==="
+	$(DIAGNOSTIC_TEST)
 	@echo "=== Bugfix Tests ==="
 	$(MAKE) run-bugfix
 	@echo "All tests completed successfully!"
@@ -199,6 +207,10 @@ run-performance: $(PERFORMANCE_TEST)
 	@echo "Running performance tests..."
 	$(PERFORMANCE_TEST)
 
+run-diagnostic: $(DIAGNOSTIC_TEST)
+	@echo "Running diagnostic tests..."
+	$(DIAGNOSTIC_TEST)
+
 #==============================================================================
 # Cleanup
 #==============================================================================
@@ -208,4 +220,4 @@ clean:
 	rm -rf $(GENERATED_SOURCES) *.h
 	rm -rf $(TEST_BUILD)
 
-.PHONY: run run-unit run-enhanced run-empty-array run-comprehensive run-nested run-performance
+.PHONY: run run-unit run-enhanced run-empty-array run-comprehensive run-nested run-performance run-diagnostic
