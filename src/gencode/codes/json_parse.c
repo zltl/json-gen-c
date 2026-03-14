@@ -10,6 +10,57 @@
 #include "sstr.h"
 #include "utils/error_codes.h"
 
+/* Allocator indirection — users may override before including generated code.
+ *
+ * Compile-time: define JGENC_MALLOC/JGENC_REALLOC/JGENC_FREE before including
+ * the generated .c file, e.g. -DJGENC_MALLOC=my_malloc.
+ *
+ * Run-time: call json_gen_c_set_alloc() to redirect allocations without
+ * recompiling.  When custom macros are defined the runtime API is disabled.
+ */
+#ifndef JGENC_MALLOC
+static void* (*jgenc_malloc_fn_)(size_t)                        = NULL;
+static void* (*jgenc_realloc_fn_)(void*, size_t)                = NULL;
+static void  (*jgenc_free_fn_)(void*)                           = NULL;
+
+static inline void* jgenc_malloc_dispatch_(size_t sz) {
+    return jgenc_malloc_fn_ ? jgenc_malloc_fn_(sz) : malloc(sz);
+}
+static inline void* jgenc_realloc_dispatch_(void* p, size_t sz) {
+    return jgenc_realloc_fn_ ? jgenc_realloc_fn_(p, sz) : realloc(p, sz);
+}
+static inline void jgenc_free_dispatch_(void* p) {
+    if (jgenc_free_fn_) jgenc_free_fn_(p); else free(p);
+}
+
+#define JGENC_MALLOC(sz)      jgenc_malloc_dispatch_(sz)
+#define JGENC_REALLOC(p, sz)  jgenc_realloc_dispatch_((p), (sz))
+#define JGENC_FREE(p)         jgenc_free_dispatch_(p)
+
+/**
+ * @brief Override the memory allocator used by generated JSON code at runtime.
+ *
+ * Pass NULL for any parameter to keep the default (stdlib) implementation.
+ * This function is NOT thread-safe — call it once during program
+ * initialisation, before any marshal / unmarshal calls.
+ */
+void json_gen_c_set_alloc(void* (*malloc_fn)(size_t),
+                           void* (*realloc_fn)(void*, size_t),
+                           void  (*free_fn)(void*)) {
+    jgenc_malloc_fn_  = malloc_fn;
+    jgenc_realloc_fn_ = realloc_fn;
+    jgenc_free_fn_    = free_fn;
+}
+#else
+/* Custom compile-time macros — runtime API disabled */
+#endif
+#ifndef JGENC_REALLOC
+#define JGENC_REALLOC(p, sz) realloc((p), (sz))
+#endif
+#ifndef JGENC_FREE
+#define JGENC_FREE(p) free(p)
+#endif
+
 /*
   hash map to describe structs like:
 
@@ -928,7 +979,7 @@ static int json_unmarshal_array_internal_enum(sstr_t content,
     }
     int cap = 4;
     int len = 0;
-    int* arr = (int*)malloc(sizeof(int) * cap);
+    int* arr = (int*)JGENC_MALLOC(sizeof(int) * cap);
     if (arr == NULL) return -1;
     while (1) {
         // peek for ']' or value
@@ -946,13 +997,13 @@ static int json_unmarshal_array_internal_enum(sstr_t content,
         *pos = saved;
         if (len >= cap) {
             cap *= 2;
-            int* new_arr = (int*)realloc(arr, sizeof(int) * cap);
-            if (new_arr == NULL) { free(arr); return -1; }
+            int* new_arr = (int*)JGENC_REALLOC(arr, sizeof(int) * cap);
+            if (new_arr == NULL) { JGENC_FREE(arr); return -1; }
             arr = new_arr;
         }
         int r = json_unmarshal_scalar_enum(content, pos, &arr[len], enum_strings, enum_count, txt);
         if (r != 0) {
-            free(arr);
+            JGENC_FREE(arr);
             return r;
         }
         len++;
@@ -1013,7 +1064,7 @@ static int json_unmarshal_array_internal_int(sstr_t content,
         if (r < 0) {
             return r;
         }
-        *ptr = (int*)realloc(*ptr, (*ptrlen + 1) * sizeof(int));
+        *ptr = (int*)JGENC_REALLOC(*ptr, (*ptrlen + 1) * sizeof(int));
         (*ptr)[*ptrlen] = res;
         *ptrlen = *ptrlen + 1;
         int tk = json_next_token(content, pos, txt);
@@ -1053,7 +1104,7 @@ static int json_unmarshal_array_internal_long(sstr_t content,
         if (r < 0) {
             return r;
         }
-        *ptr = (long*)realloc(*ptr, (*ptrlen + 1) * sizeof(long));
+        *ptr = (long*)JGENC_REALLOC(*ptr, (*ptrlen + 1) * sizeof(long));
         (*ptr)[*ptrlen] = res;
         *ptrlen = *ptrlen + 1;
         int tk = json_next_token(content, pos, txt);
@@ -1094,7 +1145,7 @@ static int json_unmarshal_array_internal_float(sstr_t content,
         if (r < 0) {
             return r;
         }
-        *ptr = (float*)realloc(*ptr, (*ptrlen + 1) * sizeof(float));
+        *ptr = (float*)JGENC_REALLOC(*ptr, (*ptrlen + 1) * sizeof(float));
         (*ptr)[*ptrlen] = res;
         *ptrlen = *ptrlen + 1;
         int tk = json_next_token(content, pos, txt);
@@ -1135,7 +1186,7 @@ static int json_unmarshal_array_internal_double(sstr_t content,
         if (r < 0) {
             return r;
         }
-        *ptr = (double*)realloc(*ptr, (*ptrlen + 1) * sizeof(double));
+        *ptr = (double*)JGENC_REALLOC(*ptr, (*ptrlen + 1) * sizeof(double));
         (*ptr)[*ptrlen] = res;
         *ptrlen = *ptrlen + 1;
         int tk = json_next_token(content, pos, txt);
@@ -1178,7 +1229,7 @@ static int json_unmarshal_array_internal_sstr_t(sstr_t content,
         if (r < 0) {
             return r;
         }
-        *ptr = (sstr_t*)realloc(*ptr, (*ptrlen + 1) * sizeof(sstr_t));
+        *ptr = (sstr_t*)JGENC_REALLOC(*ptr, (*ptrlen + 1) * sizeof(sstr_t));
         (*ptr)[*ptrlen] = res;
         *ptrlen = *ptrlen + 1;
         int tk = json_next_token(content, pos, txt);
@@ -1222,7 +1273,7 @@ static int json_unmarshal_array_internal_##TYPE(sstr_t content,                \
         if (r < 0) {                                                           \
             return r;                                                          \
         }                                                                      \
-        *ptr = (TYPE*)realloc(*ptr, (*ptrlen + 1) * sizeof(TYPE));             \
+        *ptr = (TYPE*)JGENC_REALLOC(*ptr, (*ptrlen + 1) * sizeof(TYPE));             \
         (*ptr)[*ptrlen] = res;                                                 \
         *ptrlen = *ptrlen + 1;                                                 \
         int tk2 = json_next_token(content, pos, txt);                          \
@@ -1265,7 +1316,7 @@ int json_unmarshal_array_int(sstr_t content, int** ptr, int* len) {
 #ifdef JSON_DEBUG
         printf("ERROR: %s\n", sstr_cstr(txt));
 #endif
-        free(*ptr);
+        JGENC_FREE(*ptr);
         *ptr = NULL;
         *len = 0;
     }
@@ -1285,7 +1336,7 @@ int json_unmarshal_array_long(sstr_t content, long** ptr, int* len) {
 #ifdef JSON_DEBUG
         printf("ERROR: %s\n", sstr_cstr(txt));
 #endif
-        free(*ptr);
+        JGENC_FREE(*ptr);
         *ptr = NULL;
         *len = 0;
     }
@@ -1305,7 +1356,7 @@ int json_unmarshal_array_float(sstr_t content, float** ptr, int* len) {
 #ifdef JSON_DEBUG
         printf("ERROR: %s\n", sstr_cstr(txt));
 #endif
-        free(*ptr);
+        JGENC_FREE(*ptr);
         *ptr = NULL;
         *len = 0;
     }
@@ -1324,7 +1375,7 @@ int json_unmarshal_array_double(sstr_t content, double** ptr, int* len) {
 #ifdef JSON_DEBUG
         printf("ERROR: %s\n", sstr_cstr(txt));
 #endif
-        free(*ptr);
+        JGENC_FREE(*ptr);
         *ptr = NULL;
         *len = 0;
     }
@@ -1347,7 +1398,7 @@ int json_unmarshal_array_sstr_t(sstr_t content, sstr_t** ptr, int* len) {
         for (i = 0; i < *len; ++i) {
             sstr_free((*ptr)[i]);
         }
-        free(*ptr);
+        JGENC_FREE(*ptr);
         *ptr = NULL;
         *len = 0;
     }
@@ -1365,7 +1416,7 @@ int json_unmarshal_array_##TYPE(sstr_t content, TYPE** ptr, int* len) {        \
     int r = json_unmarshal_array_internal_##TYPE(content, &pos, ptr, len,      \
                                                   txt);                        \
     if (r != 0) {                                                              \
-        free(*ptr);                                                            \
+        JGENC_FREE(*ptr);                                                            \
         *ptr = NULL;                                                           \
         *len = 0;                                                              \
     }                                                                          \
@@ -1432,7 +1483,7 @@ static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
     // If not empty, continue with normal parsing using original position
 
     while (1) {
-        void* ptr = malloc(field->type_size);
+        void* ptr = JGENC_MALLOC(field->type_size);
         if (ptr == NULL) {
             sstr_t e = PERROR(pos, "memory allocation failed for array element");
             sstr_append(txt, e);
@@ -1452,15 +1503,15 @@ static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
         
         // Handle parsing failure - free allocated memory before returning
         if (r < 0) {
-            free(ptr);
+            JGENC_FREE(ptr);
             return r;
         }
         
         // Reallocate array buffer with error checking
-        void* pptr = realloc(*(void**)param->instance_ptr,
+        void* pptr = JGENC_REALLOC(*(void**)param->instance_ptr,
                              (*len + 1) * field->type_size);
         if (pptr == NULL) {
-            free(ptr);
+            JGENC_FREE(ptr);
             sstr_t e = PERROR(pos, "memory reallocation failed for array");
             sstr_append(txt, e);
             sstr_free(e);
@@ -1469,7 +1520,7 @@ static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
         
         // Copy element to array and update pointer
         memcpy(pptr + (*len * field->type_size), ptr, field->type_size);
-        free(ptr);
+        JGENC_FREE(ptr);
         *(void**)param->instance_ptr = pptr;
         *len = *len + 1;
 
@@ -1561,7 +1612,7 @@ static int json_unmarshal_map_object(sstr_t content, struct json_pos* pos,
         int idx = *len_p;
         if (idx >= cap) {
             cap = cap == 0 ? 4 : cap * 2;
-            entries = (char*)realloc(entries, (size_t)cap * entry_size);
+            entries = (char*)JGENC_REALLOC(entries, (size_t)cap * entry_size);
             if (!entries) {
                 sstr_free(key);
                 return -1;
@@ -1649,7 +1700,7 @@ static int json_unmarshal_map_object(sstr_t content, struct json_pos* pos,
 
     // Shrink to fit
     if (*len_p > 0 && *len_p < cap) {
-        entries = (char*)realloc(entries, (size_t)(*len_p) * entry_size);
+        entries = (char*)JGENC_REALLOC(entries, (size_t)(*len_p) * entry_size);
         if (entries) {
             *entries_pp = entries;
         }
@@ -1730,6 +1781,15 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
 #if JSON_DEBUG
             printf("json_field_offset_item_find NULL, ignoring...\n");
 #endif
+            // Consume the expected colon before skipping the value.
+            tk = json_next_token(content, pos, txt);
+            if (tk != JSON_TOKEN_COLON) {
+                sstr_t e =
+                    PERROR(pos, "expected ':' but got '%s'", ptoken(tk, txt));
+                sstr_append(txt, e);
+                sstr_free(e);
+                return -1;
+            }
             json_unmarshal_ignore_value(content, pos, txt);
             continue;
         }
@@ -1804,7 +1864,7 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                     // grow array
                     if (arr_len >= arr_cap) {
                         arr_cap = arr_cap == 0 ? 4 : arr_cap * 2;
-                        arr = (char*)realloc(arr, (size_t)arr_cap * fi->type_size);
+                        arr = (char*)JGENC_REALLOC(arr, (size_t)arr_cap * fi->type_size);
                         if (!arr) return -1;
                         *arr_pp = arr;
                     }
@@ -1834,7 +1894,7 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
 
                 // Shrink to fit
                 if (arr_len > 0 && arr_len < arr_cap) {
-                    arr = (char*)realloc(arr, (size_t)arr_len * fi->type_size);
+                    arr = (char*)JGENC_REALLOC(arr, (size_t)arr_len * fi->type_size);
                     if (arr) *arr_pp = arr;
                 }
                 *(int*)((char*)param->instance_ptr + len_fi->offset) = arr_len;

@@ -12,7 +12,7 @@ jobs:
 
     steps:
     - name: install dependencies
-      run: sudo apt install -y libbenchmark-dev libgtest-dev doxygen
+      run: sudo apt install -y libbenchmark-dev libgtest-dev libcjson-dev doxygen
     - name: Checkout code
       uses: actions/checkout@v2
     - name: make clean
@@ -37,4 +37,20 @@ jobs:
         make run-empty-array
     - name: generate documentation
       run: make doxygen
+
+  sanitizer:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: install dependencies
+      run: sudo apt install -y libgtest-dev
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: build with sanitizers
+      run: JSON_SANITIZE=1 make
+    - name: run tests with sanitizers
+      env:
+        ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+        UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+      run: JSON_SANITIZE=1 make test
 

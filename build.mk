@@ -36,7 +36,7 @@ ifneq ($(JSON_DEBUG),)
 endif
 
 ifneq ($(JSON_SANITIZE),)
-	SANITIZER_FLAGS := -fsanitize=address -lasan
+	SANITIZER_FLAGS := -fsanitize=address,undefined -fno-sanitize-recover=undefined
 endif
 
 # Version

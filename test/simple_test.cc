@@ -85,7 +85,7 @@ TEST(unmarshal_int_array, random) {
         for (int i = 0; i < 100; ++i) {
             int *array = (int *)malloc(array_len * sizeof(int));
             for (int j = 0; j < array_len; ++j) {
-                array[j] = rand() * rand();
+                array[j] = rand() - RAND_MAX / 2;
             }
             sstr_t json_body = sstr_new();
             int r = json_marshal_array_int(array, array_len, json_body);
@@ -166,7 +166,7 @@ TEST(unmarshal_long_array, random) {
         for (int i = 0; i < 100; ++i) {
             long *array = (long *)malloc(array_len * sizeof(long));
             for (int j = 0; j < array_len; ++j) {
-                array[j] = rand() * rand();
+                array[j] = (long)rand() * rand();
             }
             sstr_t json_body = sstr_new();
             int r = json_marshal_array_long(array, array_len, json_body);

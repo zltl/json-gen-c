@@ -17,6 +17,17 @@
 #include <string.h>
 #include <time.h>
 
+/* Allocator indirection — users may override before including generated code */
+#ifndef JGENC_MALLOC
+#define JGENC_MALLOC(sz) malloc(sz)
+#endif
+#ifndef JGENC_REALLOC
+#define JGENC_REALLOC(p, sz) realloc((p), (sz))
+#endif
+#ifndef JGENC_FREE
+#define JGENC_FREE(p) free(p)
+#endif
+
 #define STR struct sstr_s
 #define SSTR(s) ((STR*)(s))
 
@@ -40,7 +51,7 @@ static void char_to_hex(unsigned char c, unsigned char* buf, bool cap) {
 }
 
 sstr_t sstr_new() {
-    STR* s = (STR*)malloc(sizeof(STR));
+    STR* s = (STR*)JGENC_MALLOC(sizeof(STR));
     memset(s, 0, sizeof(STR));
     return s;
 }
@@ -51,9 +62,9 @@ void sstr_free(sstr_t s) {
     }
     STR* ss = (STR*)s;
     if (ss->type == SSTR_TYPE_LONG) {
-        free(ss->un.long_str.data);
+        JGENC_FREE(ss->un.long_str.data);
     }
-    free(s);
+    JGENC_FREE(s);
 }
 
 sstr_t sstr_of(const void* data, size_t length) {
@@ -63,7 +74,7 @@ sstr_t sstr_of(const void* data, size_t length) {
         s->un.short_str[length] = '\0';
         s->type = SSTR_TYPE_SHORT;
     } else {
-        s->un.long_str.data = (char*)malloc(length + 1);
+        s->un.long_str.data = (char*)JGENC_MALLOC(length + 1);
         memcpy(s->un.long_str.data, data, length);
         s->un.long_str.capacity = length;
         s->un.long_str.data[length] = '\0';
@@ -136,7 +147,7 @@ void sstr_append_zero(sstr_t s, size_t length) {
             return;
         } else {
             char* ldata =
-                (char*)malloc(length + ss->length + CAP_ADD_DELTA + 1);
+                (char*)JGENC_MALLOC(length + ss->length + CAP_ADD_DELTA + 1);
             memcpy(ldata, ss->un.short_str, ss->length);
             memset(ldata + ss->length, 0, length + 1);
             ss->un.long_str.data = ldata;
@@ -151,7 +162,7 @@ void sstr_append_zero(sstr_t s, size_t length) {
             ss->length += length;
             return;
         } else {
-            ss->un.long_str.data = (char*)realloc(
+            ss->un.long_str.data = (char*)JGENC_REALLOC(
                 STR_PTR(s), length + ss->length + CAP_ADD_DELTA + 1);
             ss->un.long_str.capacity = length + ss->length + CAP_ADD_DELTA + 1;
             memset(ss->un.long_str.data + ss->length, 0, length + 1);
@@ -204,7 +215,7 @@ void sstr_clear(sstr_t s) {
             break;
         case SSTR_TYPE_LONG:
             ss->length = 0;
-            free(ss->un.long_str.data);
+            JGENC_FREE(ss->un.long_str.data);
             ss->un.long_str.data = NULL;
             ss->un.long_str.capacity = 0;
             break;
@@ -503,7 +514,7 @@ sstr_t sstr_vslprintf_append(sstr_t buf, const char* fmt, va_list args) {
             if (sign) {
                 if (i64 < 0) {
                     sstr_append_of(buf, "-", 1);
-                    ui64 = (uint64_t)-i64;
+                    ui64 = 0ull - (uint64_t)i64;
 
                 } else {
                     ui64 = (uint64_t)i64;
@@ -611,7 +622,7 @@ void sstr_append_int_str(sstr_t s, int i) {
 
     if (i < 0) {
         negative = true;
-        ui32 = (uint32_t)-i;
+        ui32 = 0u - (uint32_t)i;
     } else {
         ui32 = (uint32_t)i;
     }
@@ -666,7 +677,7 @@ void sstr_append_long_str(sstr_t s, long l) {
     bool negative = false;
     if (l < 0) {
         negative = true;
-        ui64 = (uint64_t)-l;
+        ui64 = 0ull - (uint64_t)l;
     } else {
         ui64 = (uint64_t)l;
     }

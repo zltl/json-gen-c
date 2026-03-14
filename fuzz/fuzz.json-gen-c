@@ -1,0 +1,23 @@
+enum Priority {
+    LOW,
+    MEDIUM,
+    HIGH
+}
+
+struct FuzzTarget {
+    int i;
+    long l;
+    float f;
+    double d;
+    bool b;
+    sstr_t s;
+    Priority p;
+    int nums[];
+    sstr_t tags[];
+    FuzzNested nested;
+}
+
+struct FuzzNested {
+    sstr_t name;
+    int value;
+}

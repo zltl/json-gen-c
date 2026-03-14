@@ -1,0 +1,255 @@
+
+
+enum Color {
+    RED,
+    GREEN,
+    BLUE
+}
+
+enum Status {
+    ACTIVE,
+    INACTIVE,
+    PENDING
+}
+
+struct TestStruct {
+	   int int_val;
+	   long long_val;
+	   float float_val;
+	   double double_val;
+	   bool bool_val;
+	   sstr_t sstr_val;
+}
+
+// Empty array bug fix test structures
+struct House {
+    sstr_t number;
+    sstr_t street;
+}
+
+struct Person {
+    sstr_t name;
+    sstr_t age;
+}
+
+struct Data {
+    House house;
+    Person people[];
+}
+
+// Additional test structures for comprehensive testing
+struct NestedStruct {
+    int id;
+    sstr_t name;
+    TestStruct embedded;
+}
+
+struct ComplexStruct {
+    int simple_int;
+    long simple_long;
+    float simple_float;
+    double simple_double;
+    bool simple_bool;
+    sstr_t simple_string;
+    
+    // Arrays of primitives
+    int int_array[];
+    long long_array[];
+    float float_array[];
+    double double_array[];
+    sstr_t string_array[];
+    
+    // Nested structures
+    House address;
+    Person contacts[];
+}
+
+struct OptionalFieldsStruct {
+    int required_id;
+    sstr_t optional_name;
+    float optional_value;
+    bool has_data;
+}
+
+struct EnumTestStruct {
+    Color color;
+    Status status;
+    int value;
+    Color colors[];
+}
+
+struct FixedArrayStruct {
+    int fixed_ints[5];
+    long fixed_longs[3];
+    float fixed_floats[4];
+    double fixed_doubles[3];
+    sstr_t fixed_strings[3];
+    bool fixed_bools[2];
+    Color fixed_colors[3];
+    Person fixed_contacts[2];
+}
+
+struct EdgeCaseStruct {
+    int zero_int;
+    long negative_long;
+    float tiny_float;
+    double huge_double;
+    bool false_bool;
+    sstr_t empty_string;
+    sstr_t special_chars_string;
+}
+
+struct MapIntStruct {
+    map<sstr_t, int> scores;
+}
+
+struct MapAllTypesStruct {
+    map<sstr_t, int> int_map;
+    map<sstr_t, long> long_map;
+    map<sstr_t, float> float_map;
+    map<sstr_t, double> double_map;
+    map<sstr_t, bool> bool_map;
+    map<sstr_t, sstr_t> str_map;
+    map<sstr_t, Color> enum_map;
+    map<sstr_t, Person> struct_map;
+}
+
+struct MapArrayStruct {
+    map<sstr_t, int> tags[];
+}
+
+struct OptionalOnlyStruct {
+    int id;
+    optional sstr_t name;
+    optional int score;
+    optional bool active;
+    optional float rating;
+    optional double precise;
+    optional long big_num;
+}
+
+struct NullableOnlyStruct {
+    int id;
+    nullable sstr_t name;
+    nullable int score;
+    nullable bool active;
+}
+
+struct OptionalNullableStruct {
+    int id;
+    optional nullable sstr_t name;
+    optional nullable int score;
+}
+
+struct NullableNestedStruct {
+    int id;
+    nullable Person person;
+    optional Color color;
+    optional nullable Status status;
+}
+
+// Precise-width integer test structures
+struct PreciseInts {
+    int8_t i8;
+    int16_t i16;
+    int32_t i32;
+    int64_t i64;
+    uint8_t u8;
+    uint16_t u16;
+    uint32_t u32;
+    uint64_t u64;
+}
+
+struct PreciseIntArrays {
+    int8_t i8_arr[4];
+    uint32_t u32_dyn[];
+    int64_t i64_dyn[];
+    uint64_t u64_fixed[2];
+}
+
+struct PreciseIntMap {
+    map<sstr_t, int32_t> i32_map;
+    map<sstr_t, uint64_t> u64_map;
+}
+
+// JSON field alias test structures
+struct AliasBasic {
+    @json "user_name"
+    sstr_t username;
+    @json "created_at"
+    long created;
+    int id;
+}
+
+struct AliasMixed {
+    @json "first_name"
+    sstr_t first;
+    sstr_t last;
+    @json "is_active"
+    bool active;
+}
+
+struct AliasOptional {
+    @json "display_name"
+    optional sstr_t name;
+    @json "age_years"
+    nullable int age;
+}
+
+struct AliasArray {
+    @json "tag_list"
+    sstr_t tags[];
+    @json "score_list"
+    int scores[3];
+}
+
+struct AliasNested {
+    @json "user_info"
+    Person info;
+    @json "home_address"
+    House addr;
+}
+
+// Default value test structures
+struct DefaultBasic {
+    int count = 42;
+    long big = 1000000;
+    float ratio = 3.14;
+    double precise = 2.718281828;
+    bool active = true;
+    sstr_t label = "hello";
+    int no_default;
+}
+
+struct DefaultNegative {
+    int neg_int = -10;
+    long neg_long = -99999;
+    float neg_float = -1.5;
+    double neg_double = -0.001;
+}
+
+struct DefaultEnum {
+    Color color = GREEN;
+    Status status = PENDING;
+}
+
+struct DefaultOptional {
+    optional int score = 100;
+    optional sstr_t name = "anonymous";
+}
+
+struct DefaultPrecise {
+    int8_t i8 = -1;
+    int16_t i16 = 256;
+    int32_t i32 = -100000;
+    uint8_t u8 = 255;
+    uint16_t u16 = 65535;
+    uint32_t u32 = 42;
+}
+
+struct DefaultMixed {
+    @json "user_count"
+    int count = 10;
+    sstr_t name;
+    bool enabled = false;
+}

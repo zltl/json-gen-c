@@ -1,0 +1,4 @@
+struct Inner {
+    int value;
+    sstr_t label;
+}

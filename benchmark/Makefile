@@ -41,7 +41,7 @@ $(BENCH_OBJECT): json.gen.c
 $(BENCHMARK): $(BENCH_OBJECT) $(GENERATED_OBJECTS)
 	@echo "Linking benchmark: $@"
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -lbenchmark -lpthread
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lbenchmark -lcjson -lpthread
 
 #==============================================================================
 # Run benchmark

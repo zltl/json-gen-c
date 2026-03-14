@@ -218,15 +218,21 @@ TEST_F(AliasTest, AliasWithNestedStruct) {
 }
 
 // Unmarshal with C field name should fail when alias is defined
-TEST_F(AliasTest, UnmarshalWithCFieldNameFails) {
-    // Use C field names instead of aliases — parser rejects unknown keys
+TEST_F(AliasTest, UnmarshalWithCFieldNameIgnored) {
+    // Use C field names instead of aliases — unknown keys are silently ignored
     const char* json_str = "{\"username\":\"test\",\"created\":999,\"id\":1}";
     sstr_t json = sstr(json_str);
 
     struct AliasBasic obj;
     AliasBasic_init(&obj);
-    // "username" and "created" are not recognized (alias overrides the key)
-    EXPECT_NE(json_unmarshal_AliasBasic(json, &obj), 0);
+    // "username" and "created" are not recognized (alias overrides the key),
+    // but "id" has no alias so it is recognized normally.
+    // Unknown fields are silently skipped per standard JSON behavior.
+    EXPECT_EQ(json_unmarshal_AliasBasic(json, &obj), 0);
+    // Only "id" should be set; aliased fields remain at init values
+    EXPECT_EQ(obj.id, 1);
+    EXPECT_TRUE(obj.username == NULL);
+    EXPECT_EQ(obj.created, 0);
 
     AliasBasic_clear(&obj);
     sstr_free(json);

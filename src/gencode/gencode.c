@@ -307,7 +307,7 @@ static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
                        "        for (i = 0; i < *len; ++i) {\n"
                        "            %S_clear(&(*obj)[i]);\n"
                        "        }\n"
-                       "    free(*obj);\n"
+                       "    JGENC_FREE(*obj);\n"
                        "    *obj = NULL;\n"
                        "    *len = 0;\n"
                        "    }\n",
@@ -907,7 +907,7 @@ static void gen_clear_map_entries(struct struct_field* field, const char* expr,
     }
     sstr_printf_append(source,
         "        }\n"
-        "        free(%s.entries);\n"
+        "        JGENC_FREE(%s.entries);\n"
         "        %s.entries = NULL;\n"
         "        %s.len = 0; }\n",
         expr, expr, expr);
@@ -934,7 +934,7 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
                 gen_clear_map_entries(field, expr, source);
                 sstr_printf_append(source,
                     "    }\n"
-                    "    free(obj->%S);\n"
+                    "    JGENC_FREE(obj->%S);\n"
                     "    obj->%S = NULL;\n"
                     "    obj->%S_len = 0; }\n",
                     field->name, field->name, field->name);
@@ -995,7 +995,7 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
                 }
                 sstr_append_cstr(source, "    }\n");
             }
-            sstr_printf_append(source, "    free(obj->%S);\n", field->name);
+            sstr_printf_append(source, "    JGENC_FREE(obj->%S);\n", field->name);
             sstr_printf_append(source, "    obj->%S = NULL;\n", field->name);
             sstr_printf_append(source, "    obj->%S_len = 0;\n", field->name);
             continue;
@@ -1423,6 +1423,19 @@ int gencode_head_guard_begin(sstr_t head) {
     sstr_append_cstr(head, "#endif\n\n");
     sstr_append_cstr(
         head,
+        "#ifndef JGENC_MALLOC\n"
+        "/**\n"
+        " * @brief Override the memory allocator used by generated JSON code.\n"
+        " *\n"
+        " * Pass NULL for any parameter to keep the default (stdlib).\n"
+        " * Not thread-safe — call once during program initialisation.\n"
+        " */\n"
+        "void json_gen_c_set_alloc(void* (*malloc_fn)(size_t),\n"
+        "                          void* (*realloc_fn)(void*, size_t),\n"
+        "                          void  (*free_fn)(void*));\n"
+        "#endif\n\n");
+    sstr_append_cstr(
+        head,
         "/**\n"
         " * @brief Convert (marshal) array of int to indented json string.\n"
         " * @param obj The array of ints.\n"
@@ -1606,6 +1619,46 @@ int gencode_source_begin(sstr_t source) {
                        "#include \"%s\"\n\n#include <stdio.h>\n"
                        "#include <malloc.h>\n#include <string.h>\n\n",
                        OUTPUT_H_FILENAME);
+
+    /* Emit allocator indirection macros early, so both gencode-emitted
+       struct code and the json_parse.c template can use JGENC_*. */
+    sstr_append_cstr(source,
+        "#ifndef JGENC_MALLOC\n"
+        "static void* (*jgenc_malloc_fn_)(size_t)                        = NULL;\n"
+        "static void* (*jgenc_realloc_fn_)(void*, size_t)                = NULL;\n"
+        "static void  (*jgenc_free_fn_)(void*)                           = NULL;\n"
+        "\n"
+        "static inline void* jgenc_malloc_dispatch_(size_t sz) {\n"
+        "    return jgenc_malloc_fn_ ? jgenc_malloc_fn_(sz) : malloc(sz);\n"
+        "}\n"
+        "static inline void* jgenc_realloc_dispatch_(void* p, size_t sz) {\n"
+        "    return jgenc_realloc_fn_ ? jgenc_realloc_fn_(p, sz) : realloc(p, sz);\n"
+        "}\n"
+        "static inline void jgenc_free_dispatch_(void* p) {\n"
+        "    if (jgenc_free_fn_) jgenc_free_fn_(p); else free(p);\n"
+        "}\n"
+        "\n"
+        "#define JGENC_MALLOC(sz)      jgenc_malloc_dispatch_(sz)\n"
+        "#define JGENC_REALLOC(p, sz)  jgenc_realloc_dispatch_((p), (sz))\n"
+        "#define JGENC_FREE(p)         jgenc_free_dispatch_(p)\n"
+        "\n"
+        "void json_gen_c_set_alloc(void* (*malloc_fn)(size_t),\n"
+        "                           void* (*realloc_fn)(void*, size_t),\n"
+        "                           void  (*free_fn)(void*)) {\n"
+        "    jgenc_malloc_fn_  = malloc_fn;\n"
+        "    jgenc_realloc_fn_ = realloc_fn;\n"
+        "    jgenc_free_fn_    = free_fn;\n"
+        "}\n"
+        "#else\n"
+        "/* Custom compile-time macros supplied */\n"
+        "#endif\n"
+        "#ifndef JGENC_REALLOC\n"
+        "#define JGENC_REALLOC(p, sz) realloc((p), (sz))\n"
+        "#endif\n"
+        "#ifndef JGENC_FREE\n"
+        "#define JGENC_FREE(p) free(p)\n"
+        "#endif\n\n");
+
     sstr_append_of(source, json_parse_h, (size_t)json_parse_h_len);
     gen_code_scalar_marshal_array(source);
     return 0;

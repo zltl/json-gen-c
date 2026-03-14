@@ -253,20 +253,24 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 
 ### Phase 5: Performance and Reliability
 
-1. Add custom allocator support.
-    - Allow generated code to use caller-provided allocation and free hooks.
-    - Important for embedded targets and arena allocators.
-2. Add fuzz testing.
-    - Schema parser fuzzing
-    - JSON parser fuzzing
-3. Add memory tooling in CI.
-    - AddressSanitizer
-    - Leak checking
-    - Optional Valgrind runs where practical
-4. Build comparative benchmarks against similar JSON libraries and code-generation approaches.
+1. ~~Add custom allocator support.~~
+    - ~~Allow generated code to use caller-provided allocation and free hooks.~~
+    - ~~Important for embedded targets and arena allocators.~~
+    - **Completed:** `JGENC_MALLOC`/`JGENC_REALLOC`/`JGENC_FREE` compile-time macros for sstr and generated code. Runtime `json_gen_c_set_alloc()` API with function pointers. 4 allocator tests passing.
+2. ~~Add fuzz testing.~~
+    - ~~Schema parser fuzzing~~
+    - ~~JSON parser fuzzing~~
+    - **Completed:** libFuzzer harnesses in `fuzz/` for schema parser and JSON unmarshal. Seed corpora. Found and fixed a real crash: missing colon consumption before `json_unmarshal_ignore_value()` for unknown fields.
+3. ~~Add memory tooling in CI.~~
+    - ~~AddressSanitizer~~
+    - ~~Leak checking~~
+    - ~~Optional Valgrind runs where practical~~
+    - **Completed:** `JSON_SANITIZE=1` enables ASan+UBSan (`-fsanitize=address,undefined`). Dedicated `sanitizer` CI job in GitHub Actions. Fixed UBSan issues: signed integer overflow in `sstr_append_int_str` / `sstr_append_long_str` and test random number generation.
+4. ~~Build comparative benchmarks against similar JSON libraries and code-generation approaches.~~
+    - **Completed:** Added nested struct and string-heavy benchmarks. Added cJSON comparison benchmarks (marshal + unmarshal for scalar and nested structs). Results show json-gen-c produces typed structs directly while cJSON builds an untyped tree.
 5. Investigate selective parsing or SIMD-assisted fast paths only after correctness and coverage are strong.
 
-**Exit criteria:** the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments.
+**Exit criteria:** the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments. **Items 1–4 completed.**
 
 ### Phase 6: Long-Term Vision
 

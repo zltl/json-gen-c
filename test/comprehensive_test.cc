@@ -300,7 +300,6 @@ TEST_F(ComprehensiveTest, MalformedJsonHandling) {
         "{ \"int_val\": }",           // Missing value
         "{ \"int_val\": abc }",       // Invalid value
         "{ \"int_val\": 123, }",      // Trailing comma
-        "{ \"unknown_field\": 123 }", // Unknown field only
         "[]",                         // Array instead of object
         "null",                       // Null instead of object
         "\"string\"",                 // String instead of object
@@ -316,7 +315,13 @@ TEST_F(ComprehensiveTest, MalformedJsonHandling) {
         sstr_free(malformed_json);
     }
     
+    // Unknown fields should be silently ignored (standard JSON behavior)
+    TestStruct_init(&test_data);
+    sstr_t unk_json = sstr("{ \"unknown_field\": 123, \"int_val\": 42 }");
+    EXPECT_EQ(json_unmarshal_TestStruct(unk_json, &test_data), 0);
+    EXPECT_EQ(test_data.int_val, 42);
     TestStruct_clear(&test_data);
+    sstr_free(unk_json);
 }
 
 // Test indented JSON output

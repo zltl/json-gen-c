@@ -7,3 +7,28 @@ struct scalar {
     float float_val;
     sstr_t sstr_val;
 };
+
+struct address {
+    sstr_t street;
+    sstr_t city;
+    sstr_t state;
+    sstr_t zip;
+};
+
+struct nested {
+    sstr_t name;
+    int age;
+    address home_addr;
+    address work_addr;
+};
+
+struct string_heavy {
+    sstr_t first_name;
+    sstr_t last_name;
+    sstr_t email;
+    sstr_t phone;
+    sstr_t bio;
+    sstr_t website;
+    sstr_t company;
+    sstr_t title;
+};

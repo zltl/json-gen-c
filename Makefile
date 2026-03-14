@@ -2,7 +2,7 @@
 # Includes common build configuration
 include build.mk
 
-.PHONY: all libs clean example benchmark install uninstall test doxygen
+.PHONY: all libs clean example benchmark install uninstall test doxygen fuzz
 .DEFAULT_GOAL := all
 
 # Installation directory
@@ -94,6 +94,10 @@ benchmark: $(JSON_GEN_C)
 test: $(JSON_GEN_C)
 	@echo "Building and running tests..."
 	$(MAKE) -C test run
+
+fuzz: $(JSON_GEN_C)
+	@echo "Building fuzz harnesses..."
+	$(MAKE) -C fuzz all
 
 #==============================================================================
 # Installation and cleanup
