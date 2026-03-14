@@ -41,16 +41,21 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
         } else {
             sstr_append(header, field->type_name);
         }
-        if (field->is_array) {
-            // if it's an array, set type to pointer
+        if (field->is_array && field->array_size > 0) {
+            // fixed-size array: type name[N];
+        } else if (field->is_array) {
+            // dynamic array: set type to pointer
             sstr_append_cstr(header, "*");
         }
         sstr_append_cstr(header, " ");
         sstr_append(header, field->name);
+        if (field->is_array && field->array_size > 0) {
+            sstr_printf_append(header, "[%d]", field->array_size);
+        }
         sstr_append_cstr(header, ";\n");
 
-        if (field->is_array) {
-            // if it's an array, add a field_name_len integer field
+        if (field->is_array && field->array_size == 0) {
+            // dynamic array: add a field_name_len integer field
             // to denote the size of array.
             sstr_printf_append(header, "    int %S_len;\n", field->name);
         }
@@ -276,8 +281,16 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                     "        sstr_append_of(out, \"[\", 1);\n"
                     "        sstr_append_of_if(out, \"\\n\", 1, indent);\n"
                     "        curindent += indent;\n");
+                if (field->array_size > 0) {
+                    sstr_printf_append(source,
+                        "        for (_ei = 0; _ei < %d; _ei++) {\n",
+                        field->array_size);
+                } else {
+                    sstr_printf_append(source,
+                        "        for (_ei = 0; _ei < obj->%S_len; _ei++) {\n",
+                        field->name);
+                }
                 sstr_printf_append(source,
-                    "        for (_ei = 0; _ei < obj->%S_len; _ei++) {\n"
                     "            sstr_append_indent(out, curindent);\n"
                     "            if (obj->%S[_ei] >= 0 && obj->%S[_ei] < %S_enum_count) {\n"
                     "                sstr_append_of(out, \"\\\"\", 1);\n"
@@ -285,22 +298,35 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                     "                sstr_append_of(out, \"\\\"\", 1);\n"
                     "            } else {\n"
                     "                sstr_append_int_str(out, obj->%S[_ei]);\n"
-                    "            }\n"
-                    "            if (_ei < obj->%S_len - 1) {\n"
+                    "            }\n",
+                    field->name, field->name, field->type_name,
+                    field->type_name, field->name,
+                    field->name);
+                if (field->array_size > 0) {
+                    sstr_printf_append(source,
+                        "            if (_ei < %d - 1) {\n",
+                        field->array_size);
+                } else {
+                    sstr_printf_append(source,
+                        "            if (_ei < obj->%S_len - 1) {\n",
+                        field->name);
+                }
+                sstr_append_cstr(source,
                     "                sstr_append_cstr(out, \",\");\n"
                     "            }\n"
                     "            sstr_append_of_if(out, \"\\n\", 1, indent);\n"
-                    "        }\n",
-                    field->name,
-                    field->name, field->name, field->type_name,
-                    field->type_name, field->name,
-                    field->name,
-                    field->name);
+                    "        }\n");
                 sstr_append_cstr(source,
                     "        curindent -= indent;\n"
                     "        sstr_append_indent(out, curindent);\n"
                     "        sstr_append_of(out, \"]\", 1);\n"
                     "    }\n");
+            } else if (field->array_size > 0) {
+                // fixed-size non-enum array
+                sstr_printf_append(source,
+                                   "    json_marshal_array_indent_%S(obj->%S, "
+                                   "%d, indent, curindent, out);\n",
+                                   field->type_name, field->name, field->array_size);
             } else {
                 sstr_printf_append(source,
                                    "    json_marshal_array_indent_%S(obj->%S, "
@@ -428,8 +454,23 @@ static void gen_code_struct_init(struct struct_container* st, sstr_t source) {
                        st->name);
     struct struct_field* field = st->fields;
     for (; field; field = field->next) {
+        if (field->is_array && field->array_size > 0) {
+            // fixed-size array initialization
+            if (field->type == FIELD_TYPE_SSTR) {
+                sstr_printf_append(source, "    {\n        int _i;\n        for (_i = 0; _i < %d; _i++) {\n", field->array_size);
+                sstr_printf_append(source, "            obj->%S[_i] = NULL;\n", field->name);
+                sstr_append_cstr(source, "        }\n    }\n");
+            } else if (field->type == FIELD_TYPE_STRUCT) {
+                sstr_printf_append(source, "    {\n        int _i;\n        for (_i = 0; _i < %d; _i++) {\n", field->array_size);
+                sstr_printf_append(source, "            %S_init(&obj->%S[_i]);\n", field->type_name, field->name);
+                sstr_append_cstr(source, "        }\n    }\n");
+            } else {
+                sstr_printf_append(source, "    memset(obj->%S, 0, sizeof(obj->%S));\n", field->name, field->name);
+            }
+            continue;
+        }
         if (field->is_array) {
-            // if array, an extra integer field XXX_len denoting the size
+            // dynamic array: an extra integer field XXX_len denoting the size
             // of the array.
             sstr_printf_append(source, "    obj->%S = NULL;\n", field->name);
             sstr_printf_append(source, "    obj->%S_len = 0;\n", field->name);
@@ -472,8 +513,36 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
     int have_i = 0;
     struct struct_field* field = st->fields;
     for (; field; field = field->next) {
+        if (field->is_array && field->array_size > 0) {
+            // fixed-size array: clear elements in-place, no free
+            if (field->type == FIELD_TYPE_STRUCT ||
+                field->type == FIELD_TYPE_SSTR) {
+                if (!have_i) {
+                    have_i = 1;
+                    sstr_append_cstr(source, "    int i;\n");
+                }
+                sstr_printf_append(source,
+                                   "    for (i = 0; i < %d; i++) {\n",
+                                   field->array_size);
+                if (field->type == FIELD_TYPE_STRUCT) {
+                    sstr_printf_append(source,
+                                       "       %S_clear(&obj->%S[i]);\n",
+                                       field->type_name, field->name);
+                } else {
+                    sstr_printf_append(
+                        source, "       sstr_free(obj->%S[i]);\n", field->name);
+                    sstr_printf_append(
+                        source, "       obj->%S[i] = NULL;\n", field->name);
+                }
+                sstr_append_cstr(source, "    }\n");
+            } else {
+                sstr_printf_append(source, "    memset(obj->%S, 0, sizeof(obj->%S));\n",
+                                   field->name, field->name);
+            }
+            continue;
+        }
         if (field->is_array) {
-            // free array, and set XXX_len=0
+            // dynamic array: free array, and set XXX_len=0
             if (field->type == FIELD_TYPE_STRUCT ||
                 field->type == FIELD_TYPE_SSTR) {
                 if (!have_i) {
@@ -552,7 +621,8 @@ static void count_fields_fd(void* key, void* value, void* ptr) {
     int* count = (int*)ptr;
     struct struct_field* field = st->fields;
     while (field) {
-        if (field->is_array) {
+        if (field->is_array && field->array_size == 0) {
+            // dynamic arrays have an extra _len field
             (*count)++;
         }
         (*count)++;
@@ -591,7 +661,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
 
     sstr_printf_append(param->source,
                        "    {0, sizeof(struct %S), %d, \"\", \"\", \"%S\", 0"
-                       ", NULL, 0},\n",
+                       ", NULL, 0, 0},\n",
                        st->name, FIELD_TYPE_STRUCT, st->name, st->name,
                        st->name);
     sstr_t empty_s = sstr_new();
@@ -604,34 +674,36 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             sstr_printf_append(param->source,
                                "    {offsetof(struct %S, %S), sizeof(struct "
                                "%S), %d, \"%S\", \"%S\", "
-                               "\"%S\", %d, NULL, 0},\n",
+                               "\"%S\", %d, NULL, 0, %d},\n",
                                st->name, field->name, field->type_name,
                                field->type, field->type_name, field->name,
-                               st->name, field->is_array);
+                               st->name, field->is_array, field->array_size);
             gen_hash_arr(st->name, field->name, param);
         } else if (field->type == FIELD_TYPE_ENUM) {
             sstr_printf_append(
                 param->source,
                 "    {offsetof(struct %S, %S), sizeof(int), %d, \"%S\", \"%S\", "
-                "\"%S\", %d, %S_enum_strings, %S_enum_count},\n",
+                "\"%S\", %d, %S_enum_strings, %S_enum_count, %d},\n",
                 st->name, field->name, field->type,
                 field->type_name, field->name,
                 st->name, field->is_array,
-                field->type_name, field->type_name);
+                field->type_name, field->type_name, field->array_size);
             gen_hash_arr(st->name, field->name, param);
         } else {
             sstr_printf_append(
                 param->source,
                 "    {offsetof(struct %S, %S), sizeof(%S), %d, \"%S\", \"%S\", "
-                "\"%S\", %d, NULL, 0},\n",
+                "\"%S\", %d, NULL, 0, %d},\n",
                 st->name, field->name, field->type_name, field->type,
-                field->type_name, field->name, st->name, field->is_array);
+                field->type_name, field->name, st->name, field->is_array,
+                field->array_size);
             gen_hash_arr(st->name, field->name, param);
         }
-        if (field->is_array) {
+        if (field->is_array && field->array_size == 0) {
+            // dynamic array: generate _len field entry
             sstr_printf_append(param->source, "    {offsetof(struct %S, %S_len), sizeof(int), "
                                "%d, \"int\", \"%S_len\", "
-                               "\"%S\", %d, NULL, 0},\n",
+                               "\"%S\", %d, NULL, 0, 0},\n",
                                st->name, field->name, FIELD_TYPE_INT,
                                field->name, st->name, 0);
             sstr_t tmp = sstr_dup(field->name);
@@ -731,6 +803,7 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
                      "    int is_array;\n"
                      "    const char** enum_strings;\n"
                      "    int enum_count;\n"
+                     "    int array_size;\n"
                      "};\n\n");
     sstr_printf_append(
         source,
@@ -745,7 +818,7 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
     param.hash_arr = (int*)malloc(sizeof(int) * param.hash_size);
     memset(param.hash_arr, -1, sizeof(int) * param.hash_size);
     hash_map_for_each(struct_map, gen_fields_list_fn, &param);
-    sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0, NULL, 0}};\n");
+    sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0, NULL, 0, 0}};\n");
 
     sstr_printf_append(
         source, "int json_entry_hash_size = %d;\nint json_entry_hash[%d] = {",
@@ -946,7 +1019,7 @@ int gencode_head_guard_end(sstr_t head) {
 int gencode_source_begin(sstr_t source) {
     sstr_printf_append(source,
                        "#include \"%s\"\n\n#include <stdio.h>\n"
-                       "#include <malloc.h>\n\n",
+                       "#include <malloc.h>\n#include <string.h>\n\n",
                        OUTPUT_H_FILENAME);
     sstr_append_of(source, json_parse_h, (size_t)json_parse_h_len);
     gen_code_scalar_marshal_array(source);

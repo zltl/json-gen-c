@@ -78,6 +78,17 @@ struct EnumTestStruct {
     Color colors[];
 }
 
+struct FixedArrayStruct {
+    int fixed_ints[5];
+    long fixed_longs[3];
+    float fixed_floats[4];
+    double fixed_doubles[3];
+    sstr_t fixed_strings[3];
+    bool fixed_bools[2];
+    Color fixed_colors[3];
+    Person fixed_contacts[2];
+}
+
 struct EdgeCaseStruct {
     int zero_int;
     long negative_long;

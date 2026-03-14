@@ -91,6 +91,7 @@ struct A {
     float float_val;
     sstr_t sstr_val;
     int int_val_array[];
+    int fixed_data[10];
     B b_val;
 };
 
@@ -209,7 +210,7 @@ The field type can be one of the following:
 - `bool`
 - a struct name
 
-If a field is an array, just append `[]` after the field name.
+If a field is a dynamic array, just append `[]` after the field name. For fixed-size arrays, use `[N]` where N is a positive integer (e.g., `int data[10];`).
 
 ## The JSON API
 

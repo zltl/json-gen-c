@@ -1362,6 +1362,108 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
             return -1;
         }
 
+        if (fi->is_array && fi->array_size > 0) {
+            // fixed-size array: parse directly into inline buffer
+            int count = 0;
+            int max_size = fi->array_size;
+            void* base = (char*)param->instance_ptr + fi->offset;
+
+            int tk2 = json_next_token(content, pos, txt);
+            if (tk2 != JSON_TOKEN_LEFT_BRACKET) {
+                sstr_t e = PERROR(pos, "expected '[' but got '%s'",
+                                  ptoken(tk2, txt));
+                sstr_append(txt, e);
+                sstr_free(e);
+                return -1;
+            }
+
+            // peek for empty array
+            struct json_pos peek = *pos;
+            sstr_t peek_txt = sstr_new();
+            tk2 = json_next_token(content, &peek, peek_txt);
+            sstr_free(peek_txt);
+            if (tk2 == JSON_TOKEN_RIGHT_BRACKET) {
+                *pos = peek;
+                continue;
+            }
+
+            while (1) {
+                if (count >= max_size) {
+                    sstr_t e = PERROR(pos, "fixed-size array overflow: "
+                                      "max %d elements for field '%s'",
+                                      max_size, fi->field_name);
+                    sstr_append(txt, e);
+                    sstr_free(e);
+                    return -1;
+                }
+                int r;
+                switch (fi->field_type) {
+                    case FIELD_TYPE_INT:
+                    case FIELD_TYPE_BOOL:
+                        r = json_unmarshal_scalar_int(content, pos,
+                            &((int*)base)[count], txt);
+                        break;
+                    case FIELD_TYPE_LONG:
+                        r = json_unmarshal_scalar_long(content, pos,
+                            &((long*)base)[count], txt);
+                        break;
+                    case FIELD_TYPE_FLOAT:
+                        r = json_unmarshal_scalar_float(content, pos,
+                            &((float*)base)[count], txt);
+                        break;
+                    case FIELD_TYPE_DOUBLE:
+                        r = json_unmarshal_scalar_double(content, pos,
+                            &((double*)base)[count], txt);
+                        break;
+                    case FIELD_TYPE_SSTR: {
+                        sstr_t s = NULL;
+                        r = json_unmarshal_scalar_sstr_t(content, pos, &s, txt);
+                        ((sstr_t*)base)[count] = s;
+                        break;
+                    }
+                    case FIELD_TYPE_ENUM:
+                        r = json_unmarshal_scalar_enum(content, pos,
+                            &((int*)base)[count],
+                            fi->enum_strings, fi->enum_count, txt);
+                        break;
+                    case FIELD_TYPE_STRUCT: {
+                        struct json_parse_param sub;
+                        sub.instance_ptr =
+                            (char*)base + count * fi->type_size;
+                        sub.in_array = 1;
+                        sub.in_struct = 0;
+                        sub.struct_name = fi->field_type_name;
+                        sub.field_name = fi->field_name;
+                        r = json_unmarshal_struct_internal(content, pos,
+                                                           &sub, txt);
+                        break;
+                    }
+                    default:
+                        r = -1;
+                        break;
+                }
+                if (r == JSON_TOKEN_RIGHT_BRACKET) {
+                    break;
+                }
+                if (r < 0) {
+                    return r;
+                }
+                count++;
+
+                tk2 = json_next_token(content, pos, txt);
+                if (tk2 == JSON_TOKEN_RIGHT_BRACKET) {
+                    break;
+                }
+                if (tk2 == JSON_TOKEN_COMMA) {
+                    continue;
+                }
+                if (tk2 == JSON_ERROR || tk2 == JSON_TOKEN_EOF) {
+                    return -1;
+                }
+            }
+            continue;
+        }
+
         if (fi->is_array) {
             sstr_t field_len_name = sstr(fi->field_name);
             sstr_append_cstr(field_len_name, "_len");

@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <malloc.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "utils/hash_map.h"
@@ -570,8 +571,14 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
     if (tk == TOKEN_LEFT_BRACKET) {
         field->is_array = 1;
         tk = next_token(parser, content, token);
-        if (tk == TOKEN_INTEGER) {
-            // ignore array size
+        if (token->type == TOKEN_INTEGER) {
+            // fixed-size array: parse the size
+            long sz = strtol(sstr_cstr(token->txt), NULL, 10);
+            if (sz <= 0) {
+                PERROR(parser, "array size must be a positive integer\n");
+                return -1;
+            }
+            field->array_size = (int)sz;
             tk = next_token(parser, content, token);
         }
         if (tk != TOKEN_RIGHT_BRACKET) {

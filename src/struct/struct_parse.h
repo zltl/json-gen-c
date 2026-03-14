@@ -72,6 +72,8 @@ struct struct_field {
     int type;
     // 1 if the field is an array, 0 otherwise
     int is_array;
+    // fixed-size array length (>0), 0 means dynamic array
+    int array_size;
     // the name of field type
     sstr_t type_name;
     // linked list pointer to next field, NULL if this is the last field

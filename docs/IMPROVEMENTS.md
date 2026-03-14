@@ -10,7 +10,7 @@ This document tracks the current maturity of `json-gen-c`, completed foundationa
 | Test coverage | Good | Multiple Google Test suites, benchmark coverage, `-Werror`, bugfix regression tests |
 | Documentation | Good | README, getting started guide, Doxygen, and man page exist |
 | CI/CD | Good | GitHub Actions test workflow and Doxygen deployment are present |
-| Type system | Growing | Enums supported; no fixed-size arrays, maps, optional fields, or precise-width integer families yet |
+| Type system | Growing | Enums and fixed-size arrays supported; no maps, optional fields, or precise-width integer families yet |
 | Ecosystem integration | Limited | No CMake, pkg-config, package manager distribution, or Windows support |
 
 Summary: the project is already usable and reasonably mature at the core. Enum type support has been added, expanding the type system. It still needs broader type support (maps, optionals, precise-width integers), better ecosystem integration, and stronger developer ergonomics to reach a polished 1.0.
@@ -99,6 +99,24 @@ Implemented full enum type support across the schema parser, code generator, and
 
 **Status:** Completed.
 
+### Add Fixed-Size Array Support
+**Location:** `src/struct/struct_parse.h`, `src/struct/struct_parse.c`, `src/gencode/gencode.c`, `src/gencode/codes/json_parse.c`
+
+Implemented fixed-size array support, distinguished from existing dynamically allocated arrays:
+
+- **Schema syntax:** `int data[10];` — any supported type followed by `[N]` where N is a positive integer.
+- **Parser:** Added `array_size` field to `struct_field`. When `[N]` is parsed, `is_array` is set and `array_size` stores N (>0 means fixed-size; 0 means dynamic).
+- **Header generation:** Fixed-size arrays emit inline C arrays (`type name[N];`) with no pointer or `_len` companion field.
+- **Init generation:** Primitive fixed arrays use `memset()` to zero; `sstr_t` and struct arrays loop to initialize each element.
+- **Clear generation:** Primitive fixed arrays use `memset()` to zero; `sstr_t` arrays loop to `sstr_free()` and NULL each element; struct arrays loop to call the nested clear function.
+- **Marshal generation:** Fixed arrays use the compile-time size N as loop bound instead of a runtime `_len` field.
+- **Offset/metadata table:** Extended `json_field_offset_item` with `array_size` field. Only dynamic arrays generate the extra `_len` metadata entry.
+- **Unmarshal (runtime):** New dispatch block for `fi->is_array && fi->array_size > 0` parses JSON array elements directly into the inline buffer, enforcing the maximum element count and reporting an error on overflow.
+
+**Test coverage:** 17 dedicated tests covering init zeros, clear resets, marshal (int array, zero-init), round-trip for all supported types (int, long, float, double, string, bool, enum, struct), partial fill unmarshal, empty array unmarshal, overflow error detection, struct layout verification, and full round-trip with all field types.
+
+**Status:** Completed.
+
 ## Roadmap
 
 ### Phase 1: Bug Fixes and Technical Debt Cleanup
@@ -116,9 +134,10 @@ Implemented full enum type support across the schema parser, code generator, and
     - ~~Example: `enum Color { RED, GREEN, BLUE }`~~
     - ~~Default JSON representation should be string-based, with room for future annotations for integer representation.~~
     - **Completed.** Enums are supported with string-based JSON representation. Integer unmarshal is also accepted. See "Add Enum Type Support" in the completed section above.
-2. Add fixed-size arrays.
-    - Example: `int data[10];`
-    - Distinguish them from dynamically allocated arrays.
+2. ~~Add fixed-size arrays.~~
+    - ~~Example: `int data[10];`~~
+    - ~~Distinguish them from dynamically allocated arrays.~~
+    - **Completed.** Fixed-size arrays are supported with `type name[N];` syntax. See "Add Fixed-Size Array Support" in the completed section above.
 3. Add map or dictionary-like support.
     - Example direction: `map<sstr_t, int>`
     - Map naturally to JSON objects.
