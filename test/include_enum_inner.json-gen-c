@@ -1,0 +1,7 @@
+// Enum defined in an included file — tests enum_map sharing across sub-parsers
+enum Direction {
+    NORTH,
+    SOUTH,
+    EAST,
+    WEST
+}

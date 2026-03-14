@@ -1,0 +1,4 @@
+// Malformed: enum missing closing brace
+enum Broken {
+    A,
+    B

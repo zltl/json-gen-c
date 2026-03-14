@@ -129,6 +129,19 @@ run-bugfix: $(JSON_GEN_C)
 	@mkdir -p $(TEST_BUILD)/bugfix_empty_enum_out
 	$(JSON_GEN_C) -in bugfix_empty_enum.json-gen-c -out $(TEST_BUILD)/bugfix_empty_enum_out
 	@rm -rf $(TEST_BUILD)/bugfix_empty_enum_out
+	@echo "Running bugfix test (include enum cross-file)..."
+	@mkdir -p $(TEST_BUILD)/bugfix_include_enum_out
+	$(JSON_GEN_C) -in bugfix_include_enum.json-gen-c -out $(TEST_BUILD)/bugfix_include_enum_out
+	@rm -rf $(TEST_BUILD)/bugfix_include_enum_out
+	@echo "Running negative tests (malformed schemas should fail)..."
+	@mkdir -p $(TEST_BUILD)/malformed_out
+	@! $(JSON_GEN_C) -in malformed_enum_no_brace.json-gen-c -out $(TEST_BUILD)/malformed_out 2>/dev/null \
+		|| (echo "FAIL: malformed_enum_no_brace should have failed" && false)
+	@! $(JSON_GEN_C) -in malformed_enum_no_name.json-gen-c -out $(TEST_BUILD)/malformed_out 2>/dev/null \
+		|| (echo "FAIL: malformed_enum_no_name should have failed" && false)
+	@! $(JSON_GEN_C) -in malformed_unexpected_token.json-gen-c -out $(TEST_BUILD)/malformed_out 2>/dev/null \
+		|| (echo "FAIL: malformed_unexpected_token should have failed" && false)
+	@rm -rf $(TEST_BUILD)/malformed_out
 
 run-unit: $(UNIT_TEST)
 	@echo "Running unit tests..."

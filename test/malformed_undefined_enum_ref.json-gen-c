@@ -1,0 +1,4 @@
+// Malformed: struct references undefined enum type
+struct BadRef {
+    UnknownEnum val;
+}

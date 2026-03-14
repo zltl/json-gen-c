@@ -1,0 +1,5 @@
+// Malformed: enum with no name
+enum {
+    X,
+    Y
+}

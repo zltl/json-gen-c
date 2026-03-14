@@ -1,0 +1,8 @@
+// Test: enum defined in included file is usable by struct in main file.
+// Verifies that enum_map is shared between main parser and sub-parser.
+#include "include_enum_inner.json-gen-c"
+
+struct DirectionUser {
+    Direction heading;
+    Direction route[];
+}

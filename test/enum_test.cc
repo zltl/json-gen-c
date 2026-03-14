@@ -214,3 +214,252 @@ TEST_F(EnumTest, EmptyEnumArray) {
     sstr_free(input);
     EnumTestStruct_clear(&obj);
 }
+
+// --- Boundary semantics tests ---
+
+TEST_F(EnumTest, UnmarshalNegativeIntEnum) {
+    // Negative integer for enum should still be accepted (stored as-is)
+    const char* json_str = "{\"color\":-1,\"status\":0,\"value\":0,\"colors\":[]}";
+    sstr_t input = sstr_of(json_str, strlen(json_str));
+
+    struct EnumTestStruct obj;
+    EnumTestStruct_init(&obj);
+    int r = json_unmarshal_EnumTestStruct(input, &obj);
+    EXPECT_EQ(r, 0);
+    EXPECT_EQ(obj.color, -1);
+
+    sstr_free(input);
+    EnumTestStruct_clear(&obj);
+}
+
+TEST_F(EnumTest, MarshalNegativeEnumFallsBackToInt) {
+    // Negative enum value should marshal as integer, not crash
+    struct EnumTestStruct obj;
+    EnumTestStruct_init(&obj);
+    obj.color = -5;
+    obj.status = Status_ACTIVE;
+    obj.value = 0;
+
+    sstr_t out = sstr_new();
+    json_marshal_EnumTestStruct(&obj, out);
+
+    const char* json = sstr_cstr(out);
+    EXPECT_TRUE(strstr(json, "-5") != NULL) << "Expected -5 in: " << json;
+
+    sstr_free(out);
+    EnumTestStruct_clear(&obj);
+}
+
+TEST_F(EnumTest, UnmarshalEnumArrayWithIntegers) {
+    // Integer values in enum array should work
+    const char* json_str = "{\"color\":\"RED\",\"status\":\"ACTIVE\",\"value\":0,\"colors\":[0,1,2]}";
+    sstr_t input = sstr_of(json_str, strlen(json_str));
+
+    struct EnumTestStruct obj;
+    EnumTestStruct_init(&obj);
+    int r = json_unmarshal_EnumTestStruct(input, &obj);
+    EXPECT_EQ(r, 0);
+    EXPECT_EQ(obj.colors_len, 3);
+    EXPECT_EQ(obj.colors[0], Color_RED);
+    EXPECT_EQ(obj.colors[1], Color_GREEN);
+    EXPECT_EQ(obj.colors[2], Color_BLUE);
+
+    sstr_free(input);
+    EnumTestStruct_clear(&obj);
+}
+
+TEST_F(EnumTest, UnmarshalMixedStringIntEnumArray) {
+    // Mixed strings and ints in enum array
+    const char* json_str = "{\"color\":\"RED\",\"status\":\"ACTIVE\",\"value\":0,\"colors\":[\"RED\",1,\"BLUE\"]}";
+    sstr_t input = sstr_of(json_str, strlen(json_str));
+
+    struct EnumTestStruct obj;
+    EnumTestStruct_init(&obj);
+    int r = json_unmarshal_EnumTestStruct(input, &obj);
+    EXPECT_EQ(r, 0);
+    EXPECT_EQ(obj.colors_len, 3);
+    EXPECT_EQ(obj.colors[0], Color_RED);
+    EXPECT_EQ(obj.colors[1], Color_GREEN);
+    EXPECT_EQ(obj.colors[2], Color_BLUE);
+
+    sstr_free(input);
+    EnumTestStruct_clear(&obj);
+}
+
+TEST_F(EnumTest, UnmarshalNullEnumArray) {
+    // null for enum array should set it to NULL/0
+    const char* json_str = "{\"color\":\"RED\",\"status\":\"ACTIVE\",\"value\":0,\"colors\":null}";
+    sstr_t input = sstr_of(json_str, strlen(json_str));
+
+    struct EnumTestStruct obj;
+    EnumTestStruct_init(&obj);
+    int r = json_unmarshal_EnumTestStruct(input, &obj);
+    EXPECT_EQ(r, 0);
+    EXPECT_EQ(obj.colors, nullptr);
+    EXPECT_EQ(obj.colors_len, 0);
+
+    sstr_free(input);
+    EnumTestStruct_clear(&obj);
+}
+
+TEST_F(EnumTest, UnmarshalBoolForEnumFails) {
+    // Boolean value for an enum field should fail
+    const char* json_str = "{\"color\":true,\"status\":\"ACTIVE\",\"value\":0,\"colors\":[]}";
+    sstr_t input = sstr_of(json_str, strlen(json_str));
+
+    struct EnumTestStruct obj;
+    EnumTestStruct_init(&obj);
+    int r = json_unmarshal_EnumTestStruct(input, &obj);
+    EXPECT_NE(r, 0) << "Should fail for boolean enum value";
+
+    sstr_free(input);
+    EnumTestStruct_clear(&obj);
+}
+
+TEST_F(EnumTest, UnmarshalNullForScalarEnumFails) {
+    // null for a scalar enum field should fail
+    const char* json_str = "{\"color\":null,\"status\":\"ACTIVE\",\"value\":0,\"colors\":[]}";
+    sstr_t input = sstr_of(json_str, strlen(json_str));
+
+    struct EnumTestStruct obj;
+    EnumTestStruct_init(&obj);
+    int r = json_unmarshal_EnumTestStruct(input, &obj);
+    EXPECT_NE(r, 0) << "Should fail for null enum value";
+
+    sstr_free(input);
+    EnumTestStruct_clear(&obj);
+}
+
+TEST_F(EnumTest, MarshalAllEnumValues) {
+    // Ensure all enum values marshal to correct strings
+    const char* expected_colors[] = {"RED", "GREEN", "BLUE"};
+    for (int i = 0; i < 3; i++) {
+        struct EnumTestStruct obj;
+        EnumTestStruct_init(&obj);
+        obj.color = i;
+        obj.status = Status_ACTIVE;
+        obj.value = 0;
+
+        sstr_t out = sstr_new();
+        json_marshal_EnumTestStruct(&obj, out);
+        const char* json = sstr_cstr(out);
+
+        char expected[32];
+        snprintf(expected, sizeof(expected), "\"%s\"", expected_colors[i]);
+        EXPECT_TRUE(strstr(json, expected) != NULL)
+            << "Expected " << expected << " in: " << json;
+
+        sstr_free(out);
+        EnumTestStruct_clear(&obj);
+    }
+}
+
+TEST_F(EnumTest, EnumInitZero) {
+    // After init, enum fields should be 0
+    struct EnumTestStruct obj;
+    EnumTestStruct_init(&obj);
+    EXPECT_EQ(obj.color, 0);
+    EXPECT_EQ(obj.status, 0);
+    EXPECT_EQ(obj.colors, nullptr);
+    EXPECT_EQ(obj.colors_len, 0);
+    EnumTestStruct_clear(&obj);
+}
+
+TEST_F(EnumTest, EnumClearResetsToZero) {
+    // After clear, enum fields should be reset to 0
+    struct EnumTestStruct obj;
+    EnumTestStruct_init(&obj);
+    obj.color = Color_BLUE;
+    obj.status = Status_PENDING;
+    obj.value = 42;
+
+    // Unmarshal to get a heap-allocated colors array
+    const char* json_str = "{\"color\":\"RED\",\"status\":\"ACTIVE\",\"value\":0,\"colors\":[\"RED\",\"GREEN\"]}";
+    sstr_t input = sstr_of(json_str, strlen(json_str));
+    json_unmarshal_EnumTestStruct(input, &obj);
+    sstr_free(input);
+
+    EXPECT_EQ(obj.colors_len, 2);
+
+    EnumTestStruct_clear(&obj);
+    EXPECT_EQ(obj.color, 0);
+    EXPECT_EQ(obj.status, 0);
+    EXPECT_EQ(obj.colors, nullptr);
+    EXPECT_EQ(obj.colors_len, 0);
+}
+
+// --- Generated code structure assertions ---
+
+TEST_F(EnumTest, GeneratedEnumStringArraysExist) {
+    // Verify the generated enum string arrays produce correct marshal output
+    // for every enum value (tests that the arrays are correctly generated)
+    const char* color_names[] = {"RED", "GREEN", "BLUE"};
+    const char* status_names[] = {"ACTIVE", "INACTIVE", "PENDING"};
+
+    for (int i = 0; i < 3; i++) {
+        struct EnumTestStruct obj;
+        EnumTestStruct_init(&obj);
+        obj.color = i;
+        obj.status = i;
+        obj.value = 0;
+
+        sstr_t out = sstr_new();
+        json_marshal_EnumTestStruct(&obj, out);
+        const char* json = sstr_cstr(out);
+
+        char expected_c[32], expected_s[32];
+        snprintf(expected_c, sizeof(expected_c), "\"%s\"", color_names[i]);
+        snprintf(expected_s, sizeof(expected_s), "\"%s\"", status_names[i]);
+        EXPECT_TRUE(strstr(json, expected_c) != NULL)
+            << "Expected " << expected_c << " in: " << json;
+        EXPECT_TRUE(strstr(json, expected_s) != NULL)
+            << "Expected " << expected_s << " in: " << json;
+
+        sstr_free(out);
+        EnumTestStruct_clear(&obj);
+    }
+}
+
+TEST_F(EnumTest, EnumFieldStoredAsInt) {
+    // Verify enum fields occupy sizeof(int) in the struct
+    EXPECT_EQ(sizeof(((struct EnumTestStruct*)0)->color), sizeof(int));
+    EXPECT_EQ(sizeof(((struct EnumTestStruct*)0)->status), sizeof(int));
+}
+
+TEST_F(EnumTest, LargeEnumArrayRoundTrip) {
+    // Build a large enum array and verify round trip
+    struct EnumTestStruct obj;
+    EnumTestStruct_init(&obj);
+    obj.color = Color_RED;
+    obj.status = Status_ACTIVE;
+    obj.value = 0;
+
+    const int N = 1000;
+    int* colors = (int*)malloc(sizeof(int) * N);
+    for (int i = 0; i < N; i++) {
+        colors[i] = i % 3; // cycle RED, GREEN, BLUE
+    }
+    obj.colors = colors;
+    obj.colors_len = N;
+
+    sstr_t out = sstr_new();
+    json_marshal_EnumTestStruct(&obj, out);
+
+    // Reset before clear to avoid freeing stack memory
+    obj.colors = NULL;
+    obj.colors_len = 0;
+
+    struct EnumTestStruct obj2;
+    EnumTestStruct_init(&obj2);
+    int r = json_unmarshal_EnumTestStruct(out, &obj2);
+    EXPECT_EQ(r, 0);
+    EXPECT_EQ(obj2.colors_len, N);
+    for (int i = 0; i < N; i++) {
+        EXPECT_EQ(obj2.colors[i], i % 3) << "Mismatch at index " << i;
+    }
+
+    free(colors);
+    sstr_free(out);
+    EnumTestStruct_clear(&obj);
+    EnumTestStruct_clear(&obj2);
+}

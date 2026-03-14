@@ -1,0 +1,2 @@
+// Malformed: unexpected token at top level
+42 not_a_keyword
