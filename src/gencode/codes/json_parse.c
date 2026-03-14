@@ -726,6 +726,98 @@ static int json_unmarshal_scalar_sstr_t(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
+// parse enum value: read a JSON string and look up the corresponding int index
+// in the enum_strings array. Falls back to parsing as int if not a string.
+static int json_unmarshal_scalar_enum(sstr_t content, struct json_pos* pos,
+                                      int* val, const char** enum_strings,
+                                      int enum_count, sstr_t txt) {
+    int tk = json_next_token(content, pos, txt);
+    if (tk == JSON_TOKEN_STRING) {
+        const char* s = sstr_cstr(txt);
+        for (int i = 0; i < enum_count; i++) {
+            if (strcmp(s, enum_strings[i]) == 0) {
+                *val = i;
+                return 0;
+            }
+        }
+        sstr_t e = PERROR(pos, "unknown enum value '%s'", s);
+        sstr_append(txt, e);
+        sstr_free(e);
+        return -1;
+    } else if (tk == JSON_TOKEN_INT) {
+        char* endptr;
+        long temp_val = strtol(sstr_cstr(txt), &endptr, 10);
+        if (*endptr != '\0' || temp_val > INT_MAX || temp_val < INT_MIN) {
+            sstr_t e = PERROR(pos, "enum integer value out of range: '%s'", sstr_cstr(txt));
+            sstr_append(txt, e);
+            sstr_free(e);
+            return JSON_ERROR;
+        }
+        *val = (int)temp_val;
+        return 0;
+    } else {
+        sstr_t e = PERROR(pos, "expected string or integer for enum but got '%s'", ptoken(tk, txt));
+        sstr_append(txt, e);
+        sstr_free(e);
+        return tk;
+    }
+}
+
+// unmarshal array of enum values
+static int json_unmarshal_array_internal_enum(sstr_t content,
+                                              struct json_pos* pos,
+                                              int** ptr, int* ptrlen,
+                                              const char** enum_strings,
+                                              int enum_count,
+                                              sstr_t txt) {
+    int tk = json_next_token(content, pos, txt);
+    if (tk == JSON_TOKEN_NULL) {
+        *ptr = NULL;
+        *ptrlen = 0;
+        return 0;
+    }
+    if (tk != JSON_TOKEN_LEFT_BRACKET) {
+        sstr_t e = PERROR(pos, "expected '[' but got '%s'", ptoken(tk, txt));
+        sstr_append(txt, e);
+        sstr_free(e);
+        return -1;
+    }
+    int cap = 4;
+    int len = 0;
+    int* arr = (int*)malloc(sizeof(int) * cap);
+    if (arr == NULL) return -1;
+    while (1) {
+        // peek for ']' or value
+        struct json_pos saved = *pos;
+        sstr_t temp = sstr_new();
+        tk = json_next_token(content, pos, temp);
+        sstr_free(temp);
+        if (tk == JSON_TOKEN_RIGHT_BRACKET) {
+            break;
+        }
+        if (tk == JSON_TOKEN_COMMA) {
+            continue;
+        }
+        // restore position to re-read the token in scalar_enum
+        *pos = saved;
+        if (len >= cap) {
+            cap *= 2;
+            int* new_arr = (int*)realloc(arr, sizeof(int) * cap);
+            if (new_arr == NULL) { free(arr); return -1; }
+            arr = new_arr;
+        }
+        int r = json_unmarshal_scalar_enum(content, pos, &arr[len], enum_strings, enum_count, txt);
+        if (r != 0) {
+            free(arr);
+            return r;
+        }
+        len++;
+    }
+    *ptr = arr;
+    *ptrlen = len;
+    return 0;
+}
+
 // ignore value, just skip it.
 // call this function if parse a keyname that does not exists
 // in field list of a struct.
@@ -1327,6 +1419,12 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                         content, pos, fi->offset + param->instance_ptr, &len,
                         txt);
                     break;
+                case FIELD_TYPE_ENUM:
+                    json_unmarshal_array_internal_enum(
+                        content, pos,
+                        (int**)(fi->offset + param->instance_ptr), &len,
+                        fi->enum_strings, fi->enum_count, txt);
+                    break;
                 default: {
                     sstr_t e = PERROR(pos, "unsupported field type %d",
                                       fi->field_type);
@@ -1399,6 +1497,16 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                     return -1;
                 }
             } break;
+
+            case FIELD_TYPE_ENUM:
+                r = json_unmarshal_scalar_enum(
+                    content, pos,
+                    (int*)((char*)param->instance_ptr + fi->offset),
+                    fi->enum_strings, fi->enum_count, txt);
+                if (r != 0) {
+                    return r;
+                }
+                break;
         }
     }
     //

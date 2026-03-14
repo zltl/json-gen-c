@@ -24,6 +24,7 @@ extern "C" {
 #define FIELD_TYPE_FLOAT 2
 #define FIELD_TYPE_DOUBLE 3
 #define FIELD_TYPE_SSTR 4
+#define FIELD_TYPE_ENUM 5
 #define FIELD_TYPE_STRUCT 6
 #define FIELD_TYPE_BOOL 7
 
@@ -39,6 +40,25 @@ extern "C" {
  * as the key. This is the size of the hash map's bucket.
  */
 #define STRUCT_MAP_BUCKET_SIZE 4096
+
+/**
+ * @brief structure to store a single enum value (name-index pair).
+ * Enum values are stored as a linked list.
+ */
+struct enum_value {
+    sstr_t name;
+    int index;
+    struct enum_value* next;
+};
+
+/**
+ * @brief structure to store a parsed enum definition.
+ */
+struct enum_container {
+    sstr_t name;
+    struct enum_value* values;
+    int count;
+};
 
 /**
  * @brief structure to store field list of parsed structs. A struct may have
@@ -85,6 +105,8 @@ struct pos {
 struct struct_parser {
     // struct name --> struct_field list
     struct hash_map* struct_map;
+    // enum name --> enum_container
+    struct hash_map* enum_map;
     // position of string to be parsed
     struct pos pos;
     // name of parser
@@ -98,6 +120,7 @@ struct struct_parser {
 #define TOKEN_LEFT_BRACKET '['
 #define TOKEN_RIGHT_BRACKET ']'
 #define TOKEN_SEMICOLON ';'
+#define TOKEN_COMMA ','
 #define TOKEN_SHARPE '#'
 #define TOKEN_STRING 4
 #define TOKEN_IDENTIFY 1

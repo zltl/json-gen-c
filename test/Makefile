@@ -8,7 +8,7 @@ include ../build.mk
 TEST_BUILD := $(BUILD_DIR)/test
 
 # Test source files
-TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc
+TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc enum_test.cc
 TEST_OBJECTS := $(patsubst %.cc,$(TEST_BUILD)/%.o,$(TEST_SOURCES))
 
 # Generated files
@@ -23,9 +23,10 @@ COMPREHENSIVE_TEST := $(TEST_BUILD)/comprehensive_test
 NESTED_STRUCT_TEST := $(TEST_BUILD)/nested_struct_test
 PERFORMANCE_TEST := $(TEST_BUILD)/performance_test
 HASH_MAP_TEST := $(TEST_BUILD)/hash_map_test
+ENUM_TEST := $(TEST_BUILD)/enum_test
 
 # All test targets
-ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST)
+ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST)
 
 #==============================================================================
 # Build rules
@@ -83,6 +84,11 @@ $(HASH_MAP_TEST): $(TEST_BUILD)/hash_map_test.o $(GENERATED_OBJECTS)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread -L$(BUILD_DIR)/lib -lutils
 
+$(ENUM_TEST): $(TEST_BUILD)/enum_test.o $(GENERATED_OBJECTS)
+	@echo "Linking enum tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
 #==============================================================================
 # Test execution
 #==============================================================================
@@ -103,6 +109,8 @@ run: $(ALL_TESTS)
 	$(PERFORMANCE_TEST)
 	@echo "=== Hash Map Tests ==="
 	$(HASH_MAP_TEST)
+	@echo "=== Enum Tests ==="
+	$(ENUM_TEST)
 	@echo "=== Bugfix Tests ==="
 	$(MAKE) run-bugfix
 	@echo "All tests completed successfully!"
@@ -117,6 +125,10 @@ run-bugfix: $(JSON_GEN_C)
 	@mkdir -p $(TEST_BUILD)/bugfix_include_out
 	$(JSON_GEN_C) -in bugfix_include_before_struct.json-gen-c -out $(TEST_BUILD)/bugfix_include_out
 	@rm -rf $(TEST_BUILD)/bugfix_include_out
+	@echo "Running bugfix test (empty enum)..."
+	@mkdir -p $(TEST_BUILD)/bugfix_empty_enum_out
+	$(JSON_GEN_C) -in bugfix_empty_enum.json-gen-c -out $(TEST_BUILD)/bugfix_empty_enum_out
+	@rm -rf $(TEST_BUILD)/bugfix_empty_enum_out
 
 run-unit: $(UNIT_TEST)
 	@echo "Running unit tests..."

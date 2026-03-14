@@ -10,10 +10,10 @@ This document tracks the current maturity of `json-gen-c`, completed foundationa
 | Test coverage | Good | Multiple Google Test suites, benchmark coverage, `-Werror`, bugfix regression tests |
 | Documentation | Good | README, getting started guide, Doxygen, and man page exist |
 | CI/CD | Good | GitHub Actions test workflow and Doxygen deployment are present |
-| Type system | Limited | No enums, fixed-size arrays, maps, optional fields, or precise-width integer families |
+| Type system | Growing | Enums supported; no fixed-size arrays, maps, optional fields, or precise-width integer families yet |
 | Ecosystem integration | Limited | No CMake, pkg-config, package manager distribution, or Windows support |
 
-Summary: the project is already usable and reasonably mature at the core, but it still needs broader type support, better ecosystem integration, and stronger developer ergonomics to reach a polished 1.0.
+Summary: the project is already usable and reasonably mature at the core. Enum type support has been added, expanding the type system. It still needs broader type support (maps, optionals, precise-width integers), better ecosystem integration, and stronger developer ergonomics to reach a polished 1.0.
 
 ## Completed Foundational Work
 
@@ -80,6 +80,25 @@ Added proper error checking for `fopen`, `fseek`, `ftell`, `fread`, and `fwrite`
 
 **Status:** Completed.
 
+### Add Enum Type Support
+**Location:** `src/struct/struct_parse.h`, `src/struct/struct_parse.c`, `src/gencode/gencode.h`, `src/gencode/gencode.c`, `src/gencode/codes/json_parse.h`, `src/gencode/codes/json_parse.c`, `src/main/main.c`
+
+Implemented full enum type support across the schema parser, code generator, and generated runtime:
+
+- **Schema syntax:** `enum Color { RED, GREEN, BLUE }` — comma or semicolon separated values.
+- **Parser:** Added `enum_map` to `struct_parser`, `parse_enum_body()` parsing function, and `TOKEN_COMMA` tokenizer support. Enum maps are shared across `#include` sub-parsers.
+- **Field recognition:** When a field type matches a known enum name, it is marked `FIELD_TYPE_ENUM` instead of `FIELD_TYPE_STRUCT`.
+- **Header generation:** Generates C `enum` type definitions with `EnumName_VALUE = N` constants in the output `.h` file.
+- **Source generation:** Generates `static const char* EnumName_enum_strings[]` and `static const int EnumName_enum_count` arrays for string lookup.
+- **Marshal:** Scalar enum fields output as JSON strings via string table lookup. Out-of-range values fall back to integer output. Enum arrays marshal each element the same way.
+- **Unmarshal:** Accepts both JSON strings (matched against string table) and JSON integers. Unknown string values produce an error. Array unmarshal uses the same logic per element.
+- **Offset map:** Extended `json_field_offset_item` with `enum_strings` and `enum_count` fields so the runtime can access per-field enum metadata.
+- **Storage:** Enum fields are stored as `int` in generated C structs.
+
+**Test coverage:** 11 dedicated enum tests covering scalar marshal/unmarshal, array marshal/unmarshal, round-trip, integer fallback, unknown value errors, out-of-range marshal, generated constants verification, and empty array. Empty enum regression test added to bugfix suite.
+
+**Status:** Completed.
+
 ## Roadmap
 
 ### Phase 1: Bug Fixes and Technical Debt Cleanup
@@ -94,8 +113,9 @@ Added proper error checking for `fopen`, `fseek`, `ftell`, `fread`, and `fwrite`
 ### Phase 2: Type System Expansion
 
 1. Add enum support.
-    - Example: `enum Color { RED, GREEN, BLUE }`
-    - Default JSON representation should be string-based, with room for future annotations for integer representation.
+    - ~~Example: `enum Color { RED, GREEN, BLUE }`~~
+    - ~~Default JSON representation should be string-based, with room for future annotations for integer representation.~~
+    - **Completed.** Enums are supported with string-based JSON representation. Integer unmarshal is also accepted. See "Add Enum Type Support" in the completed section above.
 2. Add fixed-size arrays.
     - Example: `int data[10];`
     - Distinguish them from dynamically allocated arrays.
@@ -199,7 +219,8 @@ Added proper error checking for `fopen`, `fseek`, `ftell`, `fread`, and `fwrite`
 ## Open Design Questions
 
 1. Enum JSON representation should default to strings or integers.
-    - Recommended default: strings, with future opt-in control for numeric representation.
+    - ~~Recommended default: strings, with future opt-in control for numeric representation.~~
+    - **Resolved:** Strings are the default marshal format. Integer values are accepted during unmarshal for flexibility.
 2. Whether the generated parser should support non-standard JSON such as comments or JSON5 features.
     - Recommended default: stay with strict JSON.
 3. Whether compatibility should be widened beyond C11.

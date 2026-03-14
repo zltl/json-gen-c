@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
         cleanup_and_exit(content, parser, source, head, JSON_GEN_ERROR_MEMORY);
     }
     
-    r = gencode_source(parser->struct_map, source, head);
+    r = gencode_source(parser->struct_map, parser->enum_map, source, head);
     if (r < 0) {
         fprintf(stderr, "Error: code generation failed\n");
         cleanup_and_exit(content, parser, source, head, JSON_GEN_ERROR_GENERAL);

@@ -1,5 +1,17 @@
 
 
+enum Color {
+    RED,
+    GREEN,
+    BLUE
+}
+
+enum Status {
+    ACTIVE,
+    INACTIVE,
+    PENDING
+}
+
 struct TestStruct {
 	   int int_val;
 	   long long_val;
@@ -57,6 +69,13 @@ struct OptionalFieldsStruct {
     sstr_t optional_name;
     float optional_value;
     bool has_data;
+}
+
+struct EnumTestStruct {
+    Color color;
+    Status status;
+    int value;
+    Color colors[];
 }
 
 struct EdgeCaseStruct {

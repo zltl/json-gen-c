@@ -1,0 +1,8 @@
+// Test: empty enum should parse without error
+
+enum EmptyEnum {
+}
+
+struct EmptyEnumUser {
+    int value;
+}

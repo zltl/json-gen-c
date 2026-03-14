@@ -35,7 +35,12 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
         if (field->type == FIELD_TYPE_STRUCT) {
             sstr_append_cstr(header, "struct ");
         }
-        sstr_append(header, field->type_name);
+        if (field->type == FIELD_TYPE_ENUM) {
+            // enums are stored as int
+            sstr_append_cstr(header, "int");
+        } else {
+            sstr_append(header, field->type_name);
+        }
         if (field->is_array) {
             // if it's an array, set type to pointer
             sstr_append_cstr(header, "*");
@@ -263,10 +268,45 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                            field->name);
 
         if (field->is_array) {
-            sstr_printf_append(source,
-                               "    json_marshal_array_indent_%S(obj->%S, "
-                               "obj->%S_len, indent, curindent, out);\n",
-                               field->type_name, field->name, field->name);
+            if (field->type == FIELD_TYPE_ENUM) {
+                // enum arrays: marshal each element as a string
+                sstr_append_cstr(source,
+                    "    {\n"
+                    "        int _ei;\n"
+                    "        sstr_append_of(out, \"[\", 1);\n"
+                    "        sstr_append_of_if(out, \"\\n\", 1, indent);\n"
+                    "        curindent += indent;\n");
+                sstr_printf_append(source,
+                    "        for (_ei = 0; _ei < obj->%S_len; _ei++) {\n"
+                    "            sstr_append_indent(out, curindent);\n"
+                    "            if (obj->%S[_ei] >= 0 && obj->%S[_ei] < %S_enum_count) {\n"
+                    "                sstr_append_of(out, \"\\\"\", 1);\n"
+                    "                sstr_append_cstr(out, %S_enum_strings[obj->%S[_ei]]);\n"
+                    "                sstr_append_of(out, \"\\\"\", 1);\n"
+                    "            } else {\n"
+                    "                sstr_append_int_str(out, obj->%S[_ei]);\n"
+                    "            }\n"
+                    "            if (_ei < obj->%S_len - 1) {\n"
+                    "                sstr_append_cstr(out, \",\");\n"
+                    "            }\n"
+                    "            sstr_append_of_if(out, \"\\n\", 1, indent);\n"
+                    "        }\n",
+                    field->name,
+                    field->name, field->name, field->type_name,
+                    field->type_name, field->name,
+                    field->name,
+                    field->name);
+                sstr_append_cstr(source,
+                    "        curindent -= indent;\n"
+                    "        sstr_append_indent(out, curindent);\n"
+                    "        sstr_append_of(out, \"]\", 1);\n"
+                    "    }\n");
+            } else {
+                sstr_printf_append(source,
+                                   "    json_marshal_array_indent_%S(obj->%S, "
+                                   "obj->%S_len, indent, curindent, out);\n",
+                                   field->type_name, field->name, field->name);
+            }
             if (field->next != NULL) {
                 sstr_append_cstr(source, "    sstr_append_cstr(out, \",\");\n");
             }
@@ -316,6 +356,20 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                                    "    json_marshal_indent_%S(&obj->%S, "
                                    "indent, curindent, out);\n",
                                    field->type_name, field->name);
+                break;
+            case FIELD_TYPE_ENUM:
+                // marshal enum as string: look up the int value in the string array
+                sstr_printf_append(source,
+                                   "    if (obj->%S >= 0 && obj->%S < %S_enum_count) {\n"
+                                   "        sstr_append_of(out, \"\\\"\", 1);\n"
+                                   "        sstr_append_cstr(out, %S_enum_strings[obj->%S]);\n"
+                                   "        sstr_append_of(out, \"\\\"\", 1);\n"
+                                   "    } else {\n"
+                                   "        sstr_append_int_str(out, obj->%S);\n"
+                                   "    }\n",
+                                   field->name, field->name, field->type_name,
+                                   field->type_name, field->name,
+                                   field->name);
                 break;
         }
 
@@ -403,6 +457,9 @@ static void gen_code_struct_init(struct struct_container* st, sstr_t source) {
                 sstr_printf_append(source, "    %S_init(&obj->%S);\n",
                                    field->type_name, field->name);
                 break;
+            case FIELD_TYPE_ENUM:
+                sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
+                break;
         }
     }
     sstr_append_cstr(source, "    return 0;\n}\n\n");
@@ -461,6 +518,9 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
             case FIELD_TYPE_STRUCT:
                 sstr_printf_append(source, "    %S_clear(&obj->%S);\n",
                                    field->type_name, field->name);
+                break;
+            case FIELD_TYPE_ENUM:
+                sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
                 break;
         }
     }
@@ -531,7 +591,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
 
     sstr_printf_append(param->source,
                        "    {0, sizeof(struct %S), %d, \"\", \"\", \"%S\", 0"
-                       "},\n",
+                       ", NULL, 0},\n",
                        st->name, FIELD_TYPE_STRUCT, st->name, st->name,
                        st->name);
     sstr_t empty_s = sstr_new();
@@ -544,25 +604,34 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             sstr_printf_append(param->source,
                                "    {offsetof(struct %S, %S), sizeof(struct "
                                "%S), %d, \"%S\", \"%S\", "
-                               "\"%S\", %d},\n",
+                               "\"%S\", %d, NULL, 0},\n",
                                st->name, field->name, field->type_name,
                                field->type, field->type_name, field->name,
                                st->name, field->is_array);
+            gen_hash_arr(st->name, field->name, param);
+        } else if (field->type == FIELD_TYPE_ENUM) {
+            sstr_printf_append(
+                param->source,
+                "    {offsetof(struct %S, %S), sizeof(int), %d, \"%S\", \"%S\", "
+                "\"%S\", %d, %S_enum_strings, %S_enum_count},\n",
+                st->name, field->name, field->type,
+                field->type_name, field->name,
+                st->name, field->is_array,
+                field->type_name, field->type_name);
             gen_hash_arr(st->name, field->name, param);
         } else {
             sstr_printf_append(
                 param->source,
                 "    {offsetof(struct %S, %S), sizeof(%S), %d, \"%S\", \"%S\", "
-                "\"%S\", %d},\n",
+                "\"%S\", %d, NULL, 0},\n",
                 st->name, field->name, field->type_name, field->type,
                 field->type_name, field->name, st->name, field->is_array);
             gen_hash_arr(st->name, field->name, param);
         }
         if (field->is_array) {
-            sstr_printf_append(param->source,
-                               "    {offsetof(struct %S, %S_len), sizeof(int), "
+            sstr_printf_append(param->source, "    {offsetof(struct %S, %S_len), sizeof(int), "
                                "%d, \"int\", \"%S_len\", "
-                               "\"%S\", %d},\n",
+                               "\"%S\", %d, NULL, 0},\n",
                                st->name, field->name, FIELD_TYPE_INT,
                                field->name, st->name, 0);
             sstr_t tmp = sstr_dup(field->name);
@@ -573,6 +642,57 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
 
         field = field->next;
     }
+}
+
+// generate enum type definition and constants for each enum in the header
+static void gen_enum_header_fn(void* key, void* value, void* ptr) {
+    (void)key;
+    struct enum_container* ec = (struct enum_container*)value;
+    sstr_t header = (sstr_t)ptr;
+
+    // Generate C enum type
+    sstr_printf_append(header, "enum %S {\n", ec->name);
+    struct enum_value* v = ec->values;
+    while (v) {
+        sstr_printf_append(header, "    %S_%S = %d", ec->name, v->name, v->index);
+        if (v->next) {
+            sstr_append_cstr(header, ",");
+        }
+        sstr_append_cstr(header, "\n");
+        v = v->next;
+    }
+    sstr_append_cstr(header, "};\n\n");
+}
+
+static void gen_enum_headers(struct hash_map* enum_map, sstr_t header) {
+    hash_map_for_each(enum_map, gen_enum_header_fn, header);
+}
+
+// generate enum string arrays for each enum
+static void gen_enum_string_fn(void* key, void* value, void* ptr) {
+    (void)key;
+    struct enum_container* ec = (struct enum_container*)value;
+    sstr_t source = (sstr_t)ptr;
+
+    sstr_printf_append(source, "static const char* %S_enum_strings[] = {",
+                       ec->name);
+    struct enum_value* v = ec->values;
+    int first = 1;
+    while (v) {
+        if (!first) {
+            sstr_append_cstr(source, ", ");
+        }
+        sstr_printf_append(source, "\"%S\"", v->name);
+        first = 0;
+        v = v->next;
+    }
+    sstr_append_cstr(source, "};\n");
+    sstr_printf_append(source, "static const int %S_enum_count = %d;\n\n",
+                       ec->name, ec->count);
+}
+
+static void gen_enum_strings(struct hash_map* enum_map, sstr_t source) {
+    hash_map_for_each(enum_map, gen_enum_string_fn, source);
 }
 
 /*
@@ -609,6 +729,8 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
                      "    const char* field_name;\n"
                      "    const char* struct_name;\n"
                      "    int is_array;\n"
+                     "    const char** enum_strings;\n"
+                     "    int enum_count;\n"
                      "};\n\n");
     sstr_printf_append(
         source,
@@ -623,7 +745,7 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
     param.hash_arr = (int*)malloc(sizeof(int) * param.hash_size);
     memset(param.hash_arr, -1, sizeof(int) * param.hash_size);
     hash_map_for_each(struct_map, gen_fields_list_fn, &param);
-    sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0}};\n");
+    sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0, NULL, 0}};\n");
 
     sstr_printf_append(
         source, "int json_entry_hash_size = %d;\nint json_entry_hash[%d] = {",
@@ -836,7 +958,7 @@ int gencode_source_end(sstr_t source) {
     return 0;
 }
 
-int gencode_source(struct hash_map* struct_map, sstr_t source, sstr_t header) {
+int gencode_source(struct hash_map* struct_map, struct hash_map* enum_map, sstr_t source, sstr_t header) {
     // to ensure the order struct definition on header file, we use a hash map
     // to store the struct names that already defined in header file.
     // if a struct is not in the hash map, we test all field of it, if any field
@@ -858,8 +980,15 @@ int gencode_source(struct hash_map* struct_map, sstr_t source, sstr_t header) {
 
     // generate header guards and all common functions declarations.
     gencode_head_guard_begin(header);
+
+    // generate enum type definitions and constants in header
+    gen_enum_headers(enum_map, header);
+
     // includes, and all common functions, scalar type parsing codes.
     gencode_source_begin(source);
+
+    // generate enum string arrays (must be before offset map which references them)
+    gen_enum_strings(enum_map, source);
 
     // generate a hashmap to store the structs name, fields, types, and the
     // offset of each field on the struct. the json parser codes need this

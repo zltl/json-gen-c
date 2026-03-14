@@ -50,6 +50,7 @@ enum json_token {
 #define FIELD_TYPE_FLOAT 2
 #define FIELD_TYPE_DOUBLE 3
 #define FIELD_TYPE_SSTR 4
+#define FIELD_TYPE_ENUM 5
 #define FIELD_TYPE_STRUCT 6
 #define FIELD_TYPE_BOOL 7
 

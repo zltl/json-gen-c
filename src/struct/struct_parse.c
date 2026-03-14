@@ -101,6 +101,27 @@ static void struct_container_value_free(void* container) {
     struct_container_free(c);
 }
 
+static void enum_value_free(struct enum_value* val) {
+    while (val) {
+        struct enum_value* next = val->next;
+        sstr_free(val->name);
+        free(val);
+        val = next;
+    }
+}
+
+static void enum_container_free(struct enum_container* ec) {
+    if (ec) {
+        sstr_free(ec->name);
+        enum_value_free(ec->values);
+        free(ec);
+    }
+}
+
+static void enum_container_value_free(void* ptr) {
+    enum_container_free((struct enum_container*)ptr);
+}
+
 struct struct_parser* struct_parser_new() {
     struct struct_parser* parser =
         (struct struct_parser*)malloc(sizeof(struct struct_parser));
@@ -111,6 +132,14 @@ struct struct_parser* struct_parser_new() {
         hash_map_new(STRUCT_MAP_BUCKET_SIZE, sstr_key_hash, sstr_key_cmp,
                      sstr_key_free, struct_container_value_free);
     if (parser->struct_map == NULL) {
+        free(parser);
+        return NULL;
+    }
+    parser->enum_map =
+        hash_map_new(STRUCT_MAP_BUCKET_SIZE, sstr_key_hash, sstr_key_cmp,
+                     sstr_key_free, enum_container_value_free);
+    if (parser->enum_map == NULL) {
+        hash_map_free(parser->struct_map);
         free(parser);
         return NULL;
     }
@@ -125,6 +154,7 @@ struct struct_parser* struct_parser_new() {
 void struct_parser_free(struct struct_parser* parser) {
     if (parser) {
         hash_map_free(parser->struct_map);
+        hash_map_free(parser->enum_map);
         free(parser);
     }
 }
@@ -241,6 +271,10 @@ static int next_token_(struct struct_parser* parser, sstr_t content,
                 parser->pos.offset = i + 1;
                 token->type = TOKEN_SEMICOLON;
                 return TOKEN_SEMICOLON;
+            case ',':
+                parser->pos.offset = i + 1;
+                token->type = TOKEN_COMMA;
+                return TOKEN_COMMA;
             case '/':
                 if (i + 1 < length && data[i + 1] == '/') {
                     i += 2;  // skip //
@@ -334,6 +368,8 @@ static char* token_type_str(struct struct_token* token) {
             return "]";
         case TOKEN_SEMICOLON:
             return ";";
+        case TOKEN_COMMA:
+            return ",";
         case TOKEN_EOF:
             return "--EOF--";
         case TOKEN_ERROR:
@@ -431,6 +467,7 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     // put the structs into the upper parser->struct_map also.
     sub_parser.struct_map = parser->struct_map;
     // then we step into the sub file.
+    sub_parser.enum_map = parser->enum_map;
     r = struct_parser_parse(&sub_parser, sub_content);
     sstr_free(sub_content);
     sstr_free(file);
@@ -438,11 +475,11 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     return r;
 }
 
-// skip semicolons and return the next meaningful token
+// skip semicolons and commas, return the next meaningful token
 static int next_meaningful_token(struct struct_parser* parser, sstr_t content,
                                  struct struct_token* token) {
     int tk = next_token(parser, content, token);
-    while (tk == TOKEN_SEMICOLON) {
+    while (tk == TOKEN_SEMICOLON || tk == TOKEN_COMMA) {
         tk = next_token(parser, content, token);
     }
     return tk;
@@ -500,7 +537,13 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
     } else if (sstr_compare_c(type_name, TYPE_NAME_SSTR) == 0) {
         type_id = FIELD_TYPE_SSTR;
     } else {
-        type_id = FIELD_TYPE_STRUCT;
+        // check if type_name is a known enum
+        void* enum_val = NULL;
+        if (hash_map_find(parser->enum_map, type_name, &enum_val) == HASH_MAP_OK) {
+            type_id = FIELD_TYPE_ENUM;
+        } else {
+            type_id = FIELD_TYPE_STRUCT;
+        }
     }
     field->type = type_id;
     // treat bool as int, because no 'bool' scalar type in C.
@@ -543,6 +586,97 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
         PERROR(parser, "expected \';\', found \'%s\'\n", token_type_str(token));
         return -1;
     }
+    return 0;
+}
+
+// parse an enum body: name '{' value0, value1, ... '}'
+// the 'enum' keyword must already be consumed by caller.
+static int parse_enum_body(struct struct_parser* parser, sstr_t content,
+                           struct struct_token* token) {
+    // 'name'
+    int tk = next_token(parser, content, token);
+    if (tk != TOKEN_IDENTIFY) {
+        PERROR(parser, "expected enum name, found \'%s\'\n",
+               token_type_str(token));
+        return -1;
+    }
+    sstr_t enum_name = token->txt;
+    token->txt = NULL;
+
+    // '{'
+    tk = next_token(parser, content, token);
+    if (tk != TOKEN_LEFT_BRACE) {
+        PERROR(parser, "expected \'{\', found \'%s\'\n",
+               token_type_str(token));
+        sstr_free(enum_name);
+        return -1;
+    }
+
+    struct enum_container* ec =
+        (struct enum_container*)malloc(sizeof(struct enum_container));
+    if (ec == NULL) {
+        sstr_free(enum_name);
+        return -1;
+    }
+    ec->name = enum_name;
+    ec->values = NULL;
+    ec->count = 0;
+
+    // parse enum values: IDENT [, IDENT]* '}'
+    while (1) {
+        tk = next_meaningful_token(parser, content, token);
+        if (tk == TOKEN_RIGHT_BRACE) {
+            break;
+        }
+        if (tk != TOKEN_IDENTIFY) {
+            PERROR(parser, "expected enum value name, found \'%s\'\n",
+                   token_type_str(token));
+            enum_container_free(ec);
+            return -1;
+        }
+        struct enum_value* ev =
+            (struct enum_value*)malloc(sizeof(struct enum_value));
+        if (ev == NULL) {
+            enum_container_free(ec);
+            return -1;
+        }
+        ev->name = token->txt;
+        token->txt = NULL;
+        ev->index = ec->count;
+        ev->next = ec->values;
+        ec->values = ev;
+        ec->count++;
+
+        // optional comma or semicolon separator
+        tk = next_token(parser, content, token);
+        if (tk == TOKEN_RIGHT_BRACE) {
+            break;
+        }
+        if (tk != TOKEN_SEMICOLON && tk != TOKEN_COMMA) {
+            PERROR(parser, "expected ',' or ';' or '}' in enum, found '%s'\n",
+                   token_type_str(token));
+            enum_container_free(ec);
+            return -1;
+        }
+    }
+
+    // reverse the values list so they are in order
+    struct enum_value* prev = NULL;
+    struct enum_value* cur = ec->values;
+    while (cur) {
+        struct enum_value* next = cur->next;
+        cur->next = prev;
+        prev = cur;
+        cur = next;
+    }
+    ec->values = prev;
+    // re-index after reversing
+    int idx = 0;
+    for (struct enum_value* v = ec->values; v; v = v->next) {
+        v->index = idx++;
+    }
+
+    hash_map_insert(parser->enum_map, sstr_dup(ec->name), ec);
     return 0;
 }
 
@@ -623,12 +757,23 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
             continue;
         }
 
-        // expect 'struct' keyword
-        if (tk != TOKEN_IDENTIFY || sstr_compare_c(token.txt, "struct") != 0) {
-            PERROR(parser, "expected \'struct\' or \'#include\', found \'%s\'\n",
+        // expect 'struct' or 'enum' keyword
+        if (tk != TOKEN_IDENTIFY ||
+            (sstr_compare_c(token.txt, "struct") != 0 &&
+             sstr_compare_c(token.txt, "enum") != 0)) {
+            PERROR(parser, "expected \'struct\', \'enum\' or \'#include\', found \'%s\'\n",
                    token_type_str(&token));
             token_clear(&token);
             return JSON_GEN_ERROR_PARSE;
+        }
+
+        if (sstr_compare_c(token.txt, "enum") == 0) {
+            int r = parse_enum_body(parser, content, &token);
+            if (r != 0) {
+                token_clear(&token);
+                return r;
+            }
+            continue;
         }
 
         // parse struct body: name '{' fields '}'
