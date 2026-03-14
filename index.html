@@ -144,6 +144,7 @@ Define Structs</h2>
 <div class="line">    <span class="keywordtype">float</span> float_val;</div>
 <div class="line">    <a class="code hl_typedef" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> sstr_val;</div>
 <div class="line">    <span class="keywordtype">int</span> int_val_array[];</div>
+<div class="line">    <span class="keywordtype">int</span> fixed_data[10];</div>
 <div class="line">    B b_val;</div>
 <div class="line">};</div>
 <div class="line"> </div>
@@ -240,7 +241,7 @@ The Format of Structs Definition File</h1>
 <li><code>bool</code></li>
 <li>a struct name</li>
 </ul>
-<p>If a field is an array, just append <code>[]</code> after the field name.</p>
+<p>If a field is a dynamic array, just append <code>[]</code> after the field name. For fixed-size arrays, use <code>[N]</code> where N is a positive integer (e.g., <code>int data[10];</code>).</p>
 <h1><a class="anchor" id="autotoc_md14"></a>
 The JSON API</h1>
 <div class="fragment"><div class="line"><span class="comment">// initialize a struct</span></div>
