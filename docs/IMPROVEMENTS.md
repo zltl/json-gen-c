@@ -1,150 +1,206 @@
 # Project Improvement Plan
 
-This document outlines identified areas for repair, optimization, and improvement in the `json-gen-c` project.
+This document tracks the current maturity of `json-gen-c`, completed foundational work, and the long-term roadmap for making it a more complete production-grade schema-first JSON code generator for C.
 
-## 1. Critical Fixes
+## Current Assessment
 
-### 1.1. Implement Hash Map Resizing
+| Area | Status | Notes |
+|------|--------|-------|
+| Core functionality | Good | Supports `int`, `long`, `float`, `double`, `bool`, `sstr_t`, arrays, nested structs, and `#include` across schema files |
+| Test coverage | Good | Multiple Google Test suites, benchmark coverage, `-Werror`, bugfix regression tests |
+| Documentation | Good | README, getting started guide, Doxygen, and man page exist |
+| CI/CD | Good | GitHub Actions test workflow and Doxygen deployment are present |
+| Type system | Limited | No enums, fixed-size arrays, maps, optional fields, or precise-width integer families |
+| Ecosystem integration | Limited | No CMake, pkg-config, package manager distribution, or Windows support |
+
+Summary: the project is already usable and reasonably mature at the core, but it still needs broader type support, better ecosystem integration, and stronger developer ergonomics to reach a polished 1.0.
+
+## Completed Foundational Work
+
+### Implement Hash Map Resizing
 **Location:** `src/utils/hash_map.c`
 
-**Issue:**
-The function `hash_map_resize_if_needed` currently contains a TODO and does not perform any resizing.
-```c
-static int hash_map_resize_if_needed(struct hash_map* map) {
-    // ...
-    // TODO: Implement hash table expansion
-    // ...
-    return JSON_GEN_SUCCESS;
-}
-```
-**Impact:**
-As elements are added, the load factor increases, causing hash collisions and degrading lookup performance from O(1) to O(N). For large input schemas, this will significantly slow down compilation.
+Implemented resizing logic in `hash_map_resize_if_needed()`: allocate a larger bucket array, rehash existing entries, free the old buckets, and update map metadata. Resizing is triggered when the load factor exceeds 0.75.
 
-**Solution:**
-Implement the resizing logic:
-1.  Allocate a new bucket array (e.g., double the size).
-2.  Rehash all existing entries into the new buckets.
-3.  Free the old bucket array.
-4.  Update `map->buckets` and `map->bucket_count`.
+**Status:** Completed.
 
-## 2. Performance Optimizations
-
-### 2.1. Optimize `hash_2s` Function
+### Optimize `hash_2s`
 **Location:** `src/gencode/gencode.c`
 
-**Issue:**
-The `hash_2s` function allocates a new temporary string just to combine two keys for hashing.
-```c
-inline static unsigned int hash_2s(sstr_t key1, sstr_t key2) {
-    // ...
-    sstr_t tmp = sstr_dup(key1);
-    sstr_append_of(tmp, "#", 1);
-    sstr_append(tmp, key2);
-    // ...
-    sstr_free(tmp);
-    return res;
-}
-```
-**Impact:**
-Frequent memory allocation and deallocation (`malloc`/`free`) during code generation adds unnecessary overhead.
+Removed temporary string concatenation from the composite hash path. The implementation now chains `hash_murmur()` calls with a seed, avoiding per-call allocation overhead.
 
-**Solution:**
-Implement a chaining hash function that doesn't require string concatenation.
-```c
-inline static unsigned int hash_2s(sstr_t key1, sstr_t key2) {
-    unsigned int h = 0xbc9f1d34;
-    h = hash_s(sstr_cstr(key1), sstr_length(key1), h);
-    // Mix in a separator to avoid "ab" + "c" == "a" + "bc" collisions if needed, 
-    // though for struct fields this might not be strictly necessary if delimiters are implied.
-    // Better: hash a separator byte.
-    h = hash_s("#", 1, h); 
-    h = hash_s(sstr_cstr(key2), sstr_length(key2), h);
-    return h;
-}
-```
-*Note: `hash_s` would need to be modified to accept a seed.*
+**Status:** Completed.
 
-### 2.2. Unify Hash Functions
-**Location:** `src/gencode/gencode.c` and `src/utils/hash_map.c`
+### Unify Hash Functions
+**Location:** `src/utils/hash.h`, `src/utils/hash.c`
 
-**Issue:**
-The MurmurHash-like algorithm is duplicated. `src/gencode/gencode.c` has `hash_s` and `src/utils/hash_map.c` has `hash`.
+Consolidated the MurmurHash-like implementation into a shared utility function, `hash_murmur()`, and reused it across code generation and hash map logic.
 
-**Solution:**
-Move the hash implementation to a common utility header (e.g., `src/utils/hash.h` or expose it in `src/utils/hash_map.h`) and reuse it across the project.
+**Status:** Completed.
 
-## 3. Code Quality Improvements
+### Use `stdbool.h`
+**Location:** `src/utils/sstr.c`, `src/utils/sstr.h`, related files
 
-### 3.1. Use `stdbool.h` (Completed)
-**Location:** `src/utils/sstr.c` (and others)
+Refactored boolean-like integer flags to use `bool` where appropriate for clarity and consistency.
 
-**Issue:**
-`char_to_hex` uses `int cap` as a boolean flag.
-```c
-static void char_to_hex(unsigned char c, unsigned char* buf, int cap)
-```
+**Status:** Completed.
 
-**Solution:**
-Include `<stdbool.h>` and use `bool` type for clarity.
-**Status:** Completed. Refactored `sstr.c` and `sstr.h` to use `bool` for boolean parameters and flags.
-
-### 3.2. Robust Argument Parsing (Completed)
+### Improve Argument Parsing
 **Location:** `src/main/main.c`
 
-**Issue:**
-Manual `argv` parsing is brittle and hard to extend.
+Replaced brittle manual argument parsing with `getopt_long_only`, improving flag handling and future extensibility.
 
-**Solution:**
-Consider using `getopt_long` (standard on Linux) or a lightweight argument parsing library for better handling of flags, help messages, and validation.
-**Status:** Completed. Implemented `getopt_long_only` to support existing `-in` and `-out` flags as well as standard short/long options.
+**Status:** Completed.
 
-### 3.3. Error Handling Consistency (Completed)
+### Improve Error Handling Consistency
 **Location:** `src/main/main.c`
 
-**Issue:**
-`usage()` prints to `stdout`.
+Adjusted `usage()` handling so error-triggered output goes to `stderr` while normal help output goes to `stdout`.
 
-**Solution:**
-Error messages and usage information (when triggered by an error) should ideally go to `stderr`.
-**Status:** Completed. Modified `usage()` to accept a `FILE* stream` and updated calls to send error messages to `stderr` and help messages to `stdout`.
+**Status:** Completed.
 
-### 3.4. Fix Off-by-One Error in Parser
+### Fix Parser Off-by-One Bug
 **Location:** `src/struct/struct_parse.c`
 
-**Issue:**
-The `next_token_` function prematurely returns `TOKEN_EOF` when `parser->pos.offset` reaches `length - 1`.
-```c
-    if (parser->pos.offset >= (long)sstr_length(content) - 1) {
-        parser->pos.offset++;
-        token->type = TOKEN_EOF;
-        return TOKEN_EOF;
-    }
-```
-This causes the last character of the file to be ignored. If the file ends with a significant character (like `}` or `;`) instead of a newline, parsing may fail.
+Fixed the parser EOF condition from `offset >= length - 1` to `offset >= length`, preventing the last significant character of a schema file from being ignored.
 
-**Solution:**
-Change the condition to:
-```c
-    if (parser->pos.offset >= (long)sstr_length(content)) {
-```
+**Status:** Completed.
 
-### 3.5. Robust File I/O (Completed)
+### Refactor Top-Level `#include` Parsing
+**Location:** `src/struct/struct_parse.c`
+
+Restructured top-level parsing so `#include` directives and `struct` declarations are handled independently in `struct_parser_parse()`. This fixes failures when `#include` appears before struct definitions in the same schema file.
+
+**Status:** Completed.
+
+### Harden File I/O
 **Location:** `src/utils/io.c`
 
-**Issue:**
-`read_file` and `write_file` do not check the return values of `fread` and `fwrite`. `ftell` return value is also not checked.
+Added proper error checking for `fopen`, `fseek`, `ftell`, `fread`, and `fwrite`.
 
-**Solution:**
-Add error checking for file operations and return appropriate error codes.
-**Status:** Completed. Added error checking for `fopen`, `fseek`, `ftell`, `fread`, and `fwrite`.
+**Status:** Completed.
 
-## 4. Feature Requests
+## Roadmap
 
-### 4.1. Support for More Types
-Currently, the project supports basic types and structs. Adding support for:
-*   Enums
-*   Fixed-size arrays (e.g., `int data[10];`)
-*   Boolean type (mapping to `bool` or `int`)
+### Phase 1: Bug Fixes and Technical Debt Cleanup
 
-### 4.2. Custom Allocators
-Allow the generated code to use custom memory allocators instead of `malloc`/`free`, which is useful for embedded systems or high-performance applications.
+1. Keep parser regression coverage growing for edge cases around comments, includes, empty files, and malformed trailing tokens.
+2. Continue refactoring parser internals so responsibilities are clearer and easier to extend.
+3. Remove small remaining inconsistencies in diagnostics, naming, and internal APIs.
+4. Audit the generated code template for duplicated logic and simplify where possible.
+
+**Exit criteria:** CI stays green, regression tests cover recent parser and generator fixes, and the parsing/codegen core is stable enough for feature work.
+
+### Phase 2: Type System Expansion
+
+1. Add enum support.
+    - Example: `enum Color { RED, GREEN, BLUE }`
+    - Default JSON representation should be string-based, with room for future annotations for integer representation.
+2. Add fixed-size arrays.
+    - Example: `int data[10];`
+    - Distinguish them from dynamically allocated arrays.
+3. Add map or dictionary-like support.
+    - Example direction: `map<sstr_t, int>`
+    - Map naturally to JSON objects.
+4. Add optional or nullable fields.
+    - Missing fields during unmarshal should not always be treated as hard errors.
+5. Add precise-width integer families.
+    - `int8`, `int16`, `uint16`, `uint32`, `uint64`, `int64`, and related forms.
+6. Evaluate a tagged union or `oneof` style feature as a longer-term extension.
+
+**Exit criteria:** each new type has parser coverage, generator coverage, runtime coverage, and example schemas.
+
+### Phase 3: Developer Experience
+
+1. Improve diagnostics.
+    - Show filename, line, column, and a short source snippet in a clang-like format.
+2. Add schema validation before code generation.
+    - Undefined type references
+    - Duplicate field names
+    - Duplicate struct names
+    - Invalid naming patterns
+3. Add JSON field alias support.
+    - Example direction: annotation-style comments such as `@json:"field_name"`
+4. Add default value support.
+    - Example direction: `int count = 10;`
+    - Missing JSON fields can initialize to declared defaults.
+5. Add `--version` output and centralize version definition in the build and source tree.
+6. Update the man page to match the current feature set and CLI behavior.
+
+**Exit criteria:** the tool is easier to debug, easier to learn, and easier to integrate into scripted workflows.
+
+### Phase 4: Build Ecosystem and Cross-Platform Support
+
+1. Add CMake support.
+    - Enable `find_package` or easy `add_custom_command` integration.
+2. Add pkg-config metadata.
+3. Add package-manager-friendly distribution paths.
+    - Homebrew
+    - Debian packaging
+    - AUR or equivalent community packaging
+4. Add Windows support.
+    - Validate GCC/Clang on Windows
+    - Validate MSVC compatibility where practical
+5. Consider Meson as an additional build integration option.
+
+**Exit criteria:** building and consuming the tool becomes straightforward on Linux, macOS, and Windows, with standard project integration paths.
+
+### Phase 5: Performance and Reliability
+
+1. Add custom allocator support.
+    - Allow generated code to use caller-provided allocation and free hooks.
+    - Important for embedded targets and arena allocators.
+2. Add fuzz testing.
+    - Schema parser fuzzing
+    - JSON parser fuzzing
+3. Add memory tooling in CI.
+    - AddressSanitizer
+    - Leak checking
+    - Optional Valgrind runs where practical
+4. Build comparative benchmarks against similar JSON libraries and code-generation approaches.
+5. Investigate selective parsing or SIMD-assisted fast paths only after correctness and coverage are strong.
+
+**Exit criteria:** the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments.
+
+### Phase 6: Long-Term Vision
+
+1. Add schema evolution support.
+    - Forward and backward compatibility rules
+    - Field lifecycle guidance
+2. Consider additional generated serialization formats.
+    - MessagePack
+    - CBOR
+3. Explore multi-language bindings or code generation targets.
+    - C++
+    - Rust
+    - Go
+4. Build better authoring tools.
+    - VS Code syntax highlighting and diagnostics
+    - Schema language support
+5. Consider an online playground for schema editing and generated code preview.
+
+## Key Files
+
+- `src/struct/struct_parse.c`: schema parser and top-level language handling
+- `src/gencode/gencode.c`: C code generation logic
+- `src/gencode/codes/json_parse.c`: embedded JSON runtime template emitted into generated code
+- `src/utils/hash_map.c`: hash map implementation
+- `src/utils/hash.c`: shared hashing primitives
+- `src/main/main.c`: CLI entry point
+- `docs/IMPROVEMENTS.md`: this roadmap and improvement tracker
+
+## Project Direction Notes
+
+1. Phase 1 and Phase 2 remain the highest-value work because parser correctness and type coverage define the tool's usefulness.
+2. Phase 4 is a practical prerequisite for a broader 1.0 adoption story.
+3. Phase 5 and Phase 6 should be driven by real user demand once the core language and build story are stronger.
+4. Current licensing direction remains reasonable: GPL-3.0 for the generator while generated output stays user-controlled.
+
+## Open Design Questions
+
+1. Enum JSON representation should default to strings or integers.
+    - Recommended default: strings, with future opt-in control for numeric representation.
+2. Whether the generated parser should support non-standard JSON such as comments or JSON5 features.
+    - Recommended default: stay with strict JSON.
+3. Whether compatibility should be widened beyond C11.
+    - Recommended default: keep C11 unless strong downstream demand justifies a lower baseline.

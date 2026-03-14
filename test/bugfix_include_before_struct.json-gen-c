@@ -1,0 +1,10 @@
+// Test: #include before struct definitions
+// This verifies that includes work correctly when they appear
+// before struct definitions in the same file.
+#include "include_inner.json-gen-c"
+
+struct Outer {
+    int id;
+    Inner nested;
+    Inner items[];
+}

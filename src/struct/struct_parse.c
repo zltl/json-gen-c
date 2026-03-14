@@ -438,38 +438,14 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     return r;
 }
 
-// parse 'struct' or '#include ' statement
-static int parse_keyword_struct_or_include(struct struct_parser* parser,
-                                           sstr_t content,
-                                           struct struct_token* token) {
-    int tk = 0;
-
-    tk = next_token(parser, content, token);
+// skip semicolons and return the next meaningful token
+static int next_meaningful_token(struct struct_parser* parser, sstr_t content,
+                                 struct struct_token* token) {
+    int tk = next_token(parser, content, token);
     while (tk == TOKEN_SEMICOLON) {
         tk = next_token(parser, content, token);
     }
-    if (tk == TOKEN_EOF) {
-        return 0;
-    }
-
-    if (tk == TOKEN_SHARPE) {
-        // try parse '#include "filename"'
-        // TODO: look wierd on this function, maybe need to be refactor
-        return struct_parse_include(parser, content, token);
-    }
-
-    // else parse 'struct' keyword
-    if (tk != TOKEN_IDENTIFY) {
-        PERROR(parser, "expected \'struct\', found \'%s\'\n",
-               token_type_str(token));
-        return -1;
-    }
-    if (sstr_compare_c(token->txt, "struct") != 0) {
-        PERROR(parser, "expected \'struct\', found \'%s\'\n",
-               sstr_cstr(token->txt));
-        return -1;
-    }
-    return 0;
+    return tk;
 }
 
 static int struct_parse_field(struct struct_parser* parser, sstr_t content,
@@ -570,20 +546,11 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
     return 0;
 }
 
-// parse a struct
-// or #include statement
-static int parse_struct(struct struct_parser* parser, sstr_t content,
-                        struct struct_token* token,
-                        struct struct_container* sct) {
-    // 'struct', or '#include'
-    int r = parse_keyword_struct_or_include(parser, content, token);
-    if (r != 0) {
-        return r;
-    }
-    if (token->type == TOKEN_EOF) {
-        return 0;
-    }
-
+// parse a struct body: name '{' fields '}'
+// the 'struct' keyword must already be consumed by caller.
+static int parse_struct_body(struct struct_parser* parser, sstr_t content,
+                             struct struct_token* token,
+                             struct struct_container* sct) {
     // 'name'
     int tk = next_token(parser, content, token);
     if (tk == TOKEN_EOF) {
@@ -611,7 +578,7 @@ static int parse_struct(struct struct_parser* parser, sstr_t content,
            token->type != TOKEN_ERROR) {
         // field
         struct struct_field* field = struct_field_new(NULL, 0, NULL);
-        r = struct_parse_field(parser, content, token, field);
+        int r = struct_parse_field(parser, content, token, field);
         if (r != 0) {
             struct_field_free(field);
             return r;
@@ -633,33 +600,55 @@ static int parse_struct(struct struct_parser* parser, sstr_t content,
 }
 
 // parse a struct definition file.
-// return 0 if success, -1 if error
+// return 0 if success, negative if error
 // if success, the parser->struct_map will store all structs.
 int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
     struct struct_token token;
     token.txt = NULL;
     token.type = 0;
-    token.txt = NULL;
 
-    do {
-        // start parsing 'struct aa{ type field; type field; };'
+    while (1) {
+        int tk = next_meaningful_token(parser, content, &token);
+        if (tk == TOKEN_EOF) {
+            break;
+        }
 
+        if (tk == TOKEN_SHARPE) {
+            // handle '#include "filename"'
+            int r = struct_parse_include(parser, content, &token);
+            if (r != 0) {
+                token_clear(&token);
+                return r;
+            }
+            continue;
+        }
+
+        // expect 'struct' keyword
+        if (tk != TOKEN_IDENTIFY || sstr_compare_c(token.txt, "struct") != 0) {
+            PERROR(parser, "expected \'struct\' or \'#include\', found \'%s\'\n",
+                   token_type_str(&token));
+            token_clear(&token);
+            return JSON_GEN_ERROR_PARSE;
+        }
+
+        // parse struct body: name '{' fields '}'
         struct struct_container* sct = struct_container_new();
-        int r = parse_struct(parser, content, &token, sct);
+        int r = parse_struct_body(parser, content, &token, sct);
         if (r != 0) {
             struct_container_free(sct);
+            token_clear(&token);
             return r;
         }
         if (sct->name) {
             // we insert fields into sct->fields to the head of the list,
             // so the list is reversed.
             struct_field_reverse(&sct->fields);
-            // than insert a struct into parser->struct_map;
+            // then insert a struct into parser->struct_map;
             hash_map_insert(parser->struct_map, sstr_dup(sct->name), sct);
         } else {
             struct_container_free(sct);
         }
-    } while (token.type != TOKEN_EOF);
+    }
     token_clear(&token);
 
     return 0;

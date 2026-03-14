@@ -113,6 +113,10 @@ run-bugfix: $(JSON_GEN_C)
 	@mkdir -p $(TEST_BUILD)/bugfix_out
 	$(JSON_GEN_C) -in bugfix_off_by_one.json-gen-c -out $(TEST_BUILD)/bugfix_out
 	@rm -rf $(TEST_BUILD)/bugfix_out
+	@echo "Running bugfix test (include before struct)..."
+	@mkdir -p $(TEST_BUILD)/bugfix_include_out
+	$(JSON_GEN_C) -in bugfix_include_before_struct.json-gen-c -out $(TEST_BUILD)/bugfix_include_out
+	@rm -rf $(TEST_BUILD)/bugfix_include_out
 
 run-unit: $(UNIT_TEST)
 	@echo "Running unit tests..."
