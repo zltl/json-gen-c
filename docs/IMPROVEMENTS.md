@@ -206,9 +206,19 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
     - C struct member names remain unchanged (aliases only affect JSON representation).
     - Works with all field types: primitives, strings, structs, enums, fixed/dynamic arrays, maps, optional/nullable fields.
     - 9 new unit tests in `AliasTest` class covering marshal, unmarshal, round-trip, mixed alias/non-alias, optional, arrays, and nested structs.
-4. Add default value support.
-    - Example direction: `int count = 10;`
-    - Missing JSON fields can initialize to declared defaults.
+4. ~~Add default value support.~~  **Done.**
+    - Syntax: `type field = value;` — declares a default value applied in the generated `_init()` function.
+    - Supported types: all scalar types (`int`, `long`, `float`, `double`, `bool`, `int8_t`–`uint32_t`), `sstr_t` (string), and enums.
+    - Negative number literals supported (e.g. `int x = -10;`, `float f = -1.5;`).
+    - Float/double literals with decimals supported (e.g. `float ratio = 3.14;`).
+    - Bool defaults via `true`/`false` identifiers.
+    - String defaults emit `sstr("content")` in generated `_init()`.
+    - Enum defaults validated against declared enum constants at schema validation time; generated code uses prefixed names (e.g. `Color_GREEN`).
+    - Defaults on arrays, maps, and struct fields are rejected with diagnostics.
+    - Combines with `@json` alias and `optional` annotations.
+    - Unmarshal does NOT call `_init()` — callers must init before unmarshal (API contract preserved).
+    - Tokenizer reworked: separate number and identifier parsing paths, proper `.` handling for floats, TOKEN_ERROR now always advances position to prevent infinite loops.
+    - 29 new unit tests in `DefaultValueTest` class; 4 new malformed schema negative tests.
 5. ~~Add `--version` output and centralize version definition in the build and source tree.~~  **Done.**
     - Version `0.9.0` defined in `build.mk` as `JSON_GEN_C_VERSION`, passed to compiler via `-DJSON_GEN_C_VERSION`.
     - `json-gen-c --version` / `json-gen-c -v` prints version string.

@@ -109,6 +109,10 @@ struct struct_field {
     int is_nullable;
     // JSON key alias (NULL means use field name as-is)
     sstr_t json_name;
+    // default value literal (NULL means no default)
+    sstr_t default_value;
+    // 1 if field has a declared default value
+    int has_default;
     // source position where the field was defined
     int line;
     int col;
@@ -168,6 +172,7 @@ struct struct_parser {
 #define TOKEN_COMMA ','
 #define TOKEN_SHARPE '#'
 #define TOKEN_AT '@'
+#define TOKEN_EQUAL '='
 #define TOKEN_STRING 4
 #define TOKEN_IDENTIFY 1
 #define TOKEN_INTEGER 2

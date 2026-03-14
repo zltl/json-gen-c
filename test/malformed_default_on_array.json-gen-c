@@ -1,0 +1,4 @@
+// Malformed: default value on array field (not supported)
+struct Bad {
+    int arr[5] = 0;
+}

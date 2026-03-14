@@ -44,6 +44,8 @@ static struct struct_field* struct_field_new(sstr_t name, int type,
     field->is_optional = 0;
     field->is_nullable = 0;
     field->json_name = NULL;
+    field->default_value = NULL;
+    field->has_default = 0;
     field->line = 0;
     field->col = 0;
     return field;
@@ -54,6 +56,7 @@ static void struct_field_free(struct struct_field* field) {
         sstr_free(field->name);
         sstr_free(field->type_name);
         sstr_free(field->json_name);
+        sstr_free(field->default_value);
     }
     free(field);
 }
@@ -236,6 +239,10 @@ static int next_token_(struct struct_parser* parser, sstr_t content,
                 token->type = TOKEN_AT;
                 parser->pos.offset = i + 1;
                 return TOKEN_AT;
+            case '=':
+                token->type = TOKEN_EQUAL;
+                parser->pos.offset = i + 1;
+                return TOKEN_EQUAL;
             case '#':
                 token->type = TOKEN_SHARPE;
                 parser->pos.offset = i + 1;
@@ -335,27 +342,56 @@ static int next_token_(struct struct_parser* parser, sstr_t content,
             case '\r':
             case '\n':
                 continue;
+            case '-':
+                // negative number literal: peek ahead for digit
+                if (i + 1 < length && isdigit(data[i + 1])) {
+                    long start_pos = i;
+                    i++;  // skip '-'
+                    parser->pos.col++;
+                    token->type = TOKEN_INTEGER;
+                    while (i < length && (isdigit(data[i]) || data[i] == '.')) {
+                        if (data[i] == '.') {
+                            token->type = TOKEN_FLOAT;
+                        }
+                        i++;
+                        parser->pos.col++;
+                    }
+                    token->txt = sstr_of(data + start_pos, i - start_pos);
+                    parser->pos.offset = i;
+                    return token->type;
+                }
+                token->type = TOKEN_ERROR;
+                parser->pos.offset = i + 1;
+                return TOKEN_ERROR;
             default:
                 break;
                 // identifier
         }
         // get identifier or number
         long start_pos = i;
-        token->type = TOKEN_INTEGER;
         parser->pos.offset = i;
-        if (!isalnum(data[i]) && data[i] != '_') {
+        if (isdigit(data[i])) {
+            // number literal (integer or float with '.')
+            token->type = TOKEN_INTEGER;
+            while (i < length && (isdigit(data[i]) || data[i] == '.')) {
+                if (data[i] == '.') {
+                    token->type = TOKEN_FLOAT;
+                }
+                i++;
+                parser->pos.col++;
+            }
+            token->txt = sstr_of(data + start_pos, i - start_pos);
+            parser->pos.offset = i;
+            return token->type;
+        }
+        if (!isalpha(data[i]) && data[i] != '_') {
             token->type = TOKEN_ERROR;
+            parser->pos.offset = i + 1;
             return TOKEN_ERROR;
         }
+        token->type = TOKEN_IDENTIFY;
         parser->pos.col--;
-        while (i < (long)sstr_length(content) &&
-               (isalnum(data[i]) || data[i] == '_')) {
-            if (token->type == TOKEN_INTEGER && data[i] == '.') {
-                token->type = TOKEN_FLOAT;
-            }
-            if (isalpha(data[i])) {
-                token->type = TOKEN_IDENTIFY;
-            }
+        while (i < length && (isalnum(data[i]) || data[i] == '_')) {
             i++;
             parser->pos.col++;
         }
@@ -379,6 +415,8 @@ static char* token_type_str(struct struct_token* token) {
     switch (token->type) {
         case TOKEN_AT:
             return "@";
+        case TOKEN_EQUAL:
+            return "=";
         case TOKEN_SHARPE:
             return "#";
         case TOKEN_STRING:
@@ -807,6 +845,32 @@ parse_field_name:
 
         tk = next_token(parser, content, token);
     }
+    // parse default value: = <literal>;
+    if (tk == TOKEN_EQUAL) {
+        if (field->is_array) {
+            PERROR(parser, "default values are not supported for array fields");
+            return -1;
+        }
+        if (field->type == FIELD_TYPE_MAP) {
+            PERROR(parser, "default values are not supported for map fields");
+            return -1;
+        }
+        if (field->type == FIELD_TYPE_STRUCT) {
+            PERROR(parser, "default values are not supported for struct fields");
+            return -1;
+        }
+        tk = next_token(parser, content, token);
+        if (tk != TOKEN_INTEGER && tk != TOKEN_FLOAT &&
+            tk != TOKEN_IDENTIFY && tk != TOKEN_STRING) {
+            PERROR(parser, "expected default value after '=', found '%s'",
+                   token_type_str(token));
+            return -1;
+        }
+        field->default_value = token->txt;
+        token->txt = NULL;
+        field->has_default = 1;
+        tk = next_token(parser, content, token);
+    }
     if (tk != TOKEN_SEMICOLON) {
         PERROR(parser, "expected ';', found '%s'", token_type_str(token));
         return -1;
@@ -1179,6 +1243,28 @@ static void validate_struct_fields(void* key, void* value, void* ptr) {
             diag_emit(ctx->diag, DIAG_WARNING, f->line, f->col,
                       "field name '%s' in struct '%s' is a C keyword",
                       sstr_cstr(f->name), sname);
+        }
+    }
+
+    /* Check enum default values are valid enum constants */
+    for (struct struct_field* f = sct->fields; f; f = f->next) {
+        if (f->has_default && f->type == FIELD_TYPE_ENUM) {
+            void* found = NULL;
+            if (hash_map_find(ctx->enum_map, f->type_name, &found) == HASH_MAP_OK) {
+                struct enum_container* ec = (struct enum_container*)found;
+                int valid = 0;
+                for (struct enum_value* v = ec->values; v; v = v->next) {
+                    if (sstr_compare(f->default_value, v->name) == 0) {
+                        valid = 1;
+                        break;
+                    }
+                }
+                if (!valid) {
+                    diag_emit(ctx->diag, DIAG_ERROR, f->line, f->col,
+                              "default value '%s' is not a valid constant of enum '%s'",
+                              sstr_cstr(f->default_value), sstr_cstr(f->type_name));
+                }
+            }
         }
     }
 

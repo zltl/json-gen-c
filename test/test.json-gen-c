@@ -209,3 +209,47 @@ struct AliasNested {
     @json "home_address"
     House addr;
 }
+
+// Default value test structures
+struct DefaultBasic {
+    int count = 42;
+    long big = 1000000;
+    float ratio = 3.14;
+    double precise = 2.718281828;
+    bool active = true;
+    sstr_t label = "hello";
+    int no_default;
+}
+
+struct DefaultNegative {
+    int neg_int = -10;
+    long neg_long = -99999;
+    float neg_float = -1.5;
+    double neg_double = -0.001;
+}
+
+struct DefaultEnum {
+    Color color = GREEN;
+    Status status = PENDING;
+}
+
+struct DefaultOptional {
+    optional int score = 100;
+    optional sstr_t name = "anonymous";
+}
+
+struct DefaultPrecise {
+    int8_t i8 = -1;
+    int16_t i16 = 256;
+    int32_t i32 = -100000;
+    uint8_t u8 = 255;
+    uint16_t u16 = 65535;
+    uint32_t u32 = 42;
+}
+
+struct DefaultMixed {
+    @json "user_count"
+    int count = 10;
+    sstr_t name;
+    bool enabled = false;
+}

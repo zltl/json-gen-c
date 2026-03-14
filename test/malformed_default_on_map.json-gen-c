@@ -1,0 +1,4 @@
+// Malformed: default value on map field (not supported)
+struct Bad {
+    map<sstr_t, int> m = 0;
+}

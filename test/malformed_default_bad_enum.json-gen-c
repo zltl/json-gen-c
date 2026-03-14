@@ -1,0 +1,5 @@
+// Malformed: default value references invalid enum constant
+enum Color { RED, GREEN, BLUE }
+struct Bad {
+    Color c = YELLOW;
+}

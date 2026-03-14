@@ -818,10 +818,18 @@ static void gen_code_struct_init(struct struct_container* st, sstr_t source) {
         switch (field->type) {
             case FIELD_TYPE_INT:
             case FIELD_TYPE_BOOL:
-                sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
+                if (field->has_default) {
+                    sstr_printf_append(source, "    obj->%S = %S;\n", field->name, field->default_value);
+                } else {
+                    sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
+                }
                 break;
             case FIELD_TYPE_LONG:
-                sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
+                if (field->has_default) {
+                    sstr_printf_append(source, "    obj->%S = %S;\n", field->name, field->default_value);
+                } else {
+                    sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
+                }
                 break;
             case FIELD_TYPE_INT8:
             case FIELD_TYPE_INT16:
@@ -831,24 +839,47 @@ static void gen_code_struct_init(struct struct_container* st, sstr_t source) {
             case FIELD_TYPE_UINT16:
             case FIELD_TYPE_UINT32:
             case FIELD_TYPE_UINT64:
-                sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
+                if (field->has_default) {
+                    sstr_printf_append(source, "    obj->%S = %S;\n", field->name, field->default_value);
+                } else {
+                    sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
+                }
                 break;
             case FIELD_TYPE_FLOAT:
-                sstr_printf_append(source, "    obj->%S = 0.0;\n", field->name);
+                if (field->has_default) {
+                    sstr_printf_append(source, "    obj->%S = %S;\n", field->name, field->default_value);
+                } else {
+                    sstr_printf_append(source, "    obj->%S = 0.0;\n", field->name);
+                }
                 break;
             case FIELD_TYPE_DOUBLE:
-                sstr_printf_append(source, "    obj->%S = 0.0;\n", field->name);
+                if (field->has_default) {
+                    sstr_printf_append(source, "    obj->%S = %S;\n", field->name, field->default_value);
+                } else {
+                    sstr_printf_append(source, "    obj->%S = 0.0;\n", field->name);
+                }
                 break;
             case FIELD_TYPE_SSTR:
-                sstr_printf_append(source, "    obj->%S = NULL;\n",
-                                   field->name);
+                if (field->has_default) {
+                    sstr_printf_append(source, "    obj->%S = sstr(\"%S\");\n",
+                                       field->name, field->default_value);
+                } else {
+                    sstr_printf_append(source, "    obj->%S = NULL;\n",
+                                       field->name);
+                }
                 break;
             case FIELD_TYPE_STRUCT:
                 sstr_printf_append(source, "    %S_init(&obj->%S);\n",
                                    field->type_name, field->name);
                 break;
             case FIELD_TYPE_ENUM:
-                sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
+                if (field->has_default) {
+                    sstr_printf_append(source, "    obj->%S = %S_%S;\n",
+                                       field->name, field->type_name,
+                                       field->default_value);
+                } else {
+                    sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
+                }
                 break;
         }
     }

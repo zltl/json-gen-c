@@ -1,0 +1,5 @@
+// Malformed: default value on struct field (not supported)
+struct Inner { int x; }
+struct Bad {
+    Inner inner = 0;
+}
