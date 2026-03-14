@@ -67,8 +67,8 @@ $(document).ready(function(){initNavTree('md_docs_2IMPROVEMENTS.html',''); initR
   <div class="headertitle"><div class="title">Project Improvement Plan</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md33"></a> This document tracks the current maturity of <code>json-gen-c</code>, completed foundational work, and the long-term roadmap for making it a more complete production-grade schema-first JSON code generator for C.</p>
-<h1><a class="anchor" id="autotoc_md34"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md34"></a> This document tracks the current maturity of <code>json-gen-c</code>, completed foundational work, and the long-term roadmap for making it a more complete production-grade schema-first JSON code generator for C.</p>
+<h1><a class="anchor" id="autotoc_md35"></a>
 Current Assessment</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -84,57 +84,57 @@ Current Assessment</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">Type system   </td><td class="markdownTableBodyNone">Growing   </td><td class="markdownTableBodyNone">Enums, fixed-size arrays, maps, optional/nullable fields, and precise-width integers supported    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">Ecosystem integration   </td><td class="markdownTableBodyNone">Limited   </td><td class="markdownTableBodyNone">No CMake, pkg-config, package manager distribution, or Windows support   </td></tr>
+<td class="markdownTableBodyNone">Ecosystem integration   </td><td class="markdownTableBodyNone">Good   </td><td class="markdownTableBodyNone">CMake, Meson, and pkg-config support; package manager distribution and Windows remaining   </td></tr>
 </table>
 <p>Summary: the project is already usable and reasonably mature at the core. Enum type support has been added, expanding the type system. It still needs broader type support (tagged unions), better ecosystem integration, and stronger developer ergonomics to reach a polished 1.0.</p>
-<h1><a class="anchor" id="autotoc_md35"></a>
+<h1><a class="anchor" id="autotoc_md36"></a>
 Completed Foundational Work</h1>
-<h2><a class="anchor" id="autotoc_md36"></a>
+<h2><a class="anchor" id="autotoc_md37"></a>
 Implement Hash Map Resizing</h2>
 <p><b>Location:</b> <code>src/utils/hash_map.c</code></p>
 <p>Implemented resizing logic in <code>hash_map_resize_if_needed()</code>: allocate a larger bucket array, rehash existing entries, free the old buckets, and update map metadata. Resizing is triggered when the load factor exceeds 0.75.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md37"></a>
+<h2><a class="anchor" id="autotoc_md38"></a>
 Optimize &lt;tt&gt;hash_2s&lt;/tt&gt;</h2>
 <p><b>Location:</b> <code>src/gencode/gencode.c</code></p>
 <p>Removed temporary string concatenation from the composite hash path. The implementation now chains <code>hash_murmur()</code> calls with a seed, avoiding per-call allocation overhead.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md38"></a>
+<h2><a class="anchor" id="autotoc_md39"></a>
 Unify Hash Functions</h2>
 <p><b>Location:</b> <code><a class="el" href="hash_8h_source.html">src/utils/hash.h</a></code>, <code>src/utils/hash.c</code></p>
 <p>Consolidated the MurmurHash-like implementation into a shared utility function, <code>hash_murmur()</code>, and reused it across code generation and hash map logic.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md39"></a>
+<h2><a class="anchor" id="autotoc_md40"></a>
 Use &lt;tt&gt;stdbool.h&lt;/tt&gt;</h2>
 <p><b>Location:</b> <code><a class="el" href="sstr_8c.html" title="Implementation of the sstr.h header file.">src/utils/sstr.c</a></code>, <code><a class="el" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters.">src/utils/sstr.h</a></code>, related files</p>
 <p>Refactored boolean-like integer flags to use <code>bool</code> where appropriate for clarity and consistency.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md40"></a>
+<h2><a class="anchor" id="autotoc_md41"></a>
 Improve Argument Parsing</h2>
 <p><b>Location:</b> <code>src/main/main.c</code></p>
 <p>Replaced brittle manual argument parsing with <code>getopt_long_only</code>, improving flag handling and future extensibility.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md41"></a>
+<h2><a class="anchor" id="autotoc_md42"></a>
 Improve Error Handling Consistency</h2>
 <p><b>Location:</b> <code>src/main/main.c</code></p>
 <p>Adjusted <code>usage()</code> handling so error-triggered output goes to <code>stderr</code> while normal help output goes to <code>stdout</code>.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md42"></a>
+<h2><a class="anchor" id="autotoc_md43"></a>
 Fix Parser Off-by-One Bug</h2>
 <p><b>Location:</b> <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code></p>
 <p>Fixed the parser EOF condition from <code>offset &gt;= length - 1</code> to <code>offset &gt;= length</code>, preventing the last significant character of a schema file from being ignored.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md43"></a>
+<h2><a class="anchor" id="autotoc_md44"></a>
 Refactor Top-Level &lt;tt&gt;#include&lt;/tt&gt; Parsing</h2>
 <p><b>Location:</b> <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code></p>
 <p>Restructured top-level parsing so <code>#include</code> directives and <code>struct</code> declarations are handled independently in <code><a class="el" href="struct__parse_8c.html#a3b1cfbb20875351e5264df1490a76818" title="parse a struct definition file, and store the parsed structs in struct_parser.">struct_parser_parse()</a></code>. This fixes failures when <code>#include</code> appears before struct definitions in the same schema file.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md44"></a>
+<h2><a class="anchor" id="autotoc_md45"></a>
 Harden File I/O</h2>
 <p><b>Location:</b> <code>src/utils/io.c</code></p>
 <p>Added proper error checking for <code>fopen</code>, <code>fseek</code>, <code>ftell</code>, <code>fread</code>, and <code>fwrite</code>.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md45"></a>
+<h2><a class="anchor" id="autotoc_md46"></a>
 Add Enum Type Support</h2>
 <p><b>Location:</b> <code><a class="el" href="struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,...">src/struct/struct_parse.h</a></code>, <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code>, <code><a class="el" href="gencode_8h.html" title="generate json manipulate codes.">src/gencode/gencode.h</a></code>, <code>src/gencode/gencode.c</code>, <code><a class="el" href="json__parse_8h_source.html">src/gencode/codes/json_parse.h</a></code>, <code>src/gencode/codes/json_parse.c</code>, <code>src/main/main.c</code></p>
 <p>Implemented full enum type support across the schema parser, code generator, and generated runtime:</p>
@@ -151,7 +151,7 @@ Add Enum Type Support</h2>
 </ul>
 <p><b>Test coverage:</b> 11 dedicated enum tests covering scalar marshal/unmarshal, array marshal/unmarshal, round-trip, integer fallback, unknown value errors, out-of-range marshal, generated constants verification, and empty array. Empty enum regression test added to bugfix suite.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md46"></a>
+<h2><a class="anchor" id="autotoc_md47"></a>
 Add Fixed-Size Array Support</h2>
 <p><b>Location:</b> <code><a class="el" href="struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,...">src/struct/struct_parse.h</a></code>, <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code>, <code>src/gencode/gencode.c</code>, <code>src/gencode/codes/json_parse.c</code></p>
 <p>Implemented fixed-size array support, distinguished from existing dynamically allocated arrays:</p>
@@ -167,7 +167,7 @@ Add Fixed-Size Array Support</h2>
 </ul>
 <p><b>Test coverage:</b> 17 dedicated tests covering init zeros, clear resets, marshal (int array, zero-init), round-trip for all supported types (int, long, float, double, string, bool, enum, struct), partial fill unmarshal, empty array unmarshal, overflow error detection, struct layout verification, and full round-trip with all field types.</p>
 <p><b>Status:</b> Completed.</p>
-<h2><a class="anchor" id="autotoc_md47"></a>
+<h2><a class="anchor" id="autotoc_md48"></a>
 Add Map/Dictionary Support</h2>
 <p><b>Location:</b> <code><a class="el" href="struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,...">src/struct/struct_parse.h</a></code>, <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code>, <code>src/gencode/gencode.c</code>, <code><a class="el" href="json__parse_8h_source.html">src/gencode/codes/json_parse.h</a></code>, <code>src/gencode/codes/json_parse.c</code></p>
 <p>Implemented map/dictionary field support that marshals to/from JSON objects:</p>
@@ -189,9 +189,9 @@ Add Map/Dictionary Support</h2>
 </ul>
 <p><b>Test coverage:</b> 10 dedicated tests covering init/clear, empty map marshal, int map marshal, int map unmarshal, round-trip, empty map unmarshal, all-types round-trip (int, long, float, double, bool, sstr_t, enum, struct), array-of-maps round-trip, empty array-of-maps, and null map handling.</p>
 <p><b>Status:</b> Completed.</p>
-<h1><a class="anchor" id="autotoc_md48"></a>
+<h1><a class="anchor" id="autotoc_md49"></a>
 Roadmap</h1>
-<h2><a class="anchor" id="autotoc_md49"></a>
+<h2><a class="anchor" id="autotoc_md50"></a>
 Phase 1: Bug Fixes and Technical Debt Cleanup</h2>
 <ol type="1">
 <li>Keep parser regression coverage growing for edge cases around comments, includes, empty files, and malformed trailing tokens.</li>
@@ -200,7 +200,7 @@ Phase 1: Bug Fixes and Technical Debt Cleanup</h2>
 <li>Audit the generated code template for duplicated logic and simplify where possible.</li>
 </ol>
 <p><b>Exit criteria:</b> CI stays green, regression tests cover recent parser and generator fixes, and the parsing/codegen core is stable enough for feature work.</p>
-<h2><a class="anchor" id="autotoc_md50"></a>
+<h2><a class="anchor" id="autotoc_md51"></a>
 Phase 2: Type System Expansion</h2>
 <ol type="1">
 <li>Add enum support.<ul>
@@ -245,7 +245,7 @@ Phase 2: Type System Expansion</h2>
 <li>Evaluate a tagged union or <code>oneof</code> style feature as a longer-term extension.</li>
 </ol>
 <p><b>Exit criteria:</b> each new type has parser coverage, generator coverage, runtime coverage, and example schemas.</p>
-<h2><a class="anchor" id="autotoc_md51"></a>
+<h2><a class="anchor" id="autotoc_md52"></a>
 Phase 3: Developer Experience</h2>
 <ol type="1">
 <li><strike>Improve diagnostics.</strike> <b>Done.</b><ul>
@@ -276,9 +276,19 @@ Phase 3: Developer Experience</h2>
 <li>9 new unit tests in <code>AliasTest</code> class covering marshal, unmarshal, round-trip, mixed alias/non-alias, optional, arrays, and nested structs.</li>
 </ul>
 </li>
-<li>Add default value support.<ul>
-<li>Example direction: <code>int count = 10;</code></li>
-<li>Missing JSON fields can initialize to declared defaults.</li>
+<li><strike>Add default value support.</strike> <b>Done.</b><ul>
+<li>Syntax: <code>type field = value;</code> — declares a default value applied in the generated <code>_init()</code> function.</li>
+<li>Supported types: all scalar types (<code>int</code>, <code>long</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>int8_t</code>–<code>uint32_t</code>), <code>sstr_t</code> (string), and enums.</li>
+<li>Negative number literals supported (e.g. <code>int x = -10;</code>, <code>float f = -1.5;</code>).</li>
+<li>Float/double literals with decimals supported (e.g. <code>float ratio = 3.14;</code>).</li>
+<li>Bool defaults via <code>true</code>/<code>false</code> identifiers.</li>
+<li>String defaults emit <code>sstr("content")</code> in generated <code>_init()</code>.</li>
+<li>Enum defaults validated against declared enum constants at schema validation time; generated code uses prefixed names (e.g. <code>Color_GREEN</code>).</li>
+<li>Defaults on arrays, maps, and struct fields are rejected with diagnostics.</li>
+<li>Combines with <code>@json</code> alias and <code>optional</code> annotations.</li>
+<li>Unmarshal does NOT call <code>_init()</code> — callers must init before unmarshal (API contract preserved).</li>
+<li>Tokenizer reworked: separate number and identifier parsing paths, proper <code>.</code> handling for floats, TOKEN_ERROR now always advances position to prevent infinite loops.</li>
+<li>29 new unit tests in <code>DefaultValueTest</code> class; 4 new malformed schema negative tests.</li>
 </ul>
 </li>
 <li><strike>Add <code>--version</code> output and centralize version definition in the build and source tree.</strike> <b>Done.</b><ul>
@@ -286,17 +296,29 @@ Phase 3: Developer Experience</h2>
 <li><code>json-gen-c --version</code> / <code>json-gen-c -v</code> prints version string.</li>
 </ul>
 </li>
-<li>Update the man page to match the current feature set and CLI behavior.</li>
-</ol>
-<p><b>Exit criteria:</b> the tool is easier to debug, easier to learn, and easier to integrate into scripted workflows.</p>
-<h2><a class="anchor" id="autotoc_md52"></a>
-Phase 4: Build Ecosystem and Cross-Platform Support</h2>
-<ol type="1">
-<li>Add CMake support.<ul>
-<li>Enable <code>find_package</code> or easy <code>add_custom_command</code> integration.</li>
+<li><strike>Update the man page to match the current feature set and CLI behavior.</strike> <b>Done.</b><ul>
+<li>Rewrote <code>doc/json-gen-c.1</code> from v0.1.5 to v0.9.0.</li>
+<li>Added documentation for: enums, fixed-size arrays, maps, optional/nullable fields, JSON field aliases (<code>@json</code>), default values, precise-width integer types (<code>int8_t</code>–<code>uint64_t</code>), <code>#include</code> directive, comments, <code>json_marshal_indent_*()</code> API, <code>-h</code>/<code>--help</code> and <code>-v</code>/<code>--version</code> flags, exit status, and clang-style diagnostics.</li>
+<li>Added a complete usage example showing enum, defaults, optional fields, and arrays.</li>
 </ul>
 </li>
-<li>Add pkg-config metadata.</li>
+</ol>
+<p><b>Exit criteria:</b> the tool is easier to debug, easier to learn, and easier to integrate into scripted workflows.</p>
+<h2><a class="anchor" id="autotoc_md53"></a>
+Phase 4: Build Ecosystem and Cross-Platform Support</h2>
+<ol type="1">
+<li><strike>Add CMake support.</strike> <b>Done.</b><ul>
+<li>Root <code>CMakeLists.txt</code> builds the executable with the same source layout and <code>xxd</code> embedding as the Makefile.</li>
+<li><code>cmake/JsonGenCConfig.cmake.in</code> enables <code>find_package(JsonGenC)</code> for downstream consumers.</li>
+<li><code>cmake/JsonGenCMacro.cmake</code> provides <code>json_gen_c_generate(TARGET SCHEMA OUTPUT_DIR)</code> wrapping <code>add_custom_command</code>.</li>
+<li>Installs binary, man page, CMake package config, and pkg-config <code>.pc</code> file via <code>GNUInstallDirs</code>.</li>
+</ul>
+</li>
+<li><strike>Add pkg-config metadata.</strike> <b>Done.</b><ul>
+<li><code>json-gen-c.pc.in</code> template installed to <code>${libdir}/pkgconfig/json-gen-c.pc</code>.</li>
+<li>Exposes <code>generator</code> variable pointing to the installed binary, plus standard <code>Name</code>, <code>Description</code>, and <code>Version</code> fields.</li>
+</ul>
+</li>
 <li>Add package-manager-friendly distribution paths.<ul>
 <li>Homebrew</li>
 <li>Debian packaging</li>
@@ -308,10 +330,13 @@ Phase 4: Build Ecosystem and Cross-Platform Support</h2>
 <li>Validate MSVC compatibility where practical</li>
 </ul>
 </li>
-<li>Consider Meson as an additional build integration option.</li>
+<li><strike>Consider Meson as an additional build integration option.</strike> <b>Done.</b><ul>
+<li>Root <code>meson.build</code> builds the executable with <code>custom_target</code> for <code>xxd</code> embedding, three static libraries, and install rules for the binary and man page.</li>
+</ul>
+</li>
 </ol>
 <p><b>Exit criteria:</b> building and consuming the tool becomes straightforward on Linux, macOS, and Windows, with standard project integration paths.</p>
-<h2><a class="anchor" id="autotoc_md53"></a>
+<h2><a class="anchor" id="autotoc_md54"></a>
 Phase 5: Performance and Reliability</h2>
 <ol type="1">
 <li>Add custom allocator support.<ul>
@@ -334,7 +359,7 @@ Phase 5: Performance and Reliability</h2>
 <li>Investigate selective parsing or SIMD-assisted fast paths only after correctness and coverage are strong.</li>
 </ol>
 <p><b>Exit criteria:</b> the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments.</p>
-<h2><a class="anchor" id="autotoc_md54"></a>
+<h2><a class="anchor" id="autotoc_md55"></a>
 Phase 6: Long-Term Vision</h2>
 <ol type="1">
 <li>Add schema evolution support.<ul>
@@ -360,7 +385,7 @@ Phase 6: Long-Term Vision</h2>
 </li>
 <li>Consider an online playground for schema editing and generated code preview.</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md55"></a>
+<h1><a class="anchor" id="autotoc_md56"></a>
 Key Files</h1>
 <ul>
 <li><code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code>: schema parser and top-level language handling</li>
@@ -371,7 +396,7 @@ Key Files</h1>
 <li><code>src/main/main.c</code>: CLI entry point</li>
 <li><code>docs/IMPROVEMENTS.md</code>: this roadmap and improvement tracker</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md56"></a>
+<h1><a class="anchor" id="autotoc_md57"></a>
 Project Direction Notes</h1>
 <ol type="1">
 <li>Phase 1 and Phase 2 remain the highest-value work because parser correctness and type coverage define the tool's usefulness.</li>
@@ -379,7 +404,7 @@ Project Direction Notes</h1>
 <li>Phase 5 and Phase 6 should be driven by real user demand once the core language and build story are stronger.</li>
 <li>Current licensing direction remains reasonable: GPL-3.0 for the generator while generated output stays user-controlled.</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md57"></a>
+<h1><a class="anchor" id="autotoc_md58"></a>
 Open Design Questions</h1>
 <ol type="1">
 <li>Enum JSON representation should default to strings or integers.<ul>
