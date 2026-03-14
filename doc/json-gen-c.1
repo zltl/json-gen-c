@@ -1,195 +1,276 @@
 .\" Manpage for json-gen-c.
 .\" Contact liaotonglang@gmail.com to correct errors or typos.
-.TH man 1 "29 Mar 2022" "v0.1.5" "json-gen-c man page"
+.TH json\-gen\-c 1 "15 Mar 2026" "v0.9.0" "json-gen-c man page"
 .SH NAME
-json-gen-c \- generate C code for json manipulation
+json\-gen\-c \- generate C code for JSON serialization and deserialization
 .SH SYNOPSIS
-json-gen-c -in [INPUTFILE] -out [OUTPUTDIR]
+.B json\-gen\-c
+.B \-in
+.I input_file
+.RB [ \-out
+.IR output_dir ]
+.br
+.B json\-gen\-c
+.BR \-h | \-\-help
+.br
+.B json\-gen\-c
+.BR \-v | \-\-version
 .SH DESCRIPTION
-json-gen-c is an easy mechanism for searializing C struct to JSON and deserializing JSON to C struct back. It parse structs' definition file then generate C code to serialize and deserialize the structs.
-
-.SS Define Structs
+.B json\-gen\-c
+reads a schema definition file (\f[C].json\-gen\-c\f[R]) containing
+struct and enum declarations and generates C source code to serialize
+(marshal) C structs to JSON and deserialize (unmarshal) JSON back to
+C structs.
 .PP
-For example, create a file name \f[C]struct.json\-gen\-c\f[R] as
-contents below:
+The generated code supports nested structs, enums, dynamic and
+fixed\-size arrays, key\-value maps, optional and nullable fields,
+JSON field aliases, default values, and precise\-width integer types.
+.SH SCHEMA SYNTAX
+Schema files use a C\-like syntax with additional keywords.
+Comments are supported in both \f[C]//\f[R] single\-line and
+\f[C]/* */\f[R] multi\-line forms.
+.SS Struct Definitions
 .IP
 .nf
 \f[C]
-struct A {
-    int int_val1;
-    int int_val2;
-    long long_val;
-    double double_val;
-    float float_val;
-    sstr_t sstr_val;
-    int int_val_array[];
-    B b_val;
-};
-
-struct B {
+struct Person {
     int id;
-};
-\f[R]
-.fi
-.SS Compiling Your Struct Definition File
-.IP
-.nf
-\f[C]
-json\-gen\-c \-in struct.json\-gen\-c \-out .
+    sstr_t name;
+    Address addr;
+}
 \f[R]
 .fi
 .PP
-This generates the following files in your specified destination
+Structs may reference other structs and enums defined in the same
+file or brought in via \f[C]#include\f[R].
+The trailing semicolon after the closing brace is optional.
+.SS Enum Definitions
+.IP
+.nf
+\f[C]
+enum Color { RED, GREEN, BLUE }
+\f[R]
+.fi
+.PP
+Enum values are marshaled as JSON strings (e.g. \f[C]"GREEN"\f[R]) and
+unmarshaled from either strings or integers.
+Generated C constants are prefixed with the enum name
+(e.g. \f[C]Color_RED\f[R], \f[C]Color_GREEN\f[R]).
+.SS Field Types
+The following scalar types are supported:
+.IP \[bu] 2
+\f[C]int\f[R], \f[C]long\f[R], \f[C]float\f[R], \f[C]double\f[R],
+\f[C]bool\f[R], \f[C]sstr_t\f[R] (dynamic string)
+.IP \[bu] 2
+Precise\-width integers:
+\f[C]int8_t\f[R], \f[C]int16_t\f[R], \f[C]int32_t\f[R],
+\f[C]int64_t\f[R], \f[C]uint8_t\f[R], \f[C]uint16_t\f[R],
+\f[C]uint32_t\f[R], \f[C]uint64_t\f[R]
+.IP \[bu] 2
+Struct names (for nested structs)
+.IP \[bu] 2
+Enum names
+.SS Arrays
+.IP
+.nf
+\f[C]
+int scores[];       // dynamic array (heap\-allocated)
+int fixed[10];      // fixed\-size array (inline, no length field)
+\f[R]
+.fi
+.PP
+Dynamic arrays generate a companion \f[C]<name>_len\f[R] field and are
+heap\-allocated during unmarshal.
+Fixed\-size arrays are stored inline in the struct.
+.SS Maps
+.IP
+.nf
+\f[C]
+map<sstr_t, int> scores;
+map<sstr_t, Person> people;
+\f[R]
+.fi
+.PP
+Maps are represented as JSON objects.
+The key type is always \f[C]sstr_t\f[R]; the value type can be any
+scalar, enum, or struct type.
+Maps may also be arrayed: \f[C]map<sstr_t, int> m[];\f[R]
+.SS Optional and Nullable Fields
+.IP
+.nf
+\f[C]
+optional sstr_t nickname;              // omitted from JSON if unset
+nullable int score;                    // can be JSON null
+optional nullable sstr_t middle_name;  // both behaviors
+\f[R]
+.fi
+.PP
+Optional fields generate a companion \f[C]bool has_<name>\f[R] flag.
+When \f[C]has_<name>\f[R] is false, the field is omitted in marshal
+output.
+Nullable fields accept JSON \f[C]null\f[R] on unmarshal.
+.SS JSON Field Alias
+.IP
+.nf
+\f[C]
+@json "user_name"
+sstr_t username;
+\f[R]
+.fi
+.PP
+The \f[C]@json\f[R] annotation sets the JSON key used during marshal
+and unmarshal.  The C struct member name is unchanged.
+.SS Default Values
+.IP
+.nf
+\f[C]
+int count = 42;
+sstr_t label = "hello";
+float ratio = 3.14;
+bool active = true;
+Color color = GREEN;       // enum default
+int neg = \-10;             // negative numbers
+\f[R]
+.fi
+.PP
+Default values are applied in the generated \f[C]_init()\f[R] function.
+Supported for all scalar types, strings, and enums.
+Not supported for arrays, maps, or struct fields.
+Enum defaults are validated against declared enum constants.
+.SS Include Directive
+.IP
+.nf
+\f[C]
+#include "other_schema.json\-gen\-c"
+\f[R]
+.fi
+.PP
+Includes another schema file.
+Types defined in included files are available for use as field types.
+.SS Comments
+.IP
+.nf
+\f[C]
+// single\-line comment
+/* multi\-line
+   comment */
+\f[R]
+.fi
+.SH GENERATED FILES
+Running \f[B]json\-gen\-c\f[R] produces four files in the output
 directory:
 .IP \[bu] 2
-\f[C]json.gen.h\f[R], the header which declares your generated
-structures and functions.
+\f[C]json.gen.h\f[R] \(en header with struct/enum definitions and
+function declarations.
 .IP \[bu] 2
-\f[C]json.gen.c\f[R], which contains the implementation of your
-functions.
+\f[C]json.gen.c\f[R] \(en implementation of all generated functions.
 .IP \[bu] 2
-\f[C]sstr.h\f[R], \f[C]sstr.c\f[R], the string manipulation helper
-functions that generated code depends on.
-.SS Use Your Generated Codes
-.SS To Serialize Structs to JSON
+\f[C]sstr.h\f[R], \f[C]sstr.c\f[R] \(en string helper library required
+by generated code.
+.SH GENERATED API
+For each struct \f[C]T\f[R] the following functions are generated:
 .IP
 .nf
 \f[C]
-struct A a;
-A_init(&a);
-// set values to a ...
-// ...
-sstr_t json_str = sstr_new();
-json_marshal_A(&a, json_str);
+// Initialize struct (applies default values)
+int T_init(struct T *obj);
 
-printf(\[dq]marshal a to json> %s\[rs]n\[dq], sstr_cstr(json_str));
+// Free dynamic memory owned by struct
+int T_clear(struct T *obj);
 
-sstr_free(json_str);
-A_clear(&a);
-\f[R]
-.fi
-.SS To Serialize Array of Structs to JSON
-.IP
-.nf
-\f[C]
-struct A a[3];
-for (i = 0; i < 3; ++i) {
-    A_init(&a[i]);
-    // set values to a[i] ...
-}
+// Marshal struct to compact JSON
+int json_marshal_T(struct T *obj, sstr_t out);
 
-sstr_t json_str = sstr_new();
-json_marshal_array_A(a, 3, json_str);
+// Marshal struct to indented JSON
+int json_marshal_indent_T(struct T *obj,
+    int indent, int curindent, sstr_t out);
 
-printf(\[dq]marshal a[] to json> %s\[rs]n\[dq], sstr_cstr(json_str));
+// Marshal array of structs to JSON
+int json_marshal_array_T(struct T *obj, int len,
+    sstr_t out);
 
-for (i = 0; i < 3; ++i) {
-    A_clear(&a[i]);
-}
-\f[R]
-.fi
-.SS To Deserialize JSON to Structs
-.IP
-.nf
-\f[C]
-// const char *p_str = \[dq]{this is a json string}\[dq];
-// sstr_t json_str = sstr(pstr);
+// Unmarshal JSON to struct
+int json_unmarshal_T(sstr_t in, struct T *obj);
 
-struct A a;
-A_init(&a);
-json_unmarshal_A(json_str, &a); // json_str is a type of sstr_t
-// ...
-A_clear(&a);
-\f[R]
-.fi
-.SS To Deserialize JSON to Array of Structs
-.IP
-.nf
-\f[C]
-// const char *p_str = \[dq][this is a json string]\[dq];
-// sstr_t json_str = sstr(pstr);
-
-struct A *a = NULL;
-int len = 0;
-json_unmarshal_array_A(&a, &len, json_str);
-// ...
-int i;
-for (i = 0; i < len; ++i) {
-    A_clear(&a[i]);
-}
-free(a);
-\f[R]
-.fi
-.SS The Format of Structs Definition File
-.PP
-Define a struct like:
-.IP
-.nf
-\f[C]
-struct <struct_name> {
-    <field_type> <field_name> []?;
-    <field_type> <field_name> []?;
-    ...
-};
+// Unmarshal JSON array to heap\-allocated array
+int json_unmarshal_array_T(sstr_t in,
+    struct T **obj, int *len);
 \f[R]
 .fi
 .PP
-The field type can be one of the following:
-.IP \[bu] 2
-\f[C]int\f[R]
-.IP \[bu] 2
-\f[C]long\f[R]
-.IP \[bu] 2
-\f[C]float\f[R]
-.IP \[bu] 2
-\f[C]double\f[R]
-.IP \[bu] 2
-\f[C]sstr_t\f[R]
-.IP \[bu] 2
-\f[C]bool\f[R]
-.IP \[bu] 2
-a struct name
-.PP
-If a field is an array, just append \f[C][]\f[R] after the field name.
-.SS The JSON API
+All functions return 0 on success.
+The caller must call \f[C]T_init()\f[R] before use and
+\f[C]T_clear()\f[R] after use to avoid memory leaks.
+For \f[C]json_unmarshal_array_T()\f[R], the caller must also
+\f[C]free()\f[R] the returned array pointer.
+.SH USAGE EXAMPLE
+Create a schema file \f[C]user.json\-gen\-c\f[R]:
 .IP
 .nf
 \f[C]
-// initialize a struct
-// always return 0
-int <struct_name>_init(struct <struct_name> *obj);
+enum Role { ADMIN, USER, GUEST }
 
-// uninitialize a struct
-// always return 0
-int <struct_name>_clear(struct <struct_name> *obj);
-
-// marshal a struct to json string.
-// return 0 if success.
-int json_marshal_<struct_name>(struct <struct_name>*obj, sstr_t out);
-
-// marshal an array of struct to json string.
-// return 0 if success.
-int json_marshal_array_<struct_name>(struct <struct_name>*obj, int len, sstr_t out);
-
-// unmarshal a json string to a struct.
-// return 0 if success.
-int json_unmarshal_<struct_name>(sstr_t in, struct <struct_name>*obj);
-
-// unmarshal a json string to array of struct
-// return 0 if success.
-int json_unmarshal_<struct_name>(sstr_t in, struct <struct_name>**obj, int *len);
+struct User {
+    int id;
+    sstr_t name;
+    Role role = USER;
+    optional sstr_t email;
+    int scores[];
+}
 \f[R]
 .fi
+.PP
+Generate the code and use it in your program:
+.IP
+.nf
+\f[C]
+json\-gen\-c \-in user.json\-gen\-c \-out .
 
+// In your C code:
+#include "json.gen.h"
+
+struct User u;
+User_init(&u);          // u.role == Role_USER
+u.id = 1;
+u.name = sstr("Alice");
+
+sstr_t out = sstr_new();
+json_marshal_User(&u, out);
+// out contains: {"id":1,"name":"Alice","role":"USER","scores":[]}
+
+User_clear(&u);
+sstr_free(out);
+\f[R]
+.fi
 .SH OPTIONS
--in <input_file> Specify the input struct definition file.
-
--out <output_dir> Specify the output codes location.
-
-
+.TP
+.BI \-in " input_file"
+Specify the input schema definition file.  Required.
+.TP
+.BI \-out " output_dir"
+Specify the output directory for generated files.
+Defaults to the current directory if not specified.
+.TP
+.BR \-h ", " \-\-help
+Display a help message and exit.
+.TP
+.BR \-v ", " \-\-version
+Display the version number and exit.
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B non\-zero
+An error occurred (invalid arguments, parse error, validation error,
+or file I/O error).
+Diagnostic messages are printed to stderr in a clang\-style format
+showing filename, line, column, and a source snippet.
 .SH COPYRIGHT
-Copyright © 2022 liao tonglang.  License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
-This is free software: you are free to change and redistribute it.  There is NO WARRANTY, to the extent permitted by law.
-
+Copyright \(co 2022\-2026 Liao Tonglang.
+License GPLv3+: GNU GPL version 3 or later
+<https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
 .SH AUTHOR
 Liao Tonglang (liaotonglang@gmail.com)

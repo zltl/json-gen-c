@@ -222,7 +222,10 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 5. ~~Add `--version` output and centralize version definition in the build and source tree.~~  **Done.**
     - Version `0.9.0` defined in `build.mk` as `JSON_GEN_C_VERSION`, passed to compiler via `-DJSON_GEN_C_VERSION`.
     - `json-gen-c --version` / `json-gen-c -v` prints version string.
-6. Update the man page to match the current feature set and CLI behavior.
+6. ~~Update the man page to match the current feature set and CLI behavior.~~  **Done.**
+    - Rewrote `doc/json-gen-c.1` from v0.1.5 to v0.9.0.
+    - Added documentation for: enums, fixed-size arrays, maps, optional/nullable fields, JSON field aliases (`@json`), default values, precise-width integer types (`int8_t`–`uint64_t`), `#include` directive, comments, `json_marshal_indent_*()` API, `-h`/`--help` and `-v`/`--version` flags, exit status, and clang-style diagnostics.
+    - Added a complete usage example showing enum, defaults, optional fields, and arrays.
 
 **Exit criteria:** the tool is easier to debug, easier to learn, and easier to integrate into scripted workflows.
 
