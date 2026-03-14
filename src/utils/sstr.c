@@ -105,7 +105,8 @@ int sstr_compare(sstr_t a, sstr_t b) {
     if (c != 0) {
         return c;
     }
-    return alen > blen;
+    if (alen == blen) return 0;
+    return alen > blen ? 1 : -1;
 }
 
 int sstr_compare_c(sstr_t a, const char* b) {
@@ -119,7 +120,8 @@ int sstr_compare_c(sstr_t a, const char* b) {
     if (c != 0) {
         return c;
     }
-    return alen > blen;
+    if (alen == blen) return 0;
+    return alen > blen ? 1 : -1;
 }
 
 void sstr_append_zero(sstr_t s, size_t length) {
