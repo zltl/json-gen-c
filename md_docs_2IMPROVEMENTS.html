@@ -67,109 +67,246 @@ $(document).ready(function(){initNavTree('md_docs_2IMPROVEMENTS.html',''); initR
   <div class="headertitle"><div class="title">Project Improvement Plan</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md32"></a> This document outlines identified areas for repair, optimization, and improvement in the <code>json-gen-c</code> project.</p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md32"></a> This document tracks the current maturity of <code>json-gen-c</code>, completed foundational work, and the long-term roadmap for making it a more complete production-grade schema-first JSON code generator for C.</p>
 <h1><a class="anchor" id="autotoc_md33"></a>
-1. Critical Fixes</h1>
-<h2><a class="anchor" id="autotoc_md34"></a>
-1.1. Implement Hash Map Resizing</h2>
+Current Assessment</h1>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Area   </th><th class="markdownTableHeadNone">Status   </th><th class="markdownTableHeadNone">Notes    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Core functionality   </td><td class="markdownTableBodyNone">Good   </td><td class="markdownTableBodyNone">Supports <code>int</code>, <code>long</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>sstr_t</code>, arrays, nested structs, and <code>#include</code> across schema files    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Test coverage   </td><td class="markdownTableBodyNone">Good   </td><td class="markdownTableBodyNone">Multiple Google Test suites, benchmark coverage, <code>-Werror</code>, bugfix regression tests    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Documentation   </td><td class="markdownTableBodyNone">Good   </td><td class="markdownTableBodyNone">README, getting started guide, Doxygen, and man page exist    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">CI/CD   </td><td class="markdownTableBodyNone">Good   </td><td class="markdownTableBodyNone">GitHub Actions test workflow and Doxygen deployment are present    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Type system   </td><td class="markdownTableBodyNone">Limited   </td><td class="markdownTableBodyNone">No enums, fixed-size arrays, maps, optional fields, or precise-width integer families    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Ecosystem integration   </td><td class="markdownTableBodyNone">Limited   </td><td class="markdownTableBodyNone">No CMake, pkg-config, package manager distribution, or Windows support   </td></tr>
+</table>
+<p>Summary: the project is already usable and reasonably mature at the core, but it still needs broader type support, better ecosystem integration, and stronger developer ergonomics to reach a polished 1.0.</p>
+<h1><a class="anchor" id="autotoc_md34"></a>
+Completed Foundational Work</h1>
+<h2><a class="anchor" id="autotoc_md35"></a>
+Implement Hash Map Resizing</h2>
 <p><b>Location:</b> <code>src/utils/hash_map.c</code></p>
-<p><b>Issue:</b> The function <code>hash_map_resize_if_needed</code> currently contains a TODO and does not perform any resizing. </p><div class="fragment"><div class="line"><span class="keyword">static</span> <span class="keywordtype">int</span> hash_map_resize_if_needed(<span class="keyword">struct</span> <a class="code hl_struct" href="structhash__map.html">hash_map</a>* map) {</div>
-<div class="line">    <span class="comment">// ...</span></div>
-<div class="line">    <span class="comment">// TODO: Implement hash table expansion</span></div>
-<div class="line">    <span class="comment">// ...</span></div>
-<div class="line">    <span class="keywordflow">return</span> <a class="code hl_enumvalue" href="error__codes_8h.html#a2e52ff2b658220c2389b649b75bb220bac45278106486b429e5636f4c8fd417a8">JSON_GEN_SUCCESS</a>;</div>
-<div class="line">}</div>
-<div class="ttc" id="aerror__codes_8h_html_a2e52ff2b658220c2389b649b75bb220bac45278106486b429e5636f4c8fd417a8"><div class="ttname"><a href="error__codes_8h.html#a2e52ff2b658220c2389b649b75bb220bac45278106486b429e5636f4c8fd417a8">JSON_GEN_SUCCESS</a></div><div class="ttdeci">@ JSON_GEN_SUCCESS</div><div class="ttdef"><b>Definition</b> error_codes.h:13</div></div>
-<div class="ttc" id="astructhash__map_html"><div class="ttname"><a href="structhash__map.html">hash_map</a></div><div class="ttdef"><b>Definition</b> hash_map.h:34</div></div>
-</div><!-- fragment --><p> <b>Impact:</b> As elements are added, the load factor increases, causing hash collisions and degrading lookup performance from O(1) to O(N). For large input schemas, this will significantly slow down compilation.</p>
-<p><b>Solution:</b> Implement the resizing logic:</p><ol type="1">
-<li>Allocate a new bucket array (e.g., double the size).</li>
-<li>Rehash all existing entries into the new buckets.</li>
-<li>Free the old bucket array.</li>
-<li>Update <code>map-&gt;buckets</code> and <code>map-&gt;bucket_count</code>.</li>
-</ol>
-<h1><a class="anchor" id="autotoc_md35"></a>
-2. Performance Optimizations</h1>
+<p>Implemented resizing logic in <code>hash_map_resize_if_needed()</code>: allocate a larger bucket array, rehash existing entries, free the old buckets, and update map metadata. Resizing is triggered when the load factor exceeds 0.75.</p>
+<p><b>Status:</b> Completed.</p>
 <h2><a class="anchor" id="autotoc_md36"></a>
-2.1. Optimize &lt;tt&gt;hash_2s&lt;/tt&gt; Function</h2>
+Optimize &lt;tt&gt;hash_2s&lt;/tt&gt;</h2>
 <p><b>Location:</b> <code>src/gencode/gencode.c</code></p>
-<p><b>Issue:</b> The <code>hash_2s</code> function allocates a new temporary string just to combine two keys for hashing. </p><div class="fragment"><div class="line"><span class="keyword">inline</span> <span class="keyword">static</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> hash_2s(<a class="code hl_typedef" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> key1, <a class="code hl_typedef" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> key2) {</div>
-<div class="line">    <span class="comment">// ...</span></div>
-<div class="line">    <a class="code hl_typedef" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> tmp = <a class="code hl_function" href="sstr_8c.html#a87e2708071bfb86f3961788466c9192f">sstr_dup</a>(key1);</div>
-<div class="line">    <a class="code hl_function" href="sstr_8c.html#ab55b8f697e21006921e191ca25dbcec5">sstr_append_of</a>(tmp, <span class="stringliteral">&quot;#&quot;</span>, 1);</div>
-<div class="line">    <a class="code hl_function" href="sstr_8c.html#ad8eb5ed3acc6d1f90c5097ab2f62672f">sstr_append</a>(tmp, key2);</div>
-<div class="line">    <span class="comment">// ...</span></div>
-<div class="line">    <a class="code hl_function" href="sstr_8c.html#ae99d652d5a9d25fc79343d2ac18cb0e5">sstr_free</a>(tmp);</div>
-<div class="line">    <span class="keywordflow">return</span> res;</div>
-<div class="line">}</div>
-<div class="ttc" id="asstr_8c_html_a87e2708071bfb86f3961788466c9192f"><div class="ttname"><a href="sstr_8c.html#a87e2708071bfb86f3961788466c9192f">sstr_dup</a></div><div class="ttdeci">sstr_t sstr_dup(sstr_t s)</div><div class="ttdoc">Duplicate s and return.</div><div class="ttdef"><b>Definition</b> sstr.c:179</div></div>
-<div class="ttc" id="asstr_8c_html_ab55b8f697e21006921e191ca25dbcec5"><div class="ttname"><a href="sstr_8c.html#ab55b8f697e21006921e191ca25dbcec5">sstr_append_of</a></div><div class="ttdeci">void sstr_append_of(sstr_t s, const void *data, size_t length)</div><div class="ttdoc">Extends the sstr_t by appending additional characters in data with length of length at the end of its...</div><div class="ttdef"><b>Definition</b> sstr.c:164</div></div>
-<div class="ttc" id="asstr_8c_html_ad8eb5ed3acc6d1f90c5097ab2f62672f"><div class="ttname"><a href="sstr_8c.html#ad8eb5ed3acc6d1f90c5097ab2f62672f">sstr_append</a></div><div class="ttdeci">void sstr_append(sstr_t dst, sstr_t src)</div><div class="ttdoc">Extends the sstr_t by appending additional characters contained in src.</div><div class="ttdef"><b>Definition</b> sstr.c:171</div></div>
-<div class="ttc" id="asstr_8c_html_ae99d652d5a9d25fc79343d2ac18cb0e5"><div class="ttname"><a href="sstr_8c.html#ae99d652d5a9d25fc79343d2ac18cb0e5">sstr_free</a></div><div class="ttdeci">void sstr_free(sstr_t s)</div><div class="ttdoc">delete a sstr_t.</div><div class="ttdef"><b>Definition</b> sstr.c:48</div></div>
-<div class="ttc" id="asstr_8h_html_a8d28a1ce0ac6dd8b8e50af6f78e735e7"><div class="ttname"><a href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a></div><div class="ttdeci">void * sstr_t</div><div class="ttdoc">sstr_t are objects that represent sequences of characters.</div><div class="ttdef"><b>Definition</b> sstr.h:74</div></div>
-</div><!-- fragment --><p> <b>Impact:</b> Frequent memory allocation and deallocation (<code>malloc</code>/<code>free</code>) during code generation adds unnecessary overhead.</p>
-<p><b>Solution:</b> Implement a chaining hash function that doesn't require string concatenation. </p><div class="fragment"><div class="line"><span class="keyword">inline</span> <span class="keyword">static</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> hash_2s(<a class="code hl_typedef" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> key1, <a class="code hl_typedef" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> key2) {</div>
-<div class="line">    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> h = 0xbc9f1d34;</div>
-<div class="line">    h = hash_s(<a class="code hl_function" href="sstr_8c.html#af45cbd228a22432910527e63c4b26b3b">sstr_cstr</a>(key1), <a class="code hl_define" href="sstr_8h.html#a7f83884713d44719070e83e62639716c">sstr_length</a>(key1), h);</div>
-<div class="line">    <span class="comment">// Mix in a separator to avoid &quot;ab&quot; + &quot;c&quot; == &quot;a&quot; + &quot;bc&quot; collisions if needed, </span></div>
-<div class="line">    <span class="comment">// though for struct fields this might not be strictly necessary if delimiters are implied.</span></div>
-<div class="line">    <span class="comment">// Better: hash a separator byte.</span></div>
-<div class="line">    h = hash_s(<span class="stringliteral">&quot;#&quot;</span>, 1, h); </div>
-<div class="line">    h = hash_s(<a class="code hl_function" href="sstr_8c.html#af45cbd228a22432910527e63c4b26b3b">sstr_cstr</a>(key2), <a class="code hl_define" href="sstr_8h.html#a7f83884713d44719070e83e62639716c">sstr_length</a>(key2), h);</div>
-<div class="line">    <span class="keywordflow">return</span> h;</div>
-<div class="line">}</div>
-<div class="ttc" id="asstr_8c_html_af45cbd228a22432910527e63c4b26b3b"><div class="ttname"><a href="sstr_8c.html#af45cbd228a22432910527e63c4b26b3b">sstr_cstr</a></div><div class="ttdeci">char * sstr_cstr(sstr_t s)</div><div class="ttdoc">Return C-style string representation of s.</div><div class="ttdef"><b>Definition</b> sstr.c:86</div></div>
-<div class="ttc" id="asstr_8h_html_a7f83884713d44719070e83e62639716c"><div class="ttname"><a href="sstr_8h.html#a7f83884713d44719070e83e62639716c">sstr_length</a></div><div class="ttdeci">#define sstr_length(s)</div><div class="ttdoc">Return the length of s, in terms of bytes.</div><div class="ttdef"><b>Definition</b> sstr.h:151</div></div>
-</div><!-- fragment --><p> <em>Note: <code>hash_s</code> would need to be modified to accept a seed.</em></p>
+<p>Removed temporary string concatenation from the composite hash path. The implementation now chains <code>hash_murmur()</code> calls with a seed, avoiding per-call allocation overhead.</p>
+<p><b>Status:</b> Completed.</p>
 <h2><a class="anchor" id="autotoc_md37"></a>
-2.2. Unify Hash Functions</h2>
-<p><b>Location:</b> <code>src/gencode/gencode.c</code> and <code>src/utils/hash_map.c</code></p>
-<p><b>Issue:</b> The MurmurHash-like algorithm is duplicated. <code>src/gencode/gencode.c</code> has <code>hash_s</code> and <code>src/utils/hash_map.c</code> has <code>hash</code>.</p>
-<p><b>Solution:</b> Move the hash implementation to a common utility header (e.g., <code><a class="el" href="hash_8h_source.html">src/utils/hash.h</a></code> or expose it in <code><a class="el" href="hash__map_8h.html" title="A simple hash_map implementation.">src/utils/hash_map.h</a></code>) and reuse it across the project.</p>
-<h1><a class="anchor" id="autotoc_md38"></a>
-3. Code Quality Improvements</h1>
+Unify Hash Functions</h2>
+<p><b>Location:</b> <code><a class="el" href="hash_8h_source.html">src/utils/hash.h</a></code>, <code>src/utils/hash.c</code></p>
+<p>Consolidated the MurmurHash-like implementation into a shared utility function, <code>hash_murmur()</code>, and reused it across code generation and hash map logic.</p>
+<p><b>Status:</b> Completed.</p>
+<h2><a class="anchor" id="autotoc_md38"></a>
+Use &lt;tt&gt;stdbool.h&lt;/tt&gt;</h2>
+<p><b>Location:</b> <code><a class="el" href="sstr_8c.html" title="Implementation of the sstr.h header file.">src/utils/sstr.c</a></code>, <code><a class="el" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters.">src/utils/sstr.h</a></code>, related files</p>
+<p>Refactored boolean-like integer flags to use <code>bool</code> where appropriate for clarity and consistency.</p>
+<p><b>Status:</b> Completed.</p>
 <h2><a class="anchor" id="autotoc_md39"></a>
-3.1. Use &lt;tt&gt;stdbool.h&lt;/tt&gt; (Completed)</h2>
-<p><b>Location:</b> <code><a class="el" href="sstr_8c.html" title="Implementation of the sstr.h header file.">src/utils/sstr.c</a></code> (and others)</p>
-<p><b>Issue:</b> <code>char_to_hex</code> uses <code>int cap</code> as a boolean flag. </p><div class="fragment"><div class="line"><span class="keyword">static</span> <span class="keywordtype">void</span> char_to_hex(<span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> c, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>* buf, <span class="keywordtype">int</span> cap)</div>
-</div><!-- fragment --><p><b>Solution:</b> Include <code>&lt;stdbool.h&gt;</code> and use <code>bool</code> type for clarity. <b>Status:</b> Completed. Refactored <code><a class="el" href="sstr_8c.html" title="Implementation of the sstr.h header file.">sstr.c</a></code> and <code><a class="el" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters.">sstr.h</a></code> to use <code>bool</code> for boolean parameters and flags.</p>
+Improve Argument Parsing</h2>
+<p><b>Location:</b> <code>src/main/main.c</code></p>
+<p>Replaced brittle manual argument parsing with <code>getopt_long_only</code>, improving flag handling and future extensibility.</p>
+<p><b>Status:</b> Completed.</p>
 <h2><a class="anchor" id="autotoc_md40"></a>
-3.2. Robust Argument Parsing (Completed)</h2>
+Improve Error Handling Consistency</h2>
 <p><b>Location:</b> <code>src/main/main.c</code></p>
-<p><b>Issue:</b> Manual <code>argv</code> parsing is brittle and hard to extend.</p>
-<p><b>Solution:</b> Consider using <code>getopt_long</code> (standard on Linux) or a lightweight argument parsing library for better handling of flags, help messages, and validation. <b>Status:</b> Completed. Implemented <code>getopt_long_only</code> to support existing <code>-in</code> and <code>-out</code> flags as well as standard short/long options.</p>
+<p>Adjusted <code>usage()</code> handling so error-triggered output goes to <code>stderr</code> while normal help output goes to <code>stdout</code>.</p>
+<p><b>Status:</b> Completed.</p>
 <h2><a class="anchor" id="autotoc_md41"></a>
-3.3. Error Handling Consistency (Completed)</h2>
-<p><b>Location:</b> <code>src/main/main.c</code></p>
-<p><b>Issue:</b> <code>usage()</code> prints to <code>stdout</code>.</p>
-<p><b>Solution:</b> Error messages and usage information (when triggered by an error) should ideally go to <code>stderr</code>. <b>Status:</b> Completed. Modified <code>usage()</code> to accept a <code>FILE* stream</code> and updated calls to send error messages to <code>stderr</code> and help messages to <code>stdout</code>.</p>
-<h2><a class="anchor" id="autotoc_md42"></a>
-3.4. Fix Off-by-One Error in Parser</h2>
+Fix Parser Off-by-One Bug</h2>
 <p><b>Location:</b> <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code></p>
-<p><b>Issue:</b> The <code>next_token_</code> function prematurely returns <code>TOKEN_EOF</code> when <code>parser-&gt;pos.offset</code> reaches <code>length - 1</code>. </p><div class="fragment"><div class="line"><span class="keywordflow">if</span> (parser-&gt;pos.offset &gt;= (<span class="keywordtype">long</span>)<a class="code hl_define" href="sstr_8h.html#a7f83884713d44719070e83e62639716c">sstr_length</a>(content) - 1) {</div>
-<div class="line">    parser-&gt;pos.offset++;</div>
-<div class="line">    token-&gt;type = TOKEN_EOF;</div>
-<div class="line">    <span class="keywordflow">return</span> TOKEN_EOF;</div>
-<div class="line">}</div>
-</div><!-- fragment --><p> This causes the last character of the file to be ignored. If the file ends with a significant character (like <code>}</code> or <code>;</code>) instead of a newline, parsing may fail.</p>
-<p><b>Solution:</b> Change the condition to: </p><div class="fragment"><div class="line"><span class="keywordflow">if</span> (parser-&gt;pos.offset &gt;= (<span class="keywordtype">long</span>)<a class="code hl_define" href="sstr_8h.html#a7f83884713d44719070e83e62639716c">sstr_length</a>(content)) {</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md43"></a>
-3.5. Robust File I/O (Completed)</h2>
+<p>Fixed the parser EOF condition from <code>offset &gt;= length - 1</code> to <code>offset &gt;= length</code>, preventing the last significant character of a schema file from being ignored.</p>
+<p><b>Status:</b> Completed.</p>
+<h2><a class="anchor" id="autotoc_md42"></a>
+Refactor Top-Level &lt;tt&gt;#include&lt;/tt&gt; Parsing</h2>
+<p><b>Location:</b> <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code></p>
+<p>Restructured top-level parsing so <code>#include</code> directives and <code>struct</code> declarations are handled independently in <code><a class="el" href="struct__parse_8c.html#a3b1cfbb20875351e5264df1490a76818" title="parse a struct definition file, and store the parsed structs in struct_parser.">struct_parser_parse()</a></code>. This fixes failures when <code>#include</code> appears before struct definitions in the same schema file.</p>
+<p><b>Status:</b> Completed.</p>
+<h2><a class="anchor" id="autotoc_md43"></a>
+Harden File I/O</h2>
 <p><b>Location:</b> <code>src/utils/io.c</code></p>
-<p><b>Issue:</b> <code>read_file</code> and <code>write_file</code> do not check the return values of <code>fread</code> and <code>fwrite</code>. <code>ftell</code> return value is also not checked.</p>
-<p><b>Solution:</b> Add error checking for file operations and return appropriate error codes. <b>Status:</b> Completed. Added error checking for <code>fopen</code>, <code>fseek</code>, <code>ftell</code>, <code>fread</code>, and <code>fwrite</code>.</p>
+<p>Added proper error checking for <code>fopen</code>, <code>fseek</code>, <code>ftell</code>, <code>fread</code>, and <code>fwrite</code>.</p>
+<p><b>Status:</b> Completed.</p>
 <h1><a class="anchor" id="autotoc_md44"></a>
-4. Feature Requests</h1>
+Roadmap</h1>
 <h2><a class="anchor" id="autotoc_md45"></a>
-4.1. Support for More Types</h2>
-<p>Currently, the project supports basic types and structs. Adding support for:</p><ul>
-<li>Enums</li>
-<li>Fixed-size arrays (e.g., <code>int data[10];</code>)</li>
-<li>Boolean type (mapping to <code>bool</code> or <code>int</code>)</li>
-</ul>
+Phase 1: Bug Fixes and Technical Debt Cleanup</h2>
+<ol type="1">
+<li>Keep parser regression coverage growing for edge cases around comments, includes, empty files, and malformed trailing tokens.</li>
+<li>Continue refactoring parser internals so responsibilities are clearer and easier to extend.</li>
+<li>Remove small remaining inconsistencies in diagnostics, naming, and internal APIs.</li>
+<li>Audit the generated code template for duplicated logic and simplify where possible.</li>
+</ol>
+<p><b>Exit criteria:</b> CI stays green, regression tests cover recent parser and generator fixes, and the parsing/codegen core is stable enough for feature work.</p>
 <h2><a class="anchor" id="autotoc_md46"></a>
-4.2. Custom Allocators</h2>
-<p>Allow the generated code to use custom memory allocators instead of <code>malloc</code>/<code>free</code>, which is useful for embedded systems or high-performance applications. </p>
+Phase 2: Type System Expansion</h2>
+<ol type="1">
+<li>Add enum support.<ul>
+<li>Example: <code>enum Color { RED, GREEN, BLUE }</code></li>
+<li>Default JSON representation should be string-based, with room for future annotations for integer representation.</li>
+</ul>
+</li>
+<li>Add fixed-size arrays.<ul>
+<li>Example: <code>int data[10];</code></li>
+<li>Distinguish them from dynamically allocated arrays.</li>
+</ul>
+</li>
+<li>Add map or dictionary-like support.<ul>
+<li>Example direction: <code>map&lt;sstr_t, int&gt;</code></li>
+<li>Map naturally to JSON objects.</li>
+</ul>
+</li>
+<li>Add optional or nullable fields.<ul>
+<li>Missing fields during unmarshal should not always be treated as hard errors.</li>
+</ul>
+</li>
+<li>Add precise-width integer families.<ul>
+<li><code>int8</code>, <code>int16</code>, <code>uint16</code>, <code>uint32</code>, <code>uint64</code>, <code>int64</code>, and related forms.</li>
+</ul>
+</li>
+<li>Evaluate a tagged union or <code>oneof</code> style feature as a longer-term extension.</li>
+</ol>
+<p><b>Exit criteria:</b> each new type has parser coverage, generator coverage, runtime coverage, and example schemas.</p>
+<h2><a class="anchor" id="autotoc_md47"></a>
+Phase 3: Developer Experience</h2>
+<ol type="1">
+<li>Improve diagnostics.<ul>
+<li>Show filename, line, column, and a short source snippet in a clang-like format.</li>
+</ul>
+</li>
+<li>Add schema validation before code generation.<ul>
+<li>Undefined type references</li>
+<li>Duplicate field names</li>
+<li>Duplicate struct names</li>
+<li>Invalid naming patterns</li>
+</ul>
+</li>
+<li>Add JSON field alias support.<ul>
+<li>Example direction: annotation-style comments such as <code>@json:"field_name"</code></li>
+</ul>
+</li>
+<li>Add default value support.<ul>
+<li>Example direction: <code>int count = 10;</code></li>
+<li>Missing JSON fields can initialize to declared defaults.</li>
+</ul>
+</li>
+<li>Add <code>--version</code> output and centralize version definition in the build and source tree.</li>
+<li>Update the man page to match the current feature set and CLI behavior.</li>
+</ol>
+<p><b>Exit criteria:</b> the tool is easier to debug, easier to learn, and easier to integrate into scripted workflows.</p>
+<h2><a class="anchor" id="autotoc_md48"></a>
+Phase 4: Build Ecosystem and Cross-Platform Support</h2>
+<ol type="1">
+<li>Add CMake support.<ul>
+<li>Enable <code>find_package</code> or easy <code>add_custom_command</code> integration.</li>
+</ul>
+</li>
+<li>Add pkg-config metadata.</li>
+<li>Add package-manager-friendly distribution paths.<ul>
+<li>Homebrew</li>
+<li>Debian packaging</li>
+<li>AUR or equivalent community packaging</li>
+</ul>
+</li>
+<li>Add Windows support.<ul>
+<li>Validate GCC/Clang on Windows</li>
+<li>Validate MSVC compatibility where practical</li>
+</ul>
+</li>
+<li>Consider Meson as an additional build integration option.</li>
+</ol>
+<p><b>Exit criteria:</b> building and consuming the tool becomes straightforward on Linux, macOS, and Windows, with standard project integration paths.</p>
+<h2><a class="anchor" id="autotoc_md49"></a>
+Phase 5: Performance and Reliability</h2>
+<ol type="1">
+<li>Add custom allocator support.<ul>
+<li>Allow generated code to use caller-provided allocation and free hooks.</li>
+<li>Important for embedded targets and arena allocators.</li>
+</ul>
+</li>
+<li>Add fuzz testing.<ul>
+<li>Schema parser fuzzing</li>
+<li>JSON parser fuzzing</li>
+</ul>
+</li>
+<li>Add memory tooling in CI.<ul>
+<li>AddressSanitizer</li>
+<li>Leak checking</li>
+<li>Optional Valgrind runs where practical</li>
+</ul>
+</li>
+<li>Build comparative benchmarks against similar JSON libraries and code-generation approaches.</li>
+<li>Investigate selective parsing or SIMD-assisted fast paths only after correctness and coverage are strong.</li>
+</ol>
+<p><b>Exit criteria:</b> the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments.</p>
+<h2><a class="anchor" id="autotoc_md50"></a>
+Phase 6: Long-Term Vision</h2>
+<ol type="1">
+<li>Add schema evolution support.<ul>
+<li>Forward and backward compatibility rules</li>
+<li>Field lifecycle guidance</li>
+</ul>
+</li>
+<li>Consider additional generated serialization formats.<ul>
+<li>MessagePack</li>
+<li>CBOR</li>
+</ul>
+</li>
+<li>Explore multi-language bindings or code generation targets.<ul>
+<li>C++</li>
+<li>Rust</li>
+<li>Go</li>
+</ul>
+</li>
+<li>Build better authoring tools.<ul>
+<li>VS Code syntax highlighting and diagnostics</li>
+<li>Schema language support</li>
+</ul>
+</li>
+<li>Consider an online playground for schema editing and generated code preview.</li>
+</ol>
+<h1><a class="anchor" id="autotoc_md51"></a>
+Key Files</h1>
+<ul>
+<li><code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code>: schema parser and top-level language handling</li>
+<li><code>src/gencode/gencode.c</code>: C code generation logic</li>
+<li><code>src/gencode/codes/json_parse.c</code>: embedded JSON runtime template emitted into generated code</li>
+<li><code>src/utils/hash_map.c</code>: hash map implementation</li>
+<li><code>src/utils/hash.c</code>: shared hashing primitives</li>
+<li><code>src/main/main.c</code>: CLI entry point</li>
+<li><code>docs/IMPROVEMENTS.md</code>: this roadmap and improvement tracker</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md52"></a>
+Project Direction Notes</h1>
+<ol type="1">
+<li>Phase 1 and Phase 2 remain the highest-value work because parser correctness and type coverage define the tool's usefulness.</li>
+<li>Phase 4 is a practical prerequisite for a broader 1.0 adoption story.</li>
+<li>Phase 5 and Phase 6 should be driven by real user demand once the core language and build story are stronger.</li>
+<li>Current licensing direction remains reasonable: GPL-3.0 for the generator while generated output stays user-controlled.</li>
+</ol>
+<h1><a class="anchor" id="autotoc_md53"></a>
+Open Design Questions</h1>
+<ol type="1">
+<li>Enum JSON representation should default to strings or integers.<ul>
+<li>Recommended default: strings, with future opt-in control for numeric representation.</li>
+</ul>
+</li>
+<li>Whether the generated parser should support non-standard JSON such as comments or JSON5 features.<ul>
+<li>Recommended default: stay with strict JSON.</li>
+</ul>
+</li>
+<li>Whether compatibility should be widened beyond C11.<ul>
+<li>Recommended default: keep C11 unless strong downstream demand justifies a lower baseline. </li>
+</ul>
+</li>
+</ol>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

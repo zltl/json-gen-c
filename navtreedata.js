@@ -62,24 +62,29 @@ var NAVTREE =
       [ "6. Learn More", "md_docs_2GETTING__STARTED.html#autotoc_md31", null ]
     ] ],
     [ "Project Improvement Plan", "md_docs_2IMPROVEMENTS.html", [
-      [ "1. Critical Fixes", "md_docs_2IMPROVEMENTS.html#autotoc_md33", [
-        [ "1.1. Implement Hash Map Resizing", "md_docs_2IMPROVEMENTS.html#autotoc_md34", null ]
+      [ "Current Assessment", "md_docs_2IMPROVEMENTS.html#autotoc_md33", null ],
+      [ "Completed Foundational Work", "md_docs_2IMPROVEMENTS.html#autotoc_md34", [
+        [ "Implement Hash Map Resizing", "md_docs_2IMPROVEMENTS.html#autotoc_md35", null ],
+        [ "Optimize <tt>hash_2s</tt>", "md_docs_2IMPROVEMENTS.html#autotoc_md36", null ],
+        [ "Unify Hash Functions", "md_docs_2IMPROVEMENTS.html#autotoc_md37", null ],
+        [ "Use <tt>stdbool.h</tt>", "md_docs_2IMPROVEMENTS.html#autotoc_md38", null ],
+        [ "Improve Argument Parsing", "md_docs_2IMPROVEMENTS.html#autotoc_md39", null ],
+        [ "Improve Error Handling Consistency", "md_docs_2IMPROVEMENTS.html#autotoc_md40", null ],
+        [ "Fix Parser Off-by-One Bug", "md_docs_2IMPROVEMENTS.html#autotoc_md41", null ],
+        [ "Refactor Top-Level <tt>#include</tt> Parsing", "md_docs_2IMPROVEMENTS.html#autotoc_md42", null ],
+        [ "Harden File I/O", "md_docs_2IMPROVEMENTS.html#autotoc_md43", null ]
       ] ],
-      [ "2. Performance Optimizations", "md_docs_2IMPROVEMENTS.html#autotoc_md35", [
-        [ "2.1. Optimize <tt>hash_2s</tt> Function", "md_docs_2IMPROVEMENTS.html#autotoc_md36", null ],
-        [ "2.2. Unify Hash Functions", "md_docs_2IMPROVEMENTS.html#autotoc_md37", null ]
+      [ "Roadmap", "md_docs_2IMPROVEMENTS.html#autotoc_md44", [
+        [ "Phase 1: Bug Fixes and Technical Debt Cleanup", "md_docs_2IMPROVEMENTS.html#autotoc_md45", null ],
+        [ "Phase 2: Type System Expansion", "md_docs_2IMPROVEMENTS.html#autotoc_md46", null ],
+        [ "Phase 3: Developer Experience", "md_docs_2IMPROVEMENTS.html#autotoc_md47", null ],
+        [ "Phase 4: Build Ecosystem and Cross-Platform Support", "md_docs_2IMPROVEMENTS.html#autotoc_md48", null ],
+        [ "Phase 5: Performance and Reliability", "md_docs_2IMPROVEMENTS.html#autotoc_md49", null ],
+        [ "Phase 6: Long-Term Vision", "md_docs_2IMPROVEMENTS.html#autotoc_md50", null ]
       ] ],
-      [ "3. Code Quality Improvements", "md_docs_2IMPROVEMENTS.html#autotoc_md38", [
-        [ "3.1. Use <tt>stdbool.h</tt> (Completed)", "md_docs_2IMPROVEMENTS.html#autotoc_md39", null ],
-        [ "3.2. Robust Argument Parsing (Completed)", "md_docs_2IMPROVEMENTS.html#autotoc_md40", null ],
-        [ "3.3. Error Handling Consistency (Completed)", "md_docs_2IMPROVEMENTS.html#autotoc_md41", null ],
-        [ "3.4. Fix Off-by-One Error in Parser", "md_docs_2IMPROVEMENTS.html#autotoc_md42", null ],
-        [ "3.5. Robust File I/O (Completed)", "md_docs_2IMPROVEMENTS.html#autotoc_md43", null ]
-      ] ],
-      [ "4. Feature Requests", "md_docs_2IMPROVEMENTS.html#autotoc_md44", [
-        [ "4.1. Support for More Types", "md_docs_2IMPROVEMENTS.html#autotoc_md45", null ],
-        [ "4.2. Custom Allocators", "md_docs_2IMPROVEMENTS.html#autotoc_md46", null ]
-      ] ]
+      [ "Key Files", "md_docs_2IMPROVEMENTS.html#autotoc_md51", null ],
+      [ "Project Direction Notes", "md_docs_2IMPROVEMENTS.html#autotoc_md52", null ],
+      [ "Open Design Questions", "md_docs_2IMPROVEMENTS.html#autotoc_md53", null ]
     ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
