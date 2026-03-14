@@ -76,6 +76,11 @@ struct enum_container {
     sstr_t name;
     struct enum_value* values;
     int count;
+    // source position where the enum name was defined
+    int name_line;
+    int name_col;
+    // source filename (not owned)
+    const char *filename;
 };
 
 /**
@@ -102,6 +107,11 @@ struct struct_field {
     int is_optional;
     // 1 if field is nullable (JSON value may be null), 0 otherwise
     int is_nullable;
+    // JSON key alias (NULL means use field name as-is)
+    sstr_t json_name;
+    // source position where the field was defined
+    int line;
+    int col;
     // linked list pointer to next field, NULL if this is the last field
     struct struct_field* next;
 };
@@ -115,6 +125,11 @@ struct struct_container {
     sstr_t name;
     // field list
     struct struct_field* fields;
+    // source position where the struct name was defined
+    int name_line;
+    int name_col;
+    // source filename (not owned)
+    const char *filename;
 };
 
 /**
@@ -152,6 +167,7 @@ struct struct_parser {
 #define TOKEN_SEMICOLON ';'
 #define TOKEN_COMMA ','
 #define TOKEN_SHARPE '#'
+#define TOKEN_AT '@'
 #define TOKEN_STRING 4
 #define TOKEN_IDENTIFY 1
 #define TOKEN_INTEGER 2
@@ -191,6 +207,17 @@ void struct_parser_free(struct struct_parser* parser);
  * @return int 0 if success, -1 otherwise.
  */
 int struct_parser_parse(struct struct_parser* parser, sstr_t content);
+
+/**
+ * @brief Validate parsed schema for semantic errors.
+ *
+ * Checks for: undefined type references, duplicate field names,
+ * duplicate enum values, and C keyword usage.
+ *
+ * @param parser Parser with populated struct_map and enum_map.
+ * @return 0 if no errors, -1 if validation errors found.
+ */
+int struct_parser_validate(struct struct_parser* parser);
 
 #ifdef __cplusplus
 }

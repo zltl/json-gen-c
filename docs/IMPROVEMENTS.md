@@ -187,17 +187,31 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 1. ~~Improve diagnostics.~~  **Done.**
     - ~~Show filename, line, column, and a short source snippet in a clang-like format.~~
     - New diagnostic engine (`src/utils/diag.h`, `diag.c`) with clang-style output: `filename:line:col: error: message`, source code snippet with caret indicator, severity levels (error/warning/note), ANSI color auto-detection via `isatty()`, and multi-error recovery in the schema parser. Runtime JSON parser format enhanced with "error:" label.
-2. Add schema validation before code generation.
-    - Undefined type references
-    - Duplicate field names
-    - Duplicate struct names
-    - Invalid naming patterns
-3. Add JSON field alias support.
-    - Example direction: annotation-style comments such as `@json:"field_name"`
+2. ~~Add schema validation before code generation.~~  **Done.**
+    - ~~Undefined type references~~
+    - ~~Duplicate field names~~
+    - ~~Duplicate struct names~~
+    - ~~Invalid naming patterns~~
+    - Implemented as hybrid approach: inline duplicate struct/enum name checks during parsing (using `hash_map_insert` return value), plus post-parse `struct_parser_validate()` for undefined type references, duplicate field names, duplicate enum values, and C keyword usage warnings.
+    - Duplicate struct/enum names and struct-enum name collisions caught at parse time with clang-style diagnostics.
+    - Undefined type references (both direct struct fields and map value types) detected in validation pass.
+    - Duplicate field names within a struct and duplicate enum value names detected in validation pass.
+    - C11 keyword usage as struct/enum/field names emits `DIAG_WARNING` (does not block code generation).
+    - All validation errors block code generation; warnings are informational only.
+    - Position tracking added to `struct_container`, `enum_container`, and `struct_field` for precise error locations.
+    - 16 new unit tests in `SchemaValidationTest` class; 7 new malformed schema negative tests wired into Makefile.
+3. ~~Add JSON field alias support.~~  **Done.**
+    - Annotation syntax: `@json "json_key_name"` before the field type.
+    - Aliases control the JSON key used in marshal output, unmarshal input matching, and the offset table hash lookup.
+    - C struct member names remain unchanged (aliases only affect JSON representation).
+    - Works with all field types: primitives, strings, structs, enums, fixed/dynamic arrays, maps, optional/nullable fields.
+    - 9 new unit tests in `AliasTest` class covering marshal, unmarshal, round-trip, mixed alias/non-alias, optional, arrays, and nested structs.
 4. Add default value support.
     - Example direction: `int count = 10;`
     - Missing JSON fields can initialize to declared defaults.
-5. Add `--version` output and centralize version definition in the build and source tree.
+5. ~~Add `--version` output and centralize version definition in the build and source tree.~~  **Done.**
+    - Version `0.9.0` defined in `build.mk` as `JSON_GEN_C_VERSION`, passed to compiler via `-DJSON_GEN_C_VERSION`.
+    - `json-gen-c --version` / `json-gen-c -v` prints version string.
 6. Update the man page to match the current feature set and CLI behavior.
 
 **Exit criteria:** the tool is easier to debug, easier to learn, and easier to integrate into scripted workflows.

@@ -1,0 +1,5 @@
+// Malformed: struct with duplicate field names
+struct BadFields {
+    int x;
+    double x;
+}

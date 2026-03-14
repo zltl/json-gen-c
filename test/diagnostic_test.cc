@@ -576,3 +576,179 @@ TEST_F(ParserDiagTest, MultipleStructAndEnumErrors) {
     ASSERT_NE(nullptr, parser->diag);
     EXPECT_GE(diag_error_count(parser->diag), 3);
 }
+
+// ============================================================
+// Schema Validation Tests
+// ============================================================
+
+class SchemaValidationTest : public ::testing::Test {
+protected:
+    struct struct_parser* parser = nullptr;
+
+    void SetUp() override {
+        parser = struct_parser_new();
+        ASSERT_NE(nullptr, parser);
+        parser->name = const_cast<char*>("test_input.json-gen-c");
+    }
+
+    void TearDown() override {
+        if (parser) {
+            struct_parser_free(parser);
+            parser = nullptr;
+        }
+    }
+
+    // Returns parse result code
+    int parse(const char* content) {
+        sstr_t s = sstr(content);
+        int r = struct_parser_parse(parser, s);
+        sstr_free(s);
+        return r;
+    }
+
+    // Parse then validate; returns validate result code (0=ok, -1=error)
+    int parse_and_validate(const char* content) {
+        int r = parse(content);
+        if (r < 0) return r;
+        return struct_parser_validate(parser);
+    }
+};
+
+TEST_F(SchemaValidationTest, ValidSchemaNoValidationErrors) {
+    int r = parse_and_validate(
+        "enum Color { RED, GREEN, BLUE }\n"
+        "struct Foo { int x; Color c; sstr_t name; }");
+    EXPECT_EQ(0, r);
+}
+
+TEST_F(SchemaValidationTest, UndefinedStructRef) {
+    int r = parse_and_validate(
+        "struct Foo { UnknownStruct bar; }");
+    EXPECT_LT(r, 0);
+}
+
+TEST_F(SchemaValidationTest, UndefinedMapValueStructRef) {
+    int r = parse_and_validate(
+        "struct Foo { map<sstr_t, UnknownStruct> m; }");
+    EXPECT_LT(r, 0);
+}
+
+TEST_F(SchemaValidationTest, SelfReferencingStructNoError) {
+    // Self-reference exists in struct_map, so validation passes.
+    // Circular dependency is caught later by gencode.
+    int r = parse_and_validate(
+        "struct Node { int val; Node child; }");
+    EXPECT_EQ(0, r);
+}
+
+TEST_F(SchemaValidationTest, DuplicateStructName) {
+    // Inline dup check during parsing should catch this
+    int r = parse("struct Dup { int x; }\nstruct Dup { int y; }");
+    EXPECT_LT(r, 0);
+    ASSERT_NE(nullptr, parser->diag);
+    EXPECT_TRUE(diag_has_errors(parser->diag));
+
+    bool found = false;
+    for (int i = 0; i < parser->diag->count; i++) {
+        if (strstr(parser->diag->entries[i].message, "duplicate struct name") != nullptr) {
+            found = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(found);
+}
+
+TEST_F(SchemaValidationTest, DuplicateEnumName) {
+    int r = parse("enum Dup { X, Y }\nenum Dup { A, B }");
+    EXPECT_LT(r, 0);
+    ASSERT_NE(nullptr, parser->diag);
+    EXPECT_TRUE(diag_has_errors(parser->diag));
+
+    bool found = false;
+    for (int i = 0; i < parser->diag->count; i++) {
+        if (strstr(parser->diag->entries[i].message, "duplicate enum name") != nullptr) {
+            found = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(found);
+}
+
+TEST_F(SchemaValidationTest, StructEnumNameClash) {
+    int r = parse("enum Clash { X, Y }\nstruct Clash { int x; }");
+    EXPECT_LT(r, 0);
+    ASSERT_NE(nullptr, parser->diag);
+    EXPECT_TRUE(diag_has_errors(parser->diag));
+
+    bool found = false;
+    for (int i = 0; i < parser->diag->count; i++) {
+        if (strstr(parser->diag->entries[i].message, "already defined as an enum") != nullptr) {
+            found = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(found);
+}
+
+TEST_F(SchemaValidationTest, DuplicateFieldName) {
+    int r = parse_and_validate(
+        "struct Bad { int x; double x; }");
+    EXPECT_LT(r, 0);
+}
+
+TEST_F(SchemaValidationTest, DuplicateEnumValue) {
+    int r = parse_and_validate(
+        "enum Bad { A, B, A }");
+    EXPECT_LT(r, 0);
+}
+
+TEST_F(SchemaValidationTest, CKeywordFieldWarning) {
+    // C keywords as field names should produce warnings, not errors.
+    // parse succeeds, validate returns 0 (warnings don't fail).
+    int r = parse_and_validate(
+        "struct Foo { int return; double volatile; }");
+    // Note: 'return' and 'volatile' are valid identifiers to the tokenizer
+    // but C keywords in the validation.  Validate should still return 0
+    // because warnings don't count as errors.
+    EXPECT_EQ(0, r);
+}
+
+TEST_F(SchemaValidationTest, CKeywordStructNameWarning) {
+    int r = parse_and_validate("struct void { int x; }");
+    EXPECT_EQ(0, r);
+}
+
+TEST_F(SchemaValidationTest, CKeywordEnumNameWarning) {
+    int r = parse_and_validate("enum while { X, Y }");
+    EXPECT_EQ(0, r);
+}
+
+TEST_F(SchemaValidationTest, MultipleValidationErrors) {
+    // Both undefined ref and duplicate field in same schema
+    int r = parse_and_validate(
+        "struct Bad { int x; int x; UnknownType y; }");
+    EXPECT_LT(r, 0);
+}
+
+TEST_F(SchemaValidationTest, EnumRefValid) {
+    // Regression guard: field referencing a defined enum should not error
+    int r = parse_and_validate(
+        "enum Status { OK, ERR }\n"
+        "struct Foo { Status s; }");
+    EXPECT_EQ(0, r);
+}
+
+TEST_F(SchemaValidationTest, UndefinedEnumRefInSchema) {
+    // Field references type not in either struct_map or enum_map
+    int r = parse_and_validate(
+        "struct BadRef { UnknownEnum val; }");
+    EXPECT_LT(r, 0);
+}
+
+TEST_F(SchemaValidationTest, MultipleStructsAllValid) {
+    // Multiple structs referencing each other
+    int r = parse_and_validate(
+        "struct Inner { int x; }\n"
+        "struct Outer { Inner item; int count; }");
+    EXPECT_EQ(0, r);
+}

@@ -11,6 +11,9 @@
 
 #define DEPENDENCY_HASH_MAP_BUCKET_SIZE 4096
 
+// Get the effective JSON key name for a field (json_name if set, otherwise name)
+#define JSON_KEY(f) ((f)->json_name ? (f)->json_name : (f)->name)
+
 // Get the C value type string for a map field's value.
 // For struct values, prepends "struct ".
 static void map_c_value_type(struct struct_field* field, sstr_t out) {
@@ -445,7 +448,7 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
         sstr_append_cstr(source, "    sstr_append_indent(out, curindent);\n");
         sstr_printf_append(source,
                            "    sstr_append_cstr(out, \"\\\"%S\\\":\");\n",
-                           field->name);
+                           JSON_KEY(field));
         // Nullable-only: wrap value in null check
         if (has_optional && field->is_nullable && !field->is_optional) {
             sstr_printf_append(source,
@@ -1102,7 +1105,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                     "sizeof(struct json_map_entry_%s)",
                     st->name, field->name, sfx,
                     FIELD_TYPE_MAP, field->map_value_type_name,
-                    field->name, st->name,
+                    JSON_KEY(field), st->name,
                     enum_strings_expr, enum_count_expr,
                     field->map_value_type, sfx);
                 if (field->is_optional || field->is_nullable) {
@@ -1111,14 +1114,14 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                 } else {
                     sstr_append_cstr(param->source, ", 0, -1},\n");
                 }
-                gen_hash_arr(st->name, field->name, param);
+                gen_hash_arr(st->name, JSON_KEY(field), param);
                 // _len field
                 sstr_printf_append(param->source,
                     "    {offsetof(struct %S, %S_len), sizeof(int), "
                     "%d, \"int\", \"%S_len\", \"%S\", 0, NULL, 0, 0, 0, 0, 0, -1},\n",
                     st->name, field->name, FIELD_TYPE_INT,
-                    field->name, st->name);
-                sstr_t tmp = sstr_dup(field->name);
+                    JSON_KEY(field), st->name);
+                sstr_t tmp = sstr_dup(JSON_KEY(field));
                 sstr_append_cstr(tmp, "_len");
                 gen_hash_arr(st->name, tmp, param);
                 sstr_free(tmp);
@@ -1130,7 +1133,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                     "sizeof(struct json_map_entry_%s)",
                     st->name, field->name, sfx,
                     FIELD_TYPE_MAP, field->map_value_type_name,
-                    field->name, st->name,
+                    JSON_KEY(field), st->name,
                     enum_strings_expr, enum_count_expr,
                     field->map_value_type, sfx);
                 if (field->is_optional || field->is_nullable) {
@@ -1139,7 +1142,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                 } else {
                     sstr_append_cstr(param->source, ", 0, -1},\n");
                 }
-                gen_hash_arr(st->name, field->name, param);
+                gen_hash_arr(st->name, JSON_KEY(field), param);
             }
             if (es_buf) sstr_free(es_buf);
             if (ec_buf) sstr_free(ec_buf);
@@ -1149,7 +1152,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                                "%S), %d, \"%S\", \"%S\", "
                                "\"%S\", %d, NULL, 0, %d, 0, 0",
                                st->name, field->name, field->type_name,
-                               field->type, field->type_name, field->name,
+                               field->type, field->type_name, JSON_KEY(field),
                                st->name, field->is_array, field->array_size);
             if (field->is_optional || field->is_nullable) {
                 sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S)},\n",
@@ -1157,14 +1160,14 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             } else {
                 sstr_append_cstr(param->source, ", 0, -1},\n");
             }
-            gen_hash_arr(st->name, field->name, param);
+            gen_hash_arr(st->name, JSON_KEY(field), param);
         } else if (field->type == FIELD_TYPE_ENUM) {
             sstr_printf_append(
                 param->source,
                 "    {offsetof(struct %S, %S), sizeof(int), %d, \"%S\", \"%S\", "
                 "\"%S\", %d, %S_enum_strings, %S_enum_count, %d, 0, 0",
                 st->name, field->name, field->type,
-                field->type_name, field->name,
+                field->type_name, JSON_KEY(field),
                 st->name, field->is_array,
                 field->type_name, field->type_name, field->array_size);
             if (field->is_optional || field->is_nullable) {
@@ -1173,14 +1176,14 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             } else {
                 sstr_append_cstr(param->source, ", 0, -1},\n");
             }
-            gen_hash_arr(st->name, field->name, param);
+            gen_hash_arr(st->name, JSON_KEY(field), param);
         } else {
             sstr_printf_append(
                 param->source,
                 "    {offsetof(struct %S, %S), sizeof(%S), %d, \"%S\", \"%S\", "
                 "\"%S\", %d, NULL, 0, %d, 0, 0",
                 st->name, field->name, field->type_name, field->type,
-                field->type_name, field->name, st->name, field->is_array,
+                field->type_name, JSON_KEY(field), st->name, field->is_array,
                 field->array_size);
             if (field->is_optional || field->is_nullable) {
                 sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S)},\n",
@@ -1188,7 +1191,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             } else {
                 sstr_append_cstr(param->source, ", 0, -1},\n");
             }
-            gen_hash_arr(st->name, field->name, param);
+            gen_hash_arr(st->name, JSON_KEY(field), param);
         }
         if (field->type != FIELD_TYPE_MAP && field->is_array && field->array_size == 0) {
             // dynamic array: generate _len field entry
@@ -1196,8 +1199,8 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                                "%d, \"int\", \"%S_len\", "
                                "\"%S\", %d, NULL, 0, 0, 0, 0, 0, -1},\n",
                                st->name, field->name, FIELD_TYPE_INT,
-                               field->name, st->name, 0);
-            sstr_t tmp = sstr_dup(field->name);
+                               JSON_KEY(field), st->name, 0);
+            sstr_t tmp = sstr_dup(JSON_KEY(field));
             sstr_append_cstr(tmp, "_len");
             gen_hash_arr(st->name, tmp, param);
             sstr_free(tmp);

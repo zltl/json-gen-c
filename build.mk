@@ -39,9 +39,13 @@ ifneq ($(JSON_SANITIZE),)
 	SANITIZER_FLAGS := -fsanitize=address -lasan
 endif
 
+# Version
+JSON_GEN_C_VERSION := 0.9.0
+
 # Common compilation flags
 COMMON_FLAGS := -Wall -Wextra -Werror -ggdb -Wno-unused-result \
 	-I$(ROOT_DIR)/src \
+	-DJSON_GEN_C_VERSION=\"$(JSON_GEN_C_VERSION)\" \
 	$(SANITIZER_FLAGS) $(DEBUG_FLAGS)
 
 CFLAGS := -std=c11 $(COMMON_FLAGS) $(CFLAGS)

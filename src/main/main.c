@@ -8,6 +8,10 @@
 #include "utils/io.h"
 #include "utils/error_codes.h"
 
+#ifndef JSON_GEN_C_VERSION
+#define JSON_GEN_C_VERSION "unknown"
+#endif
+
 /**
  * @brief Display usage information
  * @param stream Output stream (stdout or stderr)
@@ -19,7 +23,8 @@ static void usage(FILE *stream) {
         "Options:\n"
         "    -in <input_file>  Specify the input struct definition file.\n"
         "    -out <output_dir> Specify the output codes location, default to current directory\n"
-        "    -h, --help        Show this help message\n\n"
+        "    -h, --help        Show this help message\n"
+        "    -v, --version     Show version information\n\n"
         "json-gen-c document: https://github.com/zltl/json-gen-c\n"
         "Report bugs to: https://github.com/zltl/json-gen-c/issues\n");
 }
@@ -48,6 +53,7 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
         {"in", required_argument, 0, 'i'},
         {"out", required_argument, 0, 'o'},
         {"help", no_argument, 0, 'h'},
+        {"version", no_argument, 0, 'v'},
         {0, 0, 0, 0}
     };
 
@@ -57,7 +63,7 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
     // Reset getopt index
     optind = 1;
 
-    while ((c = getopt_long_only(argc, argv, "i:o:h", long_options, &option_index)) != -1) {
+    while ((c = getopt_long_only(argc, argv, "i:o:hv", long_options, &option_index)) != -1) {
         switch (c) {
             case 'i':
                 options->input_file = optarg;
@@ -67,6 +73,9 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
                 break;
             case 'h':
                 usage(stdout);
+                exit(JSON_GEN_SUCCESS);
+            case 'v':
+                printf("json-gen-c %s\n", JSON_GEN_C_VERSION);
                 exit(JSON_GEN_SUCCESS);
             case '?':
                 // getopt_long_only prints error message to stderr automatically
@@ -144,6 +153,12 @@ int main(int argc, char **argv) {
     r = struct_parser_parse(parser, content);
     if (r < 0) {
         // Diagnostics already printed by the parser's diag engine
+        cleanup_and_exit(content, parser, NULL, NULL, JSON_GEN_ERROR_PARSE);
+    }
+
+    // Validate schema before code generation
+    r = struct_parser_validate(parser);
+    if (r < 0) {
         cleanup_and_exit(content, parser, NULL, NULL, JSON_GEN_ERROR_PARSE);
     }
 

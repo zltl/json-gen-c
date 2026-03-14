@@ -1,0 +1,7 @@
+// Malformed: two structs with the same name
+struct Dup {
+    int x;
+}
+struct Dup {
+    int y;
+}

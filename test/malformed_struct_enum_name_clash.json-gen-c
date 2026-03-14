@@ -1,0 +1,5 @@
+// Malformed: struct and enum with the same name
+enum Clash { X, Y }
+struct Clash {
+    int x;
+}

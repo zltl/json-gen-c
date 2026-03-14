@@ -171,3 +171,41 @@ struct PreciseIntMap {
     map<sstr_t, int32_t> i32_map;
     map<sstr_t, uint64_t> u64_map;
 }
+
+// JSON field alias test structures
+struct AliasBasic {
+    @json "user_name"
+    sstr_t username;
+    @json "created_at"
+    long created;
+    int id;
+}
+
+struct AliasMixed {
+    @json "first_name"
+    sstr_t first;
+    sstr_t last;
+    @json "is_active"
+    bool active;
+}
+
+struct AliasOptional {
+    @json "display_name"
+    optional sstr_t name;
+    @json "age_years"
+    nullable int age;
+}
+
+struct AliasArray {
+    @json "tag_list"
+    sstr_t tags[];
+    @json "score_list"
+    int scores[3];
+}
+
+struct AliasNested {
+    @json "user_info"
+    Person info;
+    @json "home_address"
+    House addr;
+}

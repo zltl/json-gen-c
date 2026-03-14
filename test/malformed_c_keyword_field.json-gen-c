@@ -1,0 +1,5 @@
+// Uses C keywords as identifiers (should produce warnings)
+struct KeywordTest {
+    int return;
+    double void;
+}

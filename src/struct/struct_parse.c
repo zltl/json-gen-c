@@ -43,6 +43,9 @@ static struct struct_field* struct_field_new(sstr_t name, int type,
     field->map_value_type_name = NULL;
     field->is_optional = 0;
     field->is_nullable = 0;
+    field->json_name = NULL;
+    field->line = 0;
+    field->col = 0;
     return field;
 }
 
@@ -50,6 +53,7 @@ static void struct_field_free(struct struct_field* field) {
     if (field) {
         sstr_free(field->name);
         sstr_free(field->type_name);
+        sstr_free(field->json_name);
     }
     free(field);
 }
@@ -77,6 +81,9 @@ static struct struct_container* struct_container_new() {
     }
     container->name = NULL;
     container->fields = NULL;
+    container->name_line = 0;
+    container->name_col = 0;
+    container->filename = NULL;
     return container;
 }
 
@@ -225,6 +232,10 @@ static int next_token_(struct struct_parser* parser, sstr_t content,
             parser->pos.col++;
         }
         switch (data[i]) {
+            case '@':
+                token->type = TOKEN_AT;
+                parser->pos.offset = i + 1;
+                return TOKEN_AT;
             case '#':
                 token->type = TOKEN_SHARPE;
                 parser->pos.offset = i + 1;
@@ -366,6 +377,8 @@ static int next_token(struct struct_parser* parser, sstr_t content,
 
 static char* token_type_str(struct struct_token* token) {
     switch (token->type) {
+        case TOKEN_AT:
+            return "@";
         case TOKEN_SHARPE:
             return "#";
         case TOKEN_STRING:
@@ -552,6 +565,27 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
         return 0;
     }
 
+    // parse @json "alias" annotation
+    if (tk == TOKEN_AT) {
+        tk = next_token(parser, content, token);
+        if (tk != TOKEN_IDENTIFY || sstr_compare_c(token->txt, "json") != 0) {
+            PERROR(parser, "expected 'json' after '@', found '%s'",
+                   token_type_str(token));
+            return -1;
+        }
+        sstr_free(token->txt);
+        token->txt = NULL;
+        tk = next_token(parser, content, token);
+        if (tk != TOKEN_STRING) {
+            PERROR(parser, "expected string after '@json', found '%s'",
+                   token_type_str(token));
+            return -1;
+        }
+        field->json_name = token->txt;
+        token->txt = NULL;
+        tk = next_token(parser, content, token);
+    }
+
     // field type
     if (tk != TOKEN_IDENTIFY) {
         PERROR(parser, "expected type name, found '%s'",
@@ -583,6 +617,10 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
     }
 
     type_name = token->txt;
+
+    // capture field source position (type token location)
+    field->line = parser->pos.line;
+    field->col = parser->pos.col;
 
     // field type MUST not be 'struct', it's a reserved keyword.
     if (sstr_compare_c(type_name, "struct") == 0) {
@@ -789,6 +827,8 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
     }
     sstr_t enum_name = token->txt;
     token->txt = NULL;
+    int enum_name_line = parser->pos.line;
+    int enum_name_col = parser->pos.col;
 
     // '{'
     tk = next_token(parser, content, token);
@@ -808,6 +848,9 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
     ec->name = enum_name;
     ec->values = NULL;
     ec->count = 0;
+    ec->name_line = enum_name_line;
+    ec->name_col = enum_name_col;
+    ec->filename = parser->name;
 
     // parse enum values: IDENT [, IDENT]* '}'
     int had_error = 0;
@@ -885,6 +928,18 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
         v->index = idx++;
     }
 
+    // Check for duplicate enum name or name clash with struct
+    void* existing = NULL;
+    if (hash_map_find(parser->enum_map, ec->name, &existing) == HASH_MAP_OK) {
+        PERROR(parser, "duplicate enum name '%s'", sstr_cstr(ec->name));
+        enum_container_free(ec);
+        return -1;
+    }
+    if (hash_map_find(parser->struct_map, ec->name, &existing) == HASH_MAP_OK) {
+        PERROR(parser, "'%s' already defined as a struct", sstr_cstr(ec->name));
+        enum_container_free(ec);
+        return -1;
+    }
     hash_map_insert(parser->enum_map, sstr_dup(ec->name), ec);
     return had_error ? -1 : 0;
 }
@@ -907,6 +962,9 @@ static int parse_struct_body(struct struct_parser* parser, sstr_t content,
     }
     sstr_t struct_name = token->txt;
     sct->name = struct_name;
+    sct->name_line = parser->pos.line;
+    sct->name_col = parser->pos.col;
+    sct->filename = parser->name;
     token->txt = NULL;
 
     // '{'
@@ -1021,6 +1079,18 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
             // we insert fields into sct->fields to the head of the list,
             // so the list is reversed.
             struct_field_reverse(&sct->fields);
+            // Check for duplicate struct name or name clash with enum
+            void* existing = NULL;
+            if (hash_map_find(parser->struct_map, sct->name, &existing) == HASH_MAP_OK) {
+                PERROR(parser, "duplicate struct name '%s'", sstr_cstr(sct->name));
+                struct_container_free(sct);
+                continue;
+            }
+            if (hash_map_find(parser->enum_map, sct->name, &existing) == HASH_MAP_OK) {
+                PERROR(parser, "'%s' already defined as an enum", sstr_cstr(sct->name));
+                struct_container_free(sct);
+                continue;
+            }
             // then insert a struct into parser->struct_map;
             hash_map_insert(parser->struct_map, sstr_dup(sct->name), sct);
         } else {
@@ -1038,4 +1108,133 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
     }
 
     return 0;
+}
+
+/* ---- C11 keyword list for identifier validation ---- */
+static const char* c_keywords[] = {
+    "auto", "break", "case", "char", "const", "continue", "default", "do",
+    "else", "extern", "for", "goto", "if", "inline", "register", "restrict",
+    "return", "short", "signed", "sizeof", "static", "switch", "typedef",
+    "union", "unsigned", "void", "volatile", "while",
+    "_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic",
+    "_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local",
+    NULL
+};
+
+static int is_c_keyword(const char* name) {
+    for (const char** kw = c_keywords; *kw; kw++) {
+        if (strcmp(name, *kw) == 0) return 1;
+    }
+    return 0;
+}
+
+/* ---- Validation callbacks for hash_map_for_each ---- */
+
+struct validate_ctx {
+    struct diag_engine* diag;
+    struct hash_map* struct_map;
+    struct hash_map* enum_map;
+};
+
+static void validate_struct_fields(void* key, void* value, void* ptr) {
+    (void)key;
+    struct struct_container* sct = (struct struct_container*)value;
+    struct validate_ctx* ctx = (struct validate_ctx*)ptr;
+    const char* sname = sstr_cstr(sct->name);
+
+    /* Check for duplicate field names (O(n^2) — fine for typical structs) */
+    for (struct struct_field* f = sct->fields; f; f = f->next) {
+        for (struct struct_field* g = f->next; g; g = g->next) {
+            if (sstr_compare(f->name, g->name) == 0) {
+                diag_emit(ctx->diag, DIAG_ERROR, g->line, g->col,
+                          "duplicate field name '%s' in struct '%s'",
+                          sstr_cstr(f->name), sname);
+            }
+        }
+    }
+
+    /* Check for undefined type references */
+    for (struct struct_field* f = sct->fields; f; f = f->next) {
+        if (f->type == FIELD_TYPE_STRUCT) {
+            void* found = NULL;
+            if (hash_map_find(ctx->struct_map, f->type_name, &found) != HASH_MAP_OK) {
+                diag_emit(ctx->diag, DIAG_ERROR, f->line, f->col,
+                          "use of undefined type '%s' in struct '%s' field '%s'",
+                          sstr_cstr(f->type_name), sname, sstr_cstr(f->name));
+            }
+        }
+        if (f->type == FIELD_TYPE_MAP && f->map_value_type == FIELD_TYPE_STRUCT) {
+            void* found = NULL;
+            if (hash_map_find(ctx->struct_map, f->map_value_type_name, &found) != HASH_MAP_OK) {
+                diag_emit(ctx->diag, DIAG_ERROR, f->line, f->col,
+                          "use of undefined type '%s' in struct '%s' field '%s'",
+                          sstr_cstr(f->map_value_type_name), sname, sstr_cstr(f->name));
+            }
+        }
+    }
+
+    /* Check for C keyword usage in field names */
+    for (struct struct_field* f = sct->fields; f; f = f->next) {
+        if (f->name && is_c_keyword(sstr_cstr(f->name))) {
+            diag_emit(ctx->diag, DIAG_WARNING, f->line, f->col,
+                      "field name '%s' in struct '%s' is a C keyword",
+                      sstr_cstr(f->name), sname);
+        }
+    }
+
+    /* Check struct name against C keywords */
+    if (sct->name && is_c_keyword(sname)) {
+        diag_emit(ctx->diag, DIAG_WARNING, sct->name_line, sct->name_col,
+                  "struct name '%s' is a C keyword", sname);
+    }
+}
+
+static void validate_enum_values(void* key, void* value, void* ptr) {
+    (void)key;
+    struct enum_container* ec = (struct enum_container*)value;
+    struct validate_ctx* ctx = (struct validate_ctx*)ptr;
+    const char* ename = sstr_cstr(ec->name);
+
+    /* Check for duplicate enum values (O(n^2) — fine for typical enums) */
+    for (struct enum_value* v = ec->values; v; v = v->next) {
+        for (struct enum_value* w = v->next; w; w = w->next) {
+            if (sstr_compare(v->name, w->name) == 0) {
+                diag_emit(ctx->diag, DIAG_ERROR, 0, 0,
+                          "duplicate enum value '%s' in enum '%s'",
+                          sstr_cstr(v->name), ename);
+            }
+        }
+    }
+
+    /* Check enum name against C keywords */
+    if (ec->name && is_c_keyword(ename)) {
+        diag_emit(ctx->diag, DIAG_WARNING, ec->name_line, ec->name_col,
+                  "enum name '%s' is a C keyword", ename);
+    }
+}
+
+int struct_parser_validate(struct struct_parser* parser) {
+    if (parser == NULL) return 0;
+
+    struct diag_engine* diag = diag_engine_new("<schema>", NULL, 0);
+    if (diag == NULL) {
+        fprintf(stderr, "fatal: failed to allocate validation diagnostic engine\n");
+        return -1;
+    }
+
+    struct validate_ctx ctx;
+    ctx.diag = diag;
+    ctx.struct_map = parser->struct_map;
+    ctx.enum_map = parser->enum_map;
+
+    hash_map_for_each(parser->struct_map, validate_struct_fields, &ctx);
+    hash_map_for_each(parser->enum_map, validate_enum_values, &ctx);
+
+    int has_errors = diag_has_errors(diag);
+    if (diag->count > 0) {
+        diag_print_all(diag, stderr);
+    }
+    diag_engine_free(diag);
+
+    return has_errors ? -1 : 0;
 }

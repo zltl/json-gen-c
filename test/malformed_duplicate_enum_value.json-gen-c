@@ -1,0 +1,6 @@
+// Malformed: enum with duplicate value names
+enum BadEnum {
+    A,
+    B,
+    A
+}
