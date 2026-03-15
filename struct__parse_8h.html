@@ -127,6 +127,12 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structenum__container.html">enum_container</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">structure to store a parsed enum definition.  <a href="structenum__container.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structoneof__variant.html">oneof_variant</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">structure to store a single variant of a oneof (tagged union). Variants are stored as a linked list.  <a href="structoneof__variant.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structoneof__container.html">oneof_container</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">structure to store a parsed oneof (tagged union) definition.  <a href="structoneof__container.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstruct__field.html">struct_field</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">structure to store field list of parsed structs. A struct may have multiple field, and each field may be an array, or a struct. We use a single linked list to store the fields of a struct.  <a href="structstruct__field.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -196,6 +202,9 @@ Macros</h2></td></tr>
 <tr class="memitem:ac459395c4416883211763236eb69fea8" id="r_ac459395c4416883211763236eb69fea8"><td class="memItemLeft" align="right" valign="top"><a id="ac459395c4416883211763236eb69fea8" name="ac459395c4416883211763236eb69fea8"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_UINT64</b>&#160;&#160;&#160;16</td></tr>
 <tr class="separator:ac459395c4416883211763236eb69fea8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03d8d7e61e466ac1e863a99534c4ee7a" id="r_a03d8d7e61e466ac1e863a99534c4ee7a"><td class="memItemLeft" align="right" valign="top"><a id="a03d8d7e61e466ac1e863a99534c4ee7a" name="a03d8d7e61e466ac1e863a99534c4ee7a"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>FIELD_TYPE_ONEOF</b>&#160;&#160;&#160;17</td></tr>
+<tr class="separator:a03d8d7e61e466ac1e863a99534c4ee7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab9840f857dc4416a1c14e8d8bab92746" id="r_ab9840f857dc4416a1c14e8d8bab92746"><td class="memItemLeft" align="right" valign="top"><a id="ab9840f857dc4416a1c14e8d8bab92746" name="ab9840f857dc4416a1c14e8d8bab92746"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>TYPE_NAME_INT</b>&#160;&#160;&#160;&quot;int&quot;</td></tr>
 <tr class="separator:ab9840f857dc4416a1c14e8d8bab92746"><td class="memSeparator" colspan="2">&#160;</td></tr>

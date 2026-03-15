@@ -1,0 +1,6 @@
+<map id="oneof_container" name="oneof_container">
+<area shape="rect" id="Node000001" title="structure to store a parsed oneof (tagged union) definition." alt="" coords="5,93,132,119"/>
+<area shape="rect" id="Node000002" href="$structoneof__variant.html" title="structure to store a single variant of a oneof (tagged union). Variants are stored as a linked list." alt="" coords="13,5,125,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="71,45,71,93,66,93,66,45"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="140,9,151,18,143,26,125,29,124,23,141,21,146,18,137,14"/>
+</map>

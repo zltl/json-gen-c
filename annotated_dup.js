@@ -2,6 +2,7 @@ var annotated_dup =
 [
     [ "diag_engine", "structdiag__engine.html", null ],
     [ "diag_entry", "structdiag__entry.html", null ],
+    [ "do_each_oneof_gen_code_param", "structdo__each__oneof__gen__code__param.html", null ],
     [ "do_each_struct_gen_code_param", "structdo__each__struct__gen__code__param.html", null ],
     [ "enum_container", "structenum__container.html", null ],
     [ "enum_value", "structenum__value.html", null ],
@@ -12,6 +13,8 @@ var annotated_dup =
     [ "json_field_offset_item", "structjson__field__offset__item.html", null ],
     [ "json_parse_param", "structjson__parse__param.html", null ],
     [ "json_pos", "structjson__pos.html", null ],
+    [ "oneof_container", "structoneof__container.html", null ],
+    [ "oneof_variant", "structoneof__variant.html", null ],
     [ "options", "structoptions.html", "structoptions" ],
     [ "pos", "structpos.html", null ],
     [ "sstr_s", "structsstr__s.html", null ],

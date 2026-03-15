@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>json-gen-c: struct_parser Struct Reference</title>
+<title>json-gen-c: oneof_container Struct Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -59,65 +59,60 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('structstruct__parser.html',''); initResizable(); });
+$(document).ready(function(){initNavTree('structoneof__container.html',''); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
 <div class="header">
   <div class="summary">
 <a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="structstruct__parser-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">struct_parser Struct Reference</div></div>
+<a href="structoneof__container-members.html">List of all members</a>  </div>
+  <div class="headertitle"><div class="title">oneof_container Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>parser context  
- <a href="structstruct__parser.html#details">More...</a></p>
+<p>structure to store a parsed oneof (tagged union) definition.  
+ <a href="structoneof__container.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="struct__parse_8h_source.html">struct_parse.h</a>&gt;</code></p>
 <div class="dynheader">
-Collaboration diagram for struct_parser:</div>
+Collaboration diagram for oneof_container:</div>
 <div class="dyncontent">
-<div class="center"><img src="structstruct__parser__coll__graph.png" border="0" usemap="#astruct__parser_coll__map" alt="Collaboration graph"/></div>
-<map name="astruct__parser_coll__map" id="astruct__parser_coll__map">
-<area shape="rect" title="parser context" alt="" coords="125,211,232,236"/>
-<area shape="rect" href="structhash__map.html" title=" " alt="" coords="26,93,115,119"/>
-<area shape="poly" title=" " alt="" coords="76,132,83,159,98,185,115,198,134,208,132,213,112,203,94,188,78,161,71,133"/>
-<area shape="rect" href="structhash__map__entry.html" title=" " alt="" coords="5,5,136,31"/>
-<area shape="poly" title=" " alt="" coords="73,45,73,93,68,93,68,45"/>
-<area shape="poly" title=" " alt="" coords="151,10,163,18,154,26,136,28,136,23,152,21,157,18,148,14"/>
-<area shape="rect" href="structpos.html" title="position of string" alt="" coords="156,93,201,119"/>
-<area shape="poly" title=" " alt="" coords="181,132,181,211,176,211,176,132"/>
-<area shape="rect" href="structdiag__engine.html" title=" " alt="" coords="225,93,327,119"/>
-<area shape="poly" title=" " alt="" coords="261,131,214,188,192,212,188,209,210,185,257,128"/>
-<area shape="rect" href="structdiag__entry.html" title=" " alt="" coords="231,5,321,31"/>
-<area shape="poly" title=" " alt="" coords="279,45,279,93,273,93,273,45"/>
+<div class="center"><img src="structoneof__container__coll__graph.png" border="0" usemap="#aoneof__container_coll__map" alt="Collaboration graph"/></div>
+<map name="aoneof__container_coll__map" id="aoneof__container_coll__map">
+<area shape="rect" title="structure to store a parsed oneof (tagged union) definition." alt="" coords="5,93,132,119"/>
+<area shape="rect" href="structoneof__variant.html" title="structure to store a single variant of a oneof (tagged union). Variants are stored as a linked list." alt="" coords="13,5,125,31"/>
+<area shape="poly" title=" " alt="" coords="71,45,71,93,66,93,66,45"/>
+<area shape="poly" title=" " alt="" coords="140,9,151,18,143,26,125,29,124,23,141,21,146,18,137,14"/>
 </map>
 <center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ae74f22e33b4153a9663a8d21d9f1f218" id="r_ae74f22e33b4153a9663a8d21d9f1f218"><td class="memItemLeft" align="right" valign="top"><a id="ae74f22e33b4153a9663a8d21d9f1f218" name="ae74f22e33b4153a9663a8d21d9f1f218"></a>
-struct <a class="el" href="structhash__map.html">hash_map</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>struct_map</b></td></tr>
-<tr class="separator:ae74f22e33b4153a9663a8d21d9f1f218"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a49057f49ed281fbcaa535ef01acd73ab" id="r_a49057f49ed281fbcaa535ef01acd73ab"><td class="memItemLeft" align="right" valign="top"><a id="a49057f49ed281fbcaa535ef01acd73ab" name="a49057f49ed281fbcaa535ef01acd73ab"></a>
-struct <a class="el" href="structhash__map.html">hash_map</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>enum_map</b></td></tr>
-<tr class="separator:a49057f49ed281fbcaa535ef01acd73ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a14f257e8b5ec696f3e9a63bafb56f763" id="r_a14f257e8b5ec696f3e9a63bafb56f763"><td class="memItemLeft" align="right" valign="top"><a id="a14f257e8b5ec696f3e9a63bafb56f763" name="a14f257e8b5ec696f3e9a63bafb56f763"></a>
-struct <a class="el" href="structhash__map.html">hash_map</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>oneof_map</b></td></tr>
-<tr class="separator:a14f257e8b5ec696f3e9a63bafb56f763"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a07f5f5eca3dc1418069ec569c12e32e1" id="r_a07f5f5eca3dc1418069ec569c12e32e1"><td class="memItemLeft" align="right" valign="top"><a id="a07f5f5eca3dc1418069ec569c12e32e1" name="a07f5f5eca3dc1418069ec569c12e32e1"></a>
-struct <a class="el" href="structpos.html">pos</a>&#160;</td><td class="memItemRight" valign="bottom"><b>pos</b></td></tr>
-<tr class="separator:a07f5f5eca3dc1418069ec569c12e32e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4bbfb1d03fc4fcd441fd26dc31572f16" id="r_a4bbfb1d03fc4fcd441fd26dc31572f16"><td class="memItemLeft" align="right" valign="top"><a id="a4bbfb1d03fc4fcd441fd26dc31572f16" name="a4bbfb1d03fc4fcd441fd26dc31572f16"></a>
-char *&#160;</td><td class="memItemRight" valign="bottom"><b>name</b></td></tr>
-<tr class="separator:a4bbfb1d03fc4fcd441fd26dc31572f16"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afb67302ad05c03afa144fea8fb8173d4" id="r_afb67302ad05c03afa144fea8fb8173d4"><td class="memItemLeft" align="right" valign="top"><a id="afb67302ad05c03afa144fea8fb8173d4" name="afb67302ad05c03afa144fea8fb8173d4"></a>
-struct <a class="el" href="structdiag__engine.html">diag_engine</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>diag</b></td></tr>
-<tr class="separator:afb67302ad05c03afa144fea8fb8173d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4cbc72a606c6a7cba24f74035be1c66b" id="r_a4cbc72a606c6a7cba24f74035be1c66b"><td class="memItemLeft" align="right" valign="top"><a id="a4cbc72a606c6a7cba24f74035be1c66b" name="a4cbc72a606c6a7cba24f74035be1c66b"></a>
+<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>name</b></td></tr>
+<tr class="separator:a4cbc72a606c6a7cba24f74035be1c66b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26897fa38ac8e282777f6be86635791a" id="r_a26897fa38ac8e282777f6be86635791a"><td class="memItemLeft" align="right" valign="top"><a id="a26897fa38ac8e282777f6be86635791a" name="a26897fa38ac8e282777f6be86635791a"></a>
+<a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>tag_field</b></td></tr>
+<tr class="separator:a26897fa38ac8e282777f6be86635791a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ecf2adffa41de68b2f2f08b91a65b51" id="r_a2ecf2adffa41de68b2f2f08b91a65b51"><td class="memItemLeft" align="right" valign="top"><a id="a2ecf2adffa41de68b2f2f08b91a65b51" name="a2ecf2adffa41de68b2f2f08b91a65b51"></a>
+struct <a class="el" href="structoneof__variant.html">oneof_variant</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>variants</b></td></tr>
+<tr class="separator:a2ecf2adffa41de68b2f2f08b91a65b51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecaaf64f9eee47acdb9f549d71d611f4" id="r_aecaaf64f9eee47acdb9f549d71d611f4"><td class="memItemLeft" align="right" valign="top"><a id="aecaaf64f9eee47acdb9f549d71d611f4" name="aecaaf64f9eee47acdb9f549d71d611f4"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>count</b></td></tr>
+<tr class="separator:aecaaf64f9eee47acdb9f549d71d611f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f68b486ce97f6bff4cd4f7224fde830" id="r_a1f68b486ce97f6bff4cd4f7224fde830"><td class="memItemLeft" align="right" valign="top"><a id="a1f68b486ce97f6bff4cd4f7224fde830" name="a1f68b486ce97f6bff4cd4f7224fde830"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>name_line</b></td></tr>
+<tr class="separator:a1f68b486ce97f6bff4cd4f7224fde830"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a238dd234b0711f396b5e9a25cc28460d" id="r_a238dd234b0711f396b5e9a25cc28460d"><td class="memItemLeft" align="right" valign="top"><a id="a238dd234b0711f396b5e9a25cc28460d" name="a238dd234b0711f396b5e9a25cc28460d"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>name_col</b></td></tr>
+<tr class="separator:a238dd234b0711f396b5e9a25cc28460d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7caab766bf42543dccd0909b9b91a164" id="r_a7caab766bf42543dccd0909b9b91a164"><td class="memItemLeft" align="right" valign="top"><a id="a7caab766bf42543dccd0909b9b91a164" name="a7caab766bf42543dccd0909b9b91a164"></a>
+const char *&#160;</td><td class="memItemRight" valign="bottom"><b>filename</b></td></tr>
+<tr class="separator:a7caab766bf42543dccd0909b9b91a164"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>parser context </p>
+<div class="textblock"><p>structure to store a parsed oneof (tagged union) definition. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>src/struct/<a class="el" href="struct__parse_8h_source.html">struct_parse.h</a></li>
 </ul>
@@ -127,7 +122,7 @@ struct <a class="el" href="structdiag__engine.html">diag_engine</a> *&#160;</td>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="structstruct__parser.html">struct_parser</a></li>
+    <li class="navelem"><a class="el" href="structoneof__container.html">oneof_container</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.9.8 </li>
