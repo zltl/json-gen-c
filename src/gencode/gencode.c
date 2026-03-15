@@ -323,6 +323,53 @@ static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
     sstr_append_cstr(source, "}\n\n");
 }
 
+// Table-driven numeric marshal: maps FIELD_TYPE_* to the sstr_append function,
+// optional cast, and whether precision ("-1") is appended.
+struct marshal_numeric_info {
+    const char *append_fn;  // e.g. "sstr_append_int_str", NULL if not numeric
+    const char *cast;       // e.g. "(int)", "" if no cast
+    int has_precision;      // 1 for float/double
+};
+
+#define FIELD_TYPE_MAX 17
+static const struct marshal_numeric_info marshal_numeric_table[FIELD_TYPE_MAX + 1] = {
+    [FIELD_TYPE_INT]    = { "sstr_append_int_str",    "", 0 },
+    [FIELD_TYPE_LONG]   = { "sstr_append_long_str",   "", 0 },
+    [FIELD_TYPE_FLOAT]  = { "sstr_append_float_str",  "", 1 },
+    [FIELD_TYPE_DOUBLE] = { "sstr_append_double_str", "", 1 },
+    [FIELD_TYPE_SSTR]   = { NULL, NULL, 0 },
+    [FIELD_TYPE_ENUM]   = { NULL, NULL, 0 },
+    [FIELD_TYPE_STRUCT] = { NULL, NULL, 0 },
+    [FIELD_TYPE_BOOL]   = { "sstr_append_int_str",    "", 0 },
+    [FIELD_TYPE_MAP]    = { NULL, NULL, 0 },
+    [FIELD_TYPE_INT8]   = { "sstr_append_int_str",    "(int)",  0 },
+    [FIELD_TYPE_INT16]  = { "sstr_append_int_str",    "(int)",  0 },
+    [FIELD_TYPE_INT32]  = { "sstr_append_int_str",    "(int)",  0 },
+    [FIELD_TYPE_INT64]  = { "sstr_append_long_str",   "(long)", 0 },
+    [FIELD_TYPE_UINT8]  = { "sstr_append_int_str",    "(int)",  0 },
+    [FIELD_TYPE_UINT16] = { "sstr_append_int_str",    "(int)",  0 },
+    [FIELD_TYPE_UINT32] = { "sstr_append_uint32_str", "",       0 },
+    [FIELD_TYPE_UINT64] = { "sstr_append_uint64_str", "",       0 },
+    [FIELD_TYPE_ONEOF]  = { NULL, NULL, 0 },
+};
+
+// Emit a numeric marshal line: "<indent><fn>(out, <cast><expr>[, -1]);\n"
+// Returns 1 if emitted (numeric type), 0 if the type is not numeric.
+static int emit_numeric_marshal(sstr_t source, int field_type,
+                                const char *indent, const char *expr) {
+    if (field_type < 0 || field_type > FIELD_TYPE_MAX) return 0;
+    const struct marshal_numeric_info *info = &marshal_numeric_table[field_type];
+    if (!info->append_fn) return 0;
+    if (info->has_precision) {
+        sstr_printf_append(source, "%s%s(out, %s%s, -1);\n",
+                           indent, info->append_fn, info->cast, expr);
+    } else {
+        sstr_printf_append(source, "%s%s(out, %s%s);\n",
+                           indent, info->append_fn, info->cast, expr);
+    }
+    return 1;
+}
+
 // Helper: emit code to marshal a single map entry value.
 // `field_name` is the C field name, `val_suffix` is appended to obj->field_name
 // to form the value expression (e.g. ".entries[_mk].value").
@@ -330,78 +377,38 @@ static void gen_marshal_map_value(struct struct_field* field,
                                   const char* field_name,
                                   const char* val_suffix,
                                   sstr_t source) {
-    // expression prefix: "obj-><field_name><val_suffix>"
+    char expr[256];
+    snprintf(expr, sizeof(expr), "obj->%s%s", field_name, val_suffix);
+
+    if (emit_numeric_marshal(source, field->map_value_type, "            ", expr))
+        return;
+
     switch (field->map_value_type) {
-        case FIELD_TYPE_INT:
-        case FIELD_TYPE_BOOL:
-            sstr_printf_append(source,
-                "            sstr_append_int_str(out, obj->%s%s);\n",
-                field_name, val_suffix);
-            break;
-        case FIELD_TYPE_LONG:
-            sstr_printf_append(source,
-                "            sstr_append_long_str(out, obj->%s%s);\n",
-                field_name, val_suffix);
-            break;
-        case FIELD_TYPE_INT8:
-        case FIELD_TYPE_INT16:
-        case FIELD_TYPE_INT32:
-        case FIELD_TYPE_UINT8:
-        case FIELD_TYPE_UINT16:
-            sstr_printf_append(source,
-                "            sstr_append_int_str(out, (int)obj->%s%s);\n",
-                field_name, val_suffix);
-            break;
-        case FIELD_TYPE_INT64:
-            sstr_printf_append(source,
-                "            sstr_append_long_str(out, (long)obj->%s%s);\n",
-                field_name, val_suffix);
-            break;
-        case FIELD_TYPE_UINT32:
-            sstr_printf_append(source,
-                "            sstr_append_uint32_str(out, obj->%s%s);\n",
-                field_name, val_suffix);
-            break;
-        case FIELD_TYPE_UINT64:
-            sstr_printf_append(source,
-                "            sstr_append_uint64_str(out, obj->%s%s);\n",
-                field_name, val_suffix);
-            break;
-        case FIELD_TYPE_FLOAT:
-            sstr_printf_append(source,
-                "            sstr_append_float_str(out, obj->%s%s, -1);\n",
-                field_name, val_suffix);
-            break;
-        case FIELD_TYPE_DOUBLE:
-            sstr_printf_append(source,
-                "            sstr_append_double_str(out, obj->%s%s, -1);\n",
-                field_name, val_suffix);
-            break;
         case FIELD_TYPE_SSTR:
             sstr_printf_append(source,
                 "            sstr_append_of(out, \"\\\"\", 1);\n"
-                "            sstr_json_escape_string_append(out, obj->%s%s);\n"
+                "            sstr_json_escape_string_append(out, %s);\n"
                 "            sstr_append_of(out, \"\\\"\", 1);\n",
-                field_name, val_suffix);
+                expr);
             break;
         case FIELD_TYPE_STRUCT:
             sstr_printf_append(source,
-                "            json_marshal_indent_%S(&obj->%s%s, indent, curindent, out);\n",
-                field->map_value_type_name, field_name, val_suffix);
+                "            json_marshal_indent_%S(&%s, indent, curindent, out);\n",
+                field->map_value_type_name, expr);
             break;
         case FIELD_TYPE_ENUM:
             sstr_printf_append(source,
-                "            if (obj->%s%s >= 0 && obj->%s%s < %S_enum_count) {\n"
+                "            if (%s >= 0 && %s < %S_enum_count) {\n"
                 "                sstr_append_of(out, \"\\\"\", 1);\n"
-                "                sstr_append_cstr(out, %S_enum_strings[obj->%s%s]);\n"
+                "                sstr_append_cstr(out, %S_enum_strings[%s]);\n"
                 "                sstr_append_of(out, \"\\\"\", 1);\n"
                 "            } else {\n"
-                "                sstr_append_int_str(out, obj->%s%s);\n"
+                "                sstr_append_int_str(out, %s);\n"
                 "            }\n",
-                field_name, val_suffix, field_name, val_suffix,
-                field->map_value_type_name,
-                field->map_value_type_name, field_name, val_suffix,
-                field_name, val_suffix);
+                expr, expr, field->map_value_type_name,
+                field->map_value_type_name, expr, expr);
+            break;
+        default:
             break;
     }
 }
@@ -633,93 +640,49 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
             }
             continue;
         }
-        switch (field->type) {
-            case FIELD_TYPE_BOOL:
-                sstr_printf_append(source, "    if (obj->%S) {\n", field->name);
-                sstr_append_cstr(source,
-                                 "        sstr_append_cstr(out, \"true\");\n"
-                                 "    } else {\n"
-                                 "        sstr_append_cstr(out, \"false\");\n"
-                                 "    }\n");
-                break;
-            case FIELD_TYPE_INT:
-                sstr_printf_append(source,
-                                   "    sstr_append_int_str(out, obj->%S);\n",
-                                   field->name);
-                break;
-            case FIELD_TYPE_LONG:
-                sstr_printf_append(source,
-                                   "    sstr_append_long_str(out, obj->%S);\n",
-                                   field->name);
-                break;
-            case FIELD_TYPE_INT8:
-            case FIELD_TYPE_INT16:
-            case FIELD_TYPE_INT32:
-            case FIELD_TYPE_UINT8:
-            case FIELD_TYPE_UINT16:
-                sstr_printf_append(source,
-                                   "    sstr_append_int_str(out, (int)obj->%S);\n",
-                                   field->name);
-                break;
-            case FIELD_TYPE_INT64:
-                sstr_printf_append(source,
-                                   "    sstr_append_long_str(out, (long)obj->%S);\n",
-                                   field->name);
-                break;
-            case FIELD_TYPE_UINT32:
-                sstr_printf_append(source,
-                                   "    sstr_append_uint32_str(out, obj->%S);\n",
-                                   field->name);
-                break;
-            case FIELD_TYPE_UINT64:
-                sstr_printf_append(source,
-                                   "    sstr_append_uint64_str(out, obj->%S);\n",
-                                   field->name);
-                break;
-            case FIELD_TYPE_FLOAT:
-                sstr_printf_append(source,
-                                   "    sstr_append_float_str(out, obj->%S, -1);\n",
-                                   field->name);
-                break;
-            case FIELD_TYPE_DOUBLE:
-                sstr_printf_append(
-                    source, "    sstr_append_double_str(out, obj->%S, -1);\n",
-                    field->name);
-                break;
-            case FIELD_TYPE_SSTR:
-                sstr_printf_append(
-                    source,
-                    "    sstr_append_of(out, \"\\\"\", 1);\n"
-                    "    sstr_json_escape_string_append(out, obj->%S);\n"
-                    "    sstr_append_of(out, \"\\\"\", 1);\n",
-                    field->name);
-                break;
-            case FIELD_TYPE_STRUCT:
-                sstr_printf_append(source,
-                                   "    json_marshal_indent_%S(&obj->%S, "
-                                   "indent, curindent, out);\n",
-                                   field->type_name, field->name);
-                break;
-            case FIELD_TYPE_ONEOF:
-                sstr_printf_append(source,
-                                   "    json_marshal_indent_%S(&obj->%S, "
-                                   "indent, curindent, out);\n",
-                                   field->type_name, field->name);
-                break;
-            case FIELD_TYPE_ENUM:
-                // marshal enum as string: look up the int value in the string array
-                sstr_printf_append(source,
-                                   "    if (obj->%S >= 0 && obj->%S < %S_enum_count) {\n"
-                                   "        sstr_append_of(out, \"\\\"\", 1);\n"
-                                   "        sstr_append_cstr(out, %S_enum_strings[obj->%S]);\n"
-                                   "        sstr_append_of(out, \"\\\"\", 1);\n"
-                                   "    } else {\n"
-                                   "        sstr_append_int_str(out, obj->%S);\n"
-                                   "    }\n",
-                                   field->name, field->name, field->type_name,
-                                   field->type_name, field->name,
-                                   field->name);
-                break;
+        if (field->type == FIELD_TYPE_BOOL) {
+            sstr_printf_append(source, "    if (obj->%S) {\n", field->name);
+            sstr_append_cstr(source,
+                             "        sstr_append_cstr(out, \"true\");\n"
+                             "    } else {\n"
+                             "        sstr_append_cstr(out, \"false\");\n"
+                             "    }\n");
+        } else {
+            char expr[256];
+            snprintf(expr, sizeof(expr), "obj->%s", sstr_cstr(field->name));
+            if (!emit_numeric_marshal(source, field->type, "    ", expr)) {
+                switch (field->type) {
+                    case FIELD_TYPE_SSTR:
+                        sstr_printf_append(
+                            source,
+                            "    sstr_append_of(out, \"\\\"\", 1);\n"
+                            "    sstr_json_escape_string_append(out, %s);\n"
+                            "    sstr_append_of(out, \"\\\"\", 1);\n",
+                            expr);
+                        break;
+                    case FIELD_TYPE_STRUCT:
+                    case FIELD_TYPE_ONEOF:
+                        sstr_printf_append(source,
+                                           "    json_marshal_indent_%S(&%s, "
+                                           "indent, curindent, out);\n",
+                                           field->type_name, expr);
+                        break;
+                    case FIELD_TYPE_ENUM:
+                        sstr_printf_append(source,
+                                           "    if (%s >= 0 && %s < %S_enum_count) {\n"
+                                           "        sstr_append_of(out, \"\\\"\", 1);\n"
+                                           "        sstr_append_cstr(out, %S_enum_strings[%s]);\n"
+                                           "        sstr_append_of(out, \"\\\"\", 1);\n"
+                                           "    } else {\n"
+                                           "        sstr_append_int_str(out, %s);\n"
+                                           "    }\n",
+                                           expr, expr, field->type_name,
+                                           field->type_name, expr, expr);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
         if (has_optional) {
@@ -833,19 +796,7 @@ static void gen_code_struct_init(struct struct_container* st, sstr_t source) {
         switch (field->type) {
             case FIELD_TYPE_INT:
             case FIELD_TYPE_BOOL:
-                if (field->has_default) {
-                    sstr_printf_append(source, "    obj->%S = %S;\n", field->name, field->default_value);
-                } else {
-                    sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
-                }
-                break;
             case FIELD_TYPE_LONG:
-                if (field->has_default) {
-                    sstr_printf_append(source, "    obj->%S = %S;\n", field->name, field->default_value);
-                } else {
-                    sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
-                }
-                break;
             case FIELD_TYPE_INT8:
             case FIELD_TYPE_INT16:
             case FIELD_TYPE_INT32:
@@ -861,12 +812,6 @@ static void gen_code_struct_init(struct struct_container* st, sstr_t source) {
                 }
                 break;
             case FIELD_TYPE_FLOAT:
-                if (field->has_default) {
-                    sstr_printf_append(source, "    obj->%S = %S;\n", field->name, field->default_value);
-                } else {
-                    sstr_printf_append(source, "    obj->%S = 0.0;\n", field->name);
-                }
-                break;
             case FIELD_TYPE_DOUBLE:
                 if (field->has_default) {
                     sstr_printf_append(source, "    obj->%S = %S;\n", field->name, field->default_value);
@@ -884,9 +829,6 @@ static void gen_code_struct_init(struct struct_container* st, sstr_t source) {
                 }
                 break;
             case FIELD_TYPE_STRUCT:
-                sstr_printf_append(source, "    %S_init(&obj->%S);\n",
-                                   field->type_name, field->name);
-                break;
             case FIELD_TYPE_ONEOF:
                 sstr_printf_append(source, "    %S_init(&obj->%S);\n",
                                    field->type_name, field->name);
@@ -1036,6 +978,7 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
             case FIELD_TYPE_UINT16:
             case FIELD_TYPE_UINT32:
             case FIELD_TYPE_UINT64:
+            case FIELD_TYPE_ENUM:
                 sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
                 break;
             case FIELD_TYPE_FLOAT:
@@ -1049,15 +992,9 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
                                    field->name);
                 break;
             case FIELD_TYPE_STRUCT:
-                sstr_printf_append(source, "    %S_clear(&obj->%S);\n",
-                                   field->type_name, field->name);
-                break;
             case FIELD_TYPE_ONEOF:
                 sstr_printf_append(source, "    %S_clear(&obj->%S);\n",
                                    field->type_name, field->name);
-                break;
-            case FIELD_TYPE_ENUM:
-                sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
                 break;
         }
     }

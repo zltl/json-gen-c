@@ -146,7 +146,13 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 1. Keep parser regression coverage growing for edge cases around comments, includes, empty files, and malformed trailing tokens.
 2. Continue refactoring parser internals so responsibilities are clearer and easier to extend.
 3. Remove small remaining inconsistencies in diagnostics, naming, and internal APIs.
-4. Audit the generated code template for duplicated logic and simplify where possible.
+4. ~~Audit the generated code template for duplicated logic and simplify where possible.~~  **Done.**
+    - Table-driven marshal refactoring in `src/gencode/gencode.c`: replaced 4 duplicated `FIELD_TYPE_*` switch blocks (~268 lines) with a `marshal_numeric_info` lookup table + `emit_numeric_marshal()` helper, plus merged identical init/clear cases.
+    - Map marshal value block: 10 case arms → table lookup + 3 explicit cases (SSTR, STRUCT, ENUM).
+    - Struct marshal block: same table lookup; BOOL retains special if/else true/false path; STRUCT/ONEOF merged.
+    - Init block: merged INT/BOOL/LONG/INT8-UINT64 (identical `= 0`), FLOAT/DOUBLE (identical `= 0.0`), STRUCT/ONEOF.
+    - Clear block: merged ENUM with integer cases, STRUCT/ONEOF.
+    - Net reduction: 63 lines (171 deleted, 108 added). Generated output verified byte-identical.
 
 **Exit criteria:** CI stays green, regression tests cover recent parser and generator fixes, and the parsing/codegen core is stable enough for feature work.
 
