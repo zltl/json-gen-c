@@ -101,6 +101,9 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
         if (field->type == FIELD_TYPE_STRUCT) {
             sstr_append_cstr(header, "struct ");
         }
+        if (field->type == FIELD_TYPE_ONEOF) {
+            sstr_append_cstr(header, "struct ");
+        }
         if (field->type == FIELD_TYPE_ENUM) {
             // enums are stored as int
             sstr_append_cstr(header, "int");
@@ -695,6 +698,12 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                                    "indent, curindent, out);\n",
                                    field->type_name, field->name);
                 break;
+            case FIELD_TYPE_ONEOF:
+                sstr_printf_append(source,
+                                   "    json_marshal_indent_%S(&obj->%S, "
+                                   "indent, curindent, out);\n",
+                                   field->type_name, field->name);
+                break;
             case FIELD_TYPE_ENUM:
                 // marshal enum as string: look up the int value in the string array
                 sstr_printf_append(source,
@@ -803,6 +812,10 @@ static void gen_code_struct_init(struct struct_container* st, sstr_t source) {
                 sstr_printf_append(source, "    {\n        int _i;\n        for (_i = 0; _i < %d; _i++) {\n", field->array_size);
                 sstr_printf_append(source, "            %S_init(&obj->%S[_i]);\n", field->type_name, field->name);
                 sstr_append_cstr(source, "        }\n    }\n");
+            } else if (field->type == FIELD_TYPE_ONEOF) {
+                sstr_printf_append(source, "    {\n        int _i;\n        for (_i = 0; _i < %d; _i++) {\n", field->array_size);
+                sstr_printf_append(source, "            %S_init(&obj->%S[_i]);\n", field->type_name, field->name);
+                sstr_append_cstr(source, "        }\n    }\n");
             } else {
                 sstr_printf_append(source, "    memset(obj->%S, 0, sizeof(obj->%S));\n", field->name, field->name);
             }
@@ -869,6 +882,10 @@ static void gen_code_struct_init(struct struct_container* st, sstr_t source) {
                 }
                 break;
             case FIELD_TYPE_STRUCT:
+                sstr_printf_append(source, "    %S_init(&obj->%S);\n",
+                                   field->type_name, field->name);
+                break;
+            case FIELD_TYPE_ONEOF:
                 sstr_printf_append(source, "    %S_init(&obj->%S);\n",
                                    field->type_name, field->name);
                 break;
@@ -949,6 +966,7 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
         if (field->is_array && field->array_size > 0) {
             // fixed-size array: clear elements in-place, no free
             if (field->type == FIELD_TYPE_STRUCT ||
+                field->type == FIELD_TYPE_ONEOF ||
                 field->type == FIELD_TYPE_SSTR) {
                 if (!have_i) {
                     have_i = 1;
@@ -957,7 +975,8 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
                 sstr_printf_append(source,
                                    "    for (i = 0; i < %d; i++) {\n",
                                    field->array_size);
-                if (field->type == FIELD_TYPE_STRUCT) {
+                if (field->type == FIELD_TYPE_STRUCT ||
+                    field->type == FIELD_TYPE_ONEOF) {
                     sstr_printf_append(source,
                                        "       %S_clear(&obj->%S[i]);\n",
                                        field->type_name, field->name);
@@ -977,6 +996,7 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
         if (field->is_array) {
             // dynamic array: free array, and set XXX_len=0
             if (field->type == FIELD_TYPE_STRUCT ||
+                field->type == FIELD_TYPE_ONEOF ||
                 field->type == FIELD_TYPE_SSTR) {
                 if (!have_i) {
                     have_i = 1;
@@ -985,7 +1005,8 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
                 sstr_printf_append(source,
                                    "    for (i = 0; i < obj->%S_len; i++) {\n",
                                    field->name);
-                if (field->type == FIELD_TYPE_STRUCT) {
+                if (field->type == FIELD_TYPE_STRUCT ||
+                    field->type == FIELD_TYPE_ONEOF) {
                     sstr_printf_append(source,
                                        "       %S_clear(&obj->%S[i]);\n",
                                        field->type_name, field->name);
@@ -1029,12 +1050,356 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
                 sstr_printf_append(source, "    %S_clear(&obj->%S);\n",
                                    field->type_name, field->name);
                 break;
+            case FIELD_TYPE_ONEOF:
+                sstr_printf_append(source, "    %S_clear(&obj->%S);\n",
+                                   field->type_name, field->name);
+                break;
             case FIELD_TYPE_ENUM:
                 sstr_printf_append(source, "    obj->%S = 0;\n", field->name);
                 break;
         }
     }
     sstr_append_cstr(source, "    return 0;\n}\n\n");
+}
+
+// =====================================================================
+// oneof (tagged union) code generation
+// =====================================================================
+
+static void gen_oneof_header(struct oneof_container* oc, sstr_t header) {
+    // Tag enum
+    sstr_printf_append(header, "enum %S_tag {\n", oc->name);
+    struct oneof_variant* v = oc->variants;
+    while (v) {
+        sstr_printf_append(header, "    %S_%S = %d", oc->name, v->name, v->index);
+        if (v->next) sstr_append_cstr(header, ",");
+        sstr_append_cstr(header, "\n");
+        v = v->next;
+    }
+    sstr_append_cstr(header, "};\n\n");
+
+    // Union struct
+    sstr_printf_append(header, "struct %S {\n", oc->name);
+    sstr_printf_append(header, "    enum %S_tag tag;\n", oc->name);
+    sstr_append_cstr(header, "    union {\n");
+    v = oc->variants;
+    while (v) {
+        sstr_printf_append(header, "        struct %S %S;\n", v->struct_type_name, v->name);
+        v = v->next;
+    }
+    sstr_append_cstr(header, "    } value;\n");
+    sstr_append_cstr(header, "};\n\n");
+
+    // Function declarations
+    sstr_printf_append(header, "void %S_init(struct %S* obj);\n", oc->name, oc->name);
+    sstr_printf_append(header, "void %S_clear(struct %S* obj);\n", oc->name, oc->name);
+    sstr_printf_append(header,
+        "int json_marshal_indent_%S(struct %S* obj, int indent, int curindent, sstr_t out);\n",
+        oc->name, oc->name);
+    sstr_printf_append(header,
+        "int json_unmarshal_%S(sstr_t in, struct %S* obj);\n",
+        oc->name, oc->name);
+    sstr_printf_append(header,
+        "int json_marshal_array_indent_%S(struct %S* obj, int len, int indent, int curindent, sstr_t out);\n",
+        oc->name, oc->name);
+    sstr_printf_append(header,
+        "int json_unmarshal_array_%S(sstr_t in, struct %S** obj, int* len);\n",
+        oc->name, oc->name);
+    // Convenience macros
+    sstr_printf_append(header,
+        "#define json_marshal_%S(obj, out) json_marshal_indent_%S(obj, 0, 0, out)\n",
+        oc->name, oc->name);
+    sstr_printf_append(header,
+        "#define json_marshal_array_%S(obj, len, out) json_marshal_array_indent_%S(obj, len, 0, 0, out)\n\n",
+        oc->name, oc->name);
+}
+
+static void gen_oneof_tag_strings(struct oneof_container* oc, sstr_t source) {
+    // Tag name strings (used as variant_names by the runtime)
+    sstr_printf_append(source, "static const char* %S_tag_strings[] = {", oc->name);
+    struct oneof_variant* v = oc->variants;
+    int first = 1;
+    while (v) {
+        if (!first) sstr_append_cstr(source, ", ");
+        sstr_printf_append(source, "\"%S\"", v->name);
+        first = 0;
+        v = v->next;
+    }
+    sstr_append_cstr(source, "};\n");
+    sstr_printf_append(source, "static const int %S_tag_count = %d;\n",
+                       oc->name, oc->count);
+
+    // Variant struct name strings (used by runtime for dispatch)
+    sstr_printf_append(source, "static const char* %S_variant_structs[] = {", oc->name);
+    v = oc->variants;
+    first = 1;
+    while (v) {
+        if (!first) sstr_append_cstr(source, ", ");
+        sstr_printf_append(source, "\"%S\"", v->struct_type_name);
+        first = 0;
+        v = v->next;
+    }
+    sstr_append_cstr(source, "};\n\n");
+}
+
+static void gen_oneof_init(struct oneof_container* oc, sstr_t source) {
+    sstr_printf_append(source,
+        "void %S_init(struct %S* obj) {\n"
+        "    memset(obj, 0, sizeof(struct %S));\n"
+        "}\n\n",
+        oc->name, oc->name, oc->name);
+}
+
+static void gen_oneof_clear(struct oneof_container* oc, sstr_t source) {
+    sstr_printf_append(source,
+        "void %S_clear(struct %S* obj) {\n"
+        "    switch (obj->tag) {\n",
+        oc->name, oc->name);
+    struct oneof_variant* v = oc->variants;
+    while (v) {
+        sstr_printf_append(source,
+            "        case %S_%S: %S_clear(&obj->value.%S); break;\n",
+            oc->name, v->name, v->struct_type_name, v->name);
+        v = v->next;
+    }
+    sstr_printf_append(source,
+        "    }\n"
+        "    memset(obj, 0, sizeof(struct %S));\n"
+        "}\n\n",
+        oc->name);
+}
+
+static void gen_oneof_marshal(struct oneof_container* oc, sstr_t source) {
+    sstr_printf_append(source,
+        "int json_marshal_indent_%S(struct %S* obj, int indent, "
+        "int curindent, sstr_t out) {\n",
+        oc->name, oc->name);
+    sstr_append_cstr(source,
+        "    char tmp_cstr[64];\n    (void)tmp_cstr;\n"
+        "    if (indent && sstr_length(out) && "
+        "sstr_cstr(out)[sstr_length(out)-1] != ':') {\n"
+        "        sstr_append_indent(out, curindent);\n"
+        "    }\n"
+        "    sstr_append_cstr(out, \"{\");\n"
+        "    sstr_append_of_if(out, \"\\n\", 1, indent);\n"
+        "    curindent += indent;\n");
+
+    // Marshal tag field
+    sstr_append_cstr(source, "    sstr_append_indent(out, curindent);\n");
+    sstr_printf_append(source,
+        "    sstr_append_cstr(out, \"\\\"%S\\\":\");\n", oc->tag_field);
+    sstr_append_cstr(source,
+        "    sstr_append_of(out, \"\\\"\", 1);\n");
+    sstr_printf_append(source,
+        "    if (obj->tag >= 0 && obj->tag < %S_tag_count) {\n"
+        "        sstr_append_cstr(out, %S_tag_strings[obj->tag]);\n"
+        "    }\n",
+        oc->name, oc->name);
+    sstr_append_cstr(source,
+        "    sstr_append_of(out, \"\\\"\", 1);\n");
+
+    // Marshal variant fields via temp buffer
+    sstr_append_cstr(source, "    switch (obj->tag) {\n");
+    struct oneof_variant* v = oc->variants;
+    while (v) {
+        sstr_printf_append(source,
+            "        case %S_%S: {\n"
+            "            sstr_t _tmp = sstr_new();\n"
+            "            json_marshal_indent_%S(&obj->value.%S, indent, curindent, _tmp);\n"
+            "            if (sstr_length(_tmp) >= 2) {\n"
+            "                const char* _s = sstr_cstr(_tmp);\n"
+            "                int _tlen = sstr_length(_tmp);\n"
+            "                int _start = 0, _end = _tlen - 1;\n"
+            "                while (_start < _tlen && _s[_start] != '{') _start++;\n"
+            "                while (_end > _start && _s[_end] != '}') _end--;\n"
+            "                _start++;\n"
+            "                if (_start < _end) {\n"
+            "                    sstr_append_cstr(out, \",\");\n"
+            "                    sstr_append_of(out, _s + _start, _end - _start);\n"
+            "                }\n"
+            "            }\n"
+            "            sstr_free(_tmp);\n"
+            "            break;\n"
+            "        }\n",
+            oc->name, v->name,
+            v->struct_type_name, v->name);
+        v = v->next;
+    }
+    sstr_append_cstr(source, "    }\n");
+
+    // Close
+    sstr_append_cstr(source,
+        "    sstr_append_of_if(out, \"\\n\", 1, indent);\n"
+        "    curindent -= indent;\n"
+        "    sstr_append_indent(out, curindent);\n"
+        "    sstr_append_of(out, \"}\", 1);\n"
+        "    return 0;\n}\n\n");
+}
+
+static void gen_oneof_unmarshal(struct oneof_container* oc, sstr_t source) {
+    sstr_printf_append(source,
+        "int json_unmarshal_%S(sstr_t in, struct %S* obj) {\n"
+        "    memset(obj, 0, sizeof(struct %S));\n"
+        "    obj->tag = -1;\n"
+        "    struct json_pos pos;\n"
+        "    pos.col = 0; pos.line = 0; pos.offset = 0;\n"
+        "    sstr_t txt = sstr_new();\n"
+        "    int tk;\n",
+        oc->name, oc->name, oc->name);
+
+    // Phase 1: scan for tag field
+    sstr_append_cstr(source,
+        "    tk = json_next_token(in, &pos, txt);\n"
+        "    if (tk != JSON_TOKEN_LEFT_BRACE) { sstr_free(txt); return -1; }\n"
+        "    while (1) {\n"
+        "        tk = json_next_token(in, &pos, txt);\n"
+        "        if (tk == JSON_TOKEN_RIGHT_BRACE || tk == JSON_TOKEN_EOF) break;\n"
+        "        if (tk == JSON_TOKEN_COMMA) continue;\n"
+        "        if (tk != JSON_TOKEN_STRING) { sstr_free(txt); return -1; }\n");
+    sstr_printf_append(source,
+        "        int _is_tag = (strcmp(sstr_cstr(txt), \"%S\") == 0);\n",
+        oc->tag_field);
+    sstr_append_cstr(source,
+        "        tk = json_next_token(in, &pos, txt);\n"
+        "        if (tk != JSON_TOKEN_COLON) { sstr_free(txt); return -1; }\n"
+        "        if (_is_tag) {\n"
+        "            tk = json_next_token(in, &pos, txt);\n"
+        "            if (tk != JSON_TOKEN_STRING) { sstr_free(txt); return -1; }\n");
+    sstr_printf_append(source,
+        "            { int _i;\n"
+        "            for (_i = 0; _i < %S_tag_count; _i++) {\n"
+        "                if (strcmp(sstr_cstr(txt), %S_tag_strings[_i]) == 0) {\n"
+        "                    obj->tag = (enum %S_tag)_i;\n"
+        "                    break;\n"
+        "                }\n"
+        "            } }\n"
+        "            break;\n"
+        "        } else {\n",
+        oc->name, oc->name, oc->name);
+    // Skip the value using depth tracking
+    sstr_append_cstr(source,
+        "            tk = json_next_token(in, &pos, txt);\n"
+        "            if (tk == JSON_TOKEN_LEFT_BRACE || tk == JSON_TOKEN_LEFT_BRACKET) {\n"
+        "                int _depth = 1;\n"
+        "                int _open = tk;\n"
+        "                int _close = (tk == JSON_TOKEN_LEFT_BRACE) ? JSON_TOKEN_RIGHT_BRACE : JSON_TOKEN_RIGHT_BRACKET;\n"
+        "                while (_depth > 0) {\n"
+        "                    tk = json_next_token(in, &pos, txt);\n"
+        "                    if (tk == JSON_TOKEN_EOF) { sstr_free(txt); return -1; }\n"
+        "                    if (tk == _open) _depth++;\n"
+        "                    else if (tk == _close) _depth--;\n"
+        "                }\n"
+        "            }\n"
+        "        }\n"
+        "    }\n"
+        "    sstr_free(txt);\n");
+
+    // Phase 2: unmarshal variant struct
+    sstr_append_cstr(source, "    switch (obj->tag) {\n");
+    struct oneof_variant* v = oc->variants;
+    while (v) {
+        sstr_printf_append(source,
+            "        case %S_%S:\n"
+            "            return json_unmarshal_%S(in, (struct %S*)&obj->value.%S);\n",
+            oc->name, v->name,
+            v->struct_type_name, v->struct_type_name, v->name);
+        v = v->next;
+    }
+    sstr_append_cstr(source,
+        "        default: return -1;\n"
+        "    }\n"
+        "}\n\n");
+}
+
+static void gen_oneof_unmarshal_array(struct oneof_container* oc, sstr_t source) {
+    sstr_printf_append(source,
+        "int json_unmarshal_array_%S(sstr_t in, struct %S** obj, int* len) {\n",
+        oc->name, oc->name);
+    sstr_append_cstr(source,
+        "    struct json_pos pos;\n"
+        "    pos.col = 0; pos.line = 0; pos.offset = 0;\n"
+        "    sstr_t txt = sstr_new();\n"
+        "    int tk;\n"
+        "    tk = json_next_token(in, &pos, txt);\n"
+        "    if (tk != JSON_TOKEN_LEFT_BRACKET) { sstr_free(txt); return -1; }\n"
+        "    *len = 0;\n"
+        "    *obj = NULL;\n"
+        "    int _cap = 0;\n"
+        "    while (1) {\n"
+        "        struct json_pos save = pos;\n"
+        "        tk = json_next_token(in, &pos, txt);\n"
+        "        if (tk == JSON_TOKEN_RIGHT_BRACKET) break;\n"
+        "        if (tk == JSON_TOKEN_COMMA) continue;\n"
+        "        pos = save;\n"
+        "        if (*len >= _cap) {\n"
+        "            _cap = _cap ? _cap * 2 : 4;\n");
+    sstr_printf_append(source,
+        "            *obj = (struct %S*)JGENC_REALLOC(*obj, sizeof(struct %S) * _cap);\n",
+        oc->name, oc->name);
+    sstr_append_cstr(source,
+        "        }\n");
+    // Extract the element JSON substring
+    sstr_append_cstr(source,
+        "        int _elem_start = pos.offset;\n"
+        "        tk = json_next_token(in, &pos, txt);\n"
+        "        if (tk == JSON_TOKEN_LEFT_BRACE) {\n"
+        "            int _depth = 1;\n"
+        "            while (_depth > 0) {\n"
+        "                tk = json_next_token(in, &pos, txt);\n"
+        "                if (tk == JSON_TOKEN_EOF) { sstr_free(txt); return -1; }\n"
+        "                if (tk == JSON_TOKEN_LEFT_BRACE) _depth++;\n"
+        "                else if (tk == JSON_TOKEN_RIGHT_BRACE) _depth--;\n"
+        "            }\n"
+        "        } else { sstr_free(txt); return -1; }\n"
+        "        int _elem_end = pos.offset;\n"
+        "        sstr_t _elem = sstr_of(sstr_cstr(in) + _elem_start, _elem_end - _elem_start);\n");
+    sstr_printf_append(source,
+        "        %S_init(&(*obj)[*len]);\n"
+        "        int _r = json_unmarshal_%S(_elem, &(*obj)[*len]);\n",
+        oc->name, oc->name);
+    sstr_append_cstr(source,
+        "        sstr_free(_elem);\n"
+        "        if (_r != 0) { sstr_free(txt); return -1; }\n"
+        "        (*len)++;\n"
+        "    }\n"
+        "    sstr_free(txt);\n"
+        "    return 0;\n"
+        "}\n\n");
+}
+
+static void gen_oneof_marshal_array(struct oneof_container* oc, sstr_t source) {
+    sstr_printf_append(source,
+        "int json_marshal_array_indent_%S(struct %S* obj, int len, "
+        "int indent, int curindent, sstr_t out) {\n",
+        oc->name, oc->name);
+    sstr_append_cstr(source,
+        "    int i;\n"
+        "    sstr_append_of(out, \"[\", 1);\n"
+        "    sstr_append_of_if(out, \"\\n\", 1, indent);\n"
+        "    curindent += indent;\n"
+        "    for (i = 0; i < len; i++) {\n");
+    sstr_printf_append(source,
+        "        json_marshal_indent_%S(&obj[i], indent, curindent, out);\n",
+        oc->name);
+    sstr_append_cstr(source,
+        "        if (i < len - 1) sstr_append_cstr(out, \",\");\n"
+        "        sstr_append_of_if(out, \"\\n\", 1, indent);\n"
+        "    }\n"
+        "    curindent -= indent;\n"
+        "    sstr_append_indent(out, curindent);\n"
+        "    sstr_append_of(out, \"]\", 1);\n"
+        "    return 0;\n}\n\n");
+}
+
+static void gen_code_oneof(struct oneof_container* oc, sstr_t source, sstr_t header) {
+    gen_oneof_header(oc, header);
+    // tag_strings already generated early by gen_oneof_statics
+    gen_oneof_init(oc, source);
+    gen_oneof_clear(oc, source);
+    gen_oneof_marshal(oc, source);
+    gen_oneof_unmarshal(oc, source);
+    gen_oneof_unmarshal_array(oc, source);
+    gen_oneof_marshal_array(oc, source);
 }
 
 // generate the struct codes
@@ -1054,6 +1419,19 @@ static void gen_code_struct(struct struct_container* st, sstr_t source,
     gen_code_struct_unmarshal_array_struct(st, source);
     // json_marshal_array_XXX()
     gen_code_struct_marshal_array(st, source);
+}
+
+// Generate oneof static data (tag strings, variant struct names) early,
+// before the offset map, so offset entries can reference them.
+static void gen_oneof_statics_fn(void* key, void* value, void* ptr) {
+    (void)key;
+    struct oneof_container* oc = (struct oneof_container*)value;
+    sstr_t source = (sstr_t)ptr;
+    gen_oneof_tag_strings(oc, source);
+}
+
+static void gen_oneof_statics(struct hash_map* oneof_map, sstr_t source) {
+    hash_map_for_each(oneof_map, gen_oneof_statics_fn, source);
 }
 
 static void count_fields_fd(void* key, void* value, void* ptr) {
@@ -1077,6 +1455,7 @@ static void count_fields_fd(void* key, void* value, void* ptr) {
 struct gen_fields_list_fn_param {
     sstr_t source;
     sstr_t header;
+    struct hash_map* oneof_map;
     int hash_size;
     int* hash_arr;
     int f_cnt;
@@ -1105,7 +1484,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
 
     sstr_printf_append(param->source,
                        "    {0, sizeof(struct %S), %d, \"\", \"\", \"%S\", 0"
-                       ", NULL, 0, 0, 0, 0, 0, -1},\n",
+                       ", NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0},\n",
                        st->name, FIELD_TYPE_STRUCT, st->name, st->name,
                        st->name);
     sstr_t empty_s = sstr_new();
@@ -1140,16 +1519,16 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                     enum_strings_expr, enum_count_expr,
                     field->map_value_type, sfx);
                 if (field->is_optional || field->is_nullable) {
-                    sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S)},\n",
+                    sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0},\n",
                                        field->is_nullable, st->name, field->name);
                 } else {
-                    sstr_append_cstr(param->source, ", 0, -1},\n");
+                    sstr_append_cstr(param->source, ", 0, -1, NULL, NULL, 0, 0},\n");
                 }
                 gen_hash_arr(st->name, JSON_KEY(field), param);
                 // _len field
                 sstr_printf_append(param->source,
                     "    {offsetof(struct %S, %S_len), sizeof(int), "
-                    "%d, \"int\", \"%S_len\", \"%S\", 0, NULL, 0, 0, 0, 0, 0, -1},\n",
+                    "%d, \"int\", \"%S_len\", \"%S\", 0, NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0},\n",
                     st->name, field->name, FIELD_TYPE_INT,
                     JSON_KEY(field), st->name);
                 sstr_t tmp = sstr_dup(JSON_KEY(field));
@@ -1168,10 +1547,10 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                     enum_strings_expr, enum_count_expr,
                     field->map_value_type, sfx);
                 if (field->is_optional || field->is_nullable) {
-                    sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S)},\n",
+                    sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0},\n",
                                        field->is_nullable, st->name, field->name);
                 } else {
-                    sstr_append_cstr(param->source, ", 0, -1},\n");
+                    sstr_append_cstr(param->source, ", 0, -1, NULL, NULL, 0, 0},\n");
                 }
                 gen_hash_arr(st->name, JSON_KEY(field), param);
             }
@@ -1186,10 +1565,45 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                                field->type, field->type_name, JSON_KEY(field),
                                st->name, field->is_array, field->array_size);
             if (field->is_optional || field->is_nullable) {
-                sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S)},\n",
+                sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0},\n",
                                    field->is_nullable, st->name, field->name);
             } else {
-                sstr_append_cstr(param->source, ", 0, -1},\n");
+                sstr_append_cstr(param->source, ", 0, -1, NULL, NULL, 0, 0},\n");
+            }
+            gen_hash_arr(st->name, JSON_KEY(field), param);
+        } else if (field->type == FIELD_TYPE_ONEOF) {
+            // Look up the oneof container to get tag_field info
+            void* oc_val = NULL;
+            struct oneof_container* oc = NULL;
+            if (param->oneof_map &&
+                hash_map_find(param->oneof_map, field->type_name, &oc_val) == HASH_MAP_OK) {
+                oc = (struct oneof_container*)oc_val;
+            }
+            sstr_printf_append(param->source,
+                               "    {offsetof(struct %S, %S), sizeof(struct "
+                               "%S), %d, \"%S\", \"%S\", "
+                               "\"%S\", %d, %S_tag_strings, %S_tag_count, %d, 0, 0",
+                               st->name, field->name, field->type_name,
+                               field->type, field->type_name, JSON_KEY(field),
+                               st->name, field->is_array,
+                               field->type_name, field->type_name,
+                               field->array_size);
+            if (field->is_optional || field->is_nullable) {
+                sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S)",
+                                   field->is_nullable, st->name, field->name);
+            } else {
+                sstr_append_cstr(param->source, ", 0, -1");
+            }
+            // oneof-specific fields
+            if (oc) {
+                sstr_printf_append(param->source,
+                    ", \"%S\", %S_variant_structs"
+                    ", (int)offsetof(struct %S, tag)"
+                    ", (int)offsetof(struct %S, value)},\n",
+                    oc->tag_field, field->type_name,
+                    field->type_name, field->type_name);
+            } else {
+                sstr_append_cstr(param->source, ", NULL, NULL, 0, 0},\n");
             }
             gen_hash_arr(st->name, JSON_KEY(field), param);
         } else if (field->type == FIELD_TYPE_ENUM) {
@@ -1202,10 +1616,10 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                 st->name, field->is_array,
                 field->type_name, field->type_name, field->array_size);
             if (field->is_optional || field->is_nullable) {
-                sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S)},\n",
+                sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0},\n",
                                    field->is_nullable, st->name, field->name);
             } else {
-                sstr_append_cstr(param->source, ", 0, -1},\n");
+                sstr_append_cstr(param->source, ", 0, -1, NULL, NULL, 0, 0},\n");
             }
             gen_hash_arr(st->name, JSON_KEY(field), param);
         } else {
@@ -1217,10 +1631,10 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                 field->type_name, JSON_KEY(field), st->name, field->is_array,
                 field->array_size);
             if (field->is_optional || field->is_nullable) {
-                sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S)},\n",
+                sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0},\n",
                                    field->is_nullable, st->name, field->name);
             } else {
-                sstr_append_cstr(param->source, ", 0, -1},\n");
+                sstr_append_cstr(param->source, ", 0, -1, NULL, NULL, 0, 0},\n");
             }
             gen_hash_arr(st->name, JSON_KEY(field), param);
         }
@@ -1228,7 +1642,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             // dynamic array: generate _len field entry
             sstr_printf_append(param->source, "    {offsetof(struct %S, %S_len), sizeof(int), "
                                "%d, \"int\", \"%S_len\", "
-                               "\"%S\", %d, NULL, 0, 0, 0, 0, 0, -1},\n",
+                               "\"%S\", %d, NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0},\n",
                                st->name, field->name, FIELD_TYPE_INT,
                                JSON_KEY(field), st->name, 0);
             sstr_t tmp = sstr_dup(JSON_KEY(field));
@@ -1311,8 +1725,9 @@ static void gen_enum_strings(struct hash_map* enum_map, sstr_t source) {
                                                 offset, type_size ...
                                             }
 */
-static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
-                                sstr_t header) {
+static void gen_code_offset_map(struct hash_map* struct_map,
+                                struct hash_map* oneof_map,
+                                sstr_t source, sstr_t header) {
     int total_fields = 0;
     hash_map_for_each(struct_map, count_fields_fd, &total_fields);
     sstr_printf_append(source, "#define JSON_FIELD_OFFSET_ITEM_SIZE %d\n",
@@ -1333,6 +1748,10 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
                      "    int map_entry_size;\n"
                      "    int is_nullable;\n"
                      "    int has_field_offset;\n"
+                     "    const char* oneof_tag_field;\n"
+                     "    const char** oneof_variant_structs;\n"
+                     "    int oneof_tag_offset;\n"
+                     "    int oneof_value_offset;\n"
                      "};\n\n");
     sstr_printf_append(
         source,
@@ -1342,12 +1761,13 @@ static void gen_code_offset_map(struct hash_map* struct_map, sstr_t source,
     struct gen_fields_list_fn_param param;
     param.header = header;
     param.source = source;
+    param.oneof_map = oneof_map;
     param.hash_size = total_fields * 2 + 1;
     param.f_cnt = 0;
     param.hash_arr = (int*)malloc(sizeof(int) * param.hash_size);
     memset(param.hash_arr, -1, sizeof(int) * param.hash_size);
     hash_map_for_each(struct_map, gen_fields_list_fn, &param);
-    sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0, NULL, 0, 0, 0, 0, 0, -1}};\n");
+    sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0, NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0}};\n");
 
     sstr_printf_append(
         source, "int json_entry_hash_size = %d;\nint json_entry_hash[%d] = {",
@@ -1398,6 +1818,12 @@ static void do_each_struct_gen_code(void* key, void* value, void* ptr) {
         }
         if (iter->type == FIELD_TYPE_MAP && iter->map_value_type == FIELD_TYPE_STRUCT) {
             int r = hash_map_find(dep_map, iter->map_value_type_name, &dv);
+            if (r != HASH_MAP_OK) {
+                return;
+            }
+        }
+        if (iter->type == FIELD_TYPE_ONEOF) {
+            int r = hash_map_find(dep_map, iter->type_name, &dv);
             if (r != HASH_MAP_OK) {
                 return;
             }
@@ -1669,7 +2095,44 @@ int gencode_source_end(sstr_t source) {
     return 0;
 }
 
-int gencode_source(struct hash_map* struct_map, struct hash_map* enum_map, sstr_t source, sstr_t header) {
+// callback + param for generating oneofs in dependency order
+struct do_each_oneof_gen_code_param {
+    struct hash_map* dependency_map;
+    struct hash_map* struct_map;
+    sstr_t source;
+    sstr_t header;
+};
+
+static void do_each_oneof_gen_code(void* key, void* value, void* ptr) {
+    sstr_t k = (sstr_t)key;
+    struct oneof_container* oc = (struct oneof_container*)value;
+    struct do_each_oneof_gen_code_param* param =
+        (struct do_each_oneof_gen_code_param*)ptr;
+    struct hash_map* dep_map = param->dependency_map;
+    void* dv = NULL;
+
+    // skip if already generated
+    int r = hash_map_find(dep_map, k, &dv);
+    if (r == HASH_MAP_OK) {
+        return;
+    }
+
+    // each variant references a struct type; all must already be generated
+    struct oneof_variant* v = oc->variants;
+    while (v) {
+        r = hash_map_find(dep_map, v->struct_type_name, &dv);
+        if (r != HASH_MAP_OK) {
+            return;
+        }
+        v = v->next;
+    }
+
+    gen_code_oneof(oc, param->source, param->header);
+    hash_map_insert(dep_map, sstr_dup(k), NULL);
+}
+
+int gencode_source(struct hash_map* struct_map, struct hash_map* enum_map,
+                   struct hash_map* oneof_map, sstr_t source, sstr_t header) {
     // to ensure the order struct definition on header file, we use a hash map
     // to store the struct names that already defined in header file.
     // if a struct is not in the hash map, we test all field of it, if any field
@@ -1701,29 +2164,37 @@ int gencode_source(struct hash_map* struct_map, struct hash_map* enum_map, sstr_
     // generate enum string arrays (must be before offset map which references them)
     gen_enum_strings(enum_map, source);
 
+    // generate oneof static data (tag strings, variant struct names)
+    // must be before offset map which references them
+    gen_oneof_statics(oneof_map, source);
+
     // generate a hashmap to store the structs name, fields, types, and the
     // offset of each field on the struct. the json parser codes need this
     // information to store the parsed data.
-    gen_code_offset_map(struct_map, source, header);
+    gen_code_offset_map(struct_map, oneof_map, source, header);
 
-    // Think about the worst case, we only have one struct defined on each loop,
-    // then we must have loop through struct_map the times same as the number of
-    // structs.
-    for (i = 0; i < struct_map->size; ++i) {
-        // for each struct, find a struct that not defined and all it's fields
-        // are already defined, generate the codes for it.
+    // Generate structs and oneofs in dependency order.
+    // Each pass tries to generate all structs whose deps are met, then
+    // all oneofs whose variant struct deps are met.
+    int total = struct_map->size + oneof_map->size;
+    struct do_each_oneof_gen_code_param oneof_param;
+    oneof_param.dependency_map = dependency_map;
+    oneof_param.struct_map = struct_map;
+    oneof_param.source = source;
+    oneof_param.header = header;
+
+    for (i = 0; i < total; ++i) {
         hash_map_for_each(struct_map, do_each_struct_gen_code, &param);
-        if (struct_map->size == dependency_map->size) {
+        hash_map_for_each(oneof_map, do_each_oneof_gen_code, &oneof_param);
+        if (dependency_map->size >= total) {
             break;
         }
     }
-    // if all struct are already defined, the dependency_map's size
-    // should be equal to struct_map's size.
-    // if not, we have a circular dependency.
-    if (struct_map->size != dependency_map->size) {
-        printf("msize = %d, d size=%d\n", struct_map->size,
+    // check for unresolved dependencies
+    if (dependency_map->size < total) {
+        printf("msize = %d, d size=%d\n", total,
                dependency_map->size);
-        fprintf(stderr, "struct dependency circle detected\n");
+        fprintf(stderr, "struct/oneof dependency circle detected\n");
         hash_map_free(dependency_map);
         return -1;
     }
