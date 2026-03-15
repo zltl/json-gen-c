@@ -37,6 +37,7 @@ extern "C" {
 #define FIELD_TYPE_UINT16 14
 #define FIELD_TYPE_UINT32 15
 #define FIELD_TYPE_UINT64 16
+#define FIELD_TYPE_ONEOF 17
 
 #define TYPE_NAME_INT "int"
 #define TYPE_NAME_BOOL "bool"
@@ -77,6 +78,32 @@ struct enum_container {
     struct enum_value* values;
     int count;
     // source position where the enum name was defined
+    int name_line;
+    int name_col;
+    // source filename (not owned)
+    const char *filename;
+};
+
+/**
+ * @brief structure to store a single variant of a oneof (tagged union).
+ * Variants are stored as a linked list.
+ */
+struct oneof_variant {
+    sstr_t name;              // variant name (used as tag value string)
+    sstr_t struct_type_name;  // the struct type this variant maps to
+    int index;                // 0-based variant index
+    struct oneof_variant* next;
+};
+
+/**
+ * @brief structure to store a parsed oneof (tagged union) definition.
+ */
+struct oneof_container {
+    sstr_t name;
+    sstr_t tag_field;          // JSON discriminator key (default: "type")
+    struct oneof_variant* variants;
+    int count;
+    // source position where the oneof name was defined
     int name_line;
     int name_col;
     // source filename (not owned)
@@ -154,6 +181,8 @@ struct struct_parser {
     struct hash_map* struct_map;
     // enum name --> enum_container
     struct hash_map* enum_map;
+    // oneof name --> oneof_container
+    struct hash_map* oneof_map;
     // position of string to be parsed
     struct pos pos;
     // name of parser

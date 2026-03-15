@@ -1044,6 +1044,289 @@ static int json_unmarshal_ignore_value(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
+/**
+ * @brief Scan a JSON object for a specific string-valued key without consuming
+ *        the object.  Used by oneof (tagged union) unmarshal to discover the
+ *        discriminator value before dispatching to the correct variant.
+ *
+ * On entry *pos must point just past the opening '{' of the object.
+ * On return *pos is restored to that same location regardless of success or
+ * failure.
+ *
+ * @param content   Full JSON input string.
+ * @param pos       Current parse position (saved/restored).
+ * @param tag_field The JSON key name to look for (e.g. "type").
+ * @param out_value On success, receives the string value of the tag field.
+ *                  Caller must free with sstr_free().
+ * @param txt       Error / debug message buffer.
+ * @return 0 on success, -1 on error (tag key not found or parse error).
+ */
+static int json_scan_tag_value(sstr_t content, struct json_pos* pos,
+                               const char* tag_field, sstr_t out_value,
+                               sstr_t txt) {
+    struct json_pos saved = *pos;
+    int found = 0;
+
+    while (1) {
+        sstr_t key_txt = sstr_new();
+        int tk = json_next_token(content, pos, key_txt);
+        if (tk == JSON_TOKEN_RIGHT_BRACE || tk == JSON_TOKEN_EOF ||
+            tk == JSON_ERROR) {
+            sstr_free(key_txt);
+            break;
+        }
+        if (tk == JSON_TOKEN_COMMA) {
+            sstr_free(key_txt);
+            continue;
+        }
+        if (tk != JSON_TOKEN_STRING) {
+            sstr_free(key_txt);
+            break;
+        }
+
+        /* Consume colon. */
+        sstr_t colon_txt = sstr_new();
+        int colon_tk = json_next_token(content, pos, colon_txt);
+        sstr_free(colon_txt);
+        if (colon_tk != JSON_TOKEN_COLON) {
+            sstr_free(key_txt);
+            break;
+        }
+
+        if (strcmp(sstr_cstr(key_txt), tag_field) == 0) {
+            /* Next token must be a string. */
+            sstr_t val_txt = sstr_new();
+            int val_tk = json_next_token(content, pos, val_txt);
+            if (val_tk == JSON_TOKEN_STRING) {
+                sstr_append(out_value, val_txt);
+                found = 1;
+            }
+            sstr_free(val_txt);
+            sstr_free(key_txt);
+            break;
+        }
+        sstr_free(key_txt);
+        /* Skip the value we don't care about. */
+        json_unmarshal_ignore_value(content, pos, txt);
+    }
+
+    *pos = saved;
+    if (!found) {
+        sstr_t e = PERROR(pos, "oneof: tag field \"%s\" not found", tag_field);
+        sstr_append(txt, e);
+        sstr_free(e);
+        return -1;
+    }
+    return 0;
+}
+
+/**
+ * @brief Generic unmarshal for a oneof (tagged union).
+ *
+ * Two-pass algorithm:
+ *   1. Save pos, read '{', scan for tag field, restore pos.
+ *   2. Based on tag string, set the tag enum, then call
+ *      json_unmarshal_struct_internal() targeting the variant union member.
+ *      That function reads '{' again from the restored position and parses
+ *      the whole object — the tag field is simply skipped as an unknown field
+ *      by the variant struct's offset table.
+ *
+ * @param content              Full JSON input.
+ * @param pos                  Current parse position (before the '{').
+ * @param instance             Pointer to the oneof struct instance.
+ * @param tag_field            JSON key name used as discriminator (e.g. "type").
+ * @param variant_names        Array of tag string values (one per variant).
+ * @param variant_struct_names Array of C struct names (one per variant).
+ * @param variant_count        Number of variants.
+ * @param tag_offset           offsetof(struct Oneof, tag).
+ * @param value_offset         offsetof(struct Oneof, value).
+ * @param txt                  Error buffer.
+ * @return 0 on success, -1 on error.
+ */
+static int json_unmarshal_oneof_internal(sstr_t content, struct json_pos* pos,
+                                         void* instance,
+                                         const char* tag_field,
+                                         const char** variant_names,
+                                         const char** variant_struct_names,
+                                         int variant_count,
+                                         int tag_offset, int value_offset,
+                                         sstr_t txt) {
+    /* Save position before '{' for pass 2. */
+    struct json_pos saved = *pos;
+
+    /* Pass 1: consume '{', scan for tag, restore position. */
+    sstr_t tmp = sstr_new();
+    int tk = json_next_token(content, pos, tmp);
+    sstr_free(tmp);
+    if (tk == JSON_TOKEN_EOF) {
+        return 0;
+    }
+    if (tk == JSON_ERROR) {
+        return -1;
+    }
+    if (tk != JSON_TOKEN_LEFT_BRACE) {
+        sstr_t e = PERROR(pos, "oneof: expected '{' but got token %d", tk);
+        sstr_append(txt, e);
+        sstr_free(e);
+        return -1;
+    }
+
+    /* pos is now past '{'. Scan for the tag field. */
+    sstr_t tag_value = sstr_new();
+    int r = json_scan_tag_value(content, pos, tag_field, tag_value, txt);
+    if (r < 0) {
+        sstr_free(tag_value);
+        return -1;
+    }
+
+    /* Match tag value to a variant. */
+    int matched = -1;
+    int i;
+    for (i = 0; i < variant_count; i++) {
+        if (strcmp(sstr_cstr(tag_value), variant_names[i]) == 0) {
+            matched = i;
+            break;
+        }
+    }
+    if (matched < 0) {
+        sstr_t e = PERROR(pos, "oneof: unknown tag value \"%s\"",
+                          sstr_cstr(tag_value));
+        sstr_append(txt, e);
+        sstr_free(e);
+        sstr_free(tag_value);
+        return -1;
+    }
+    sstr_free(tag_value);
+
+    /* Set the tag enum value. */
+    *(int*)((char*)instance + tag_offset) = matched;
+
+    /* Pass 2: restore to before '{' and unmarshal as the variant struct.
+     * json_unmarshal_struct_internal will read '{' and parse all fields.
+     * The tag field (e.g. "type") will be looked up in the variant struct's
+     * offset table and not found, so it gets harmlessly skipped. */
+    *pos = saved;
+
+    struct json_parse_param sub;
+    sub.instance_ptr = (char*)instance + value_offset;
+    sub.in_array = 0;
+    sub.in_struct = 1;
+    sub.struct_name = variant_struct_names[matched];
+    sub.field_name = "";
+    r = json_unmarshal_struct_internal(content, pos, &sub, txt);
+    if (r < 0) {
+        return -1;
+    }
+    return 0;
+}
+
+/**
+ * @brief Unmarshal a JSON array of oneof (tagged union) elements.
+ *
+ * Parses '[', then for each element calls json_unmarshal_oneof_internal.
+ * Grows the array dynamically using JGENC_REALLOC.
+ *
+ * @param content              Full JSON input.
+ * @param pos                  Current parse position (before '[').
+ * @param arr_pp               Pointer to the array pointer (output).
+ * @param ptrlen               Pointer to the array length (output).
+ * @param element_size         sizeof(struct OneofType).
+ * @param tag_field            JSON discriminator key name.
+ * @param variant_names        Array of variant tag strings.
+ * @param variant_struct_names Array of variant struct names.
+ * @param variant_count        Number of variants.
+ * @param tag_offset           offsetof(struct Oneof, tag).
+ * @param value_offset         offsetof(struct Oneof, value).
+ * @param txt                  Error buffer.
+ * @return 0 on success, -1 on error.
+ */
+static int json_unmarshal_array_internal_oneof(
+    sstr_t content, struct json_pos* pos,
+    void** arr_pp, int* ptrlen, int element_size,
+    const char* tag_field,
+    const char** variant_names,
+    const char** variant_struct_names,
+    int variant_count,
+    int tag_offset, int value_offset,
+    sstr_t txt) {
+
+    int tk = json_next_token(content, pos, txt);
+    if (tk == JSON_TOKEN_NULL) {
+        return 0;
+    }
+    if (tk != JSON_TOKEN_LEFT_BRACKET) {
+        sstr_t e = PERROR(pos, "expected '[' but got %s", ptoken(tk, txt));
+        sstr_append(txt, e);
+        sstr_free(e);
+        return -1;
+    }
+
+    char* arr = NULL;
+    int len = 0;
+    int cap = 0;
+
+    while (1) {
+        /* Peek for ']' */
+        struct json_pos peek = *pos;
+        sstr_t peek_txt = sstr_new();
+        int peek_tk = json_next_token(content, &peek, peek_txt);
+        sstr_free(peek_txt);
+        if (peek_tk == JSON_TOKEN_RIGHT_BRACKET) {
+            *pos = peek;
+            break;
+        }
+
+        /* Grow array if needed. */
+        if (len >= cap) {
+            cap = cap == 0 ? 4 : cap * 2;
+            arr = (char*)JGENC_REALLOC(arr, (size_t)cap * element_size);
+            if (!arr) return -1;
+        }
+        memset(arr + len * element_size, 0, (size_t)element_size);
+
+        int r = json_unmarshal_oneof_internal(
+            content, pos,
+            arr + len * element_size,
+            tag_field, variant_names, variant_struct_names,
+            variant_count, tag_offset, value_offset, txt);
+        if (r < 0) {
+            JGENC_FREE(arr);
+            *arr_pp = NULL;
+            *ptrlen = 0;
+            return -1;
+        }
+        len++;
+
+        /* Expect ',' or ']'. */
+        peek = *pos;
+        sstr_t sep_txt = sstr_new();
+        peek_tk = json_next_token(content, &peek, sep_txt);
+        sstr_free(sep_txt);
+        if (peek_tk == JSON_TOKEN_RIGHT_BRACKET) {
+            *pos = peek;
+            break;
+        }
+        if (peek_tk == JSON_TOKEN_COMMA) {
+            *pos = peek;
+            continue;
+        }
+        if (peek_tk == JSON_ERROR || peek_tk == JSON_TOKEN_EOF) {
+            JGENC_FREE(arr);
+            *arr_pp = NULL;
+            *ptrlen = 0;
+            return -1;
+        }
+    }
+
+    /* Shrink to fit. */
+    if (len > 0 && len < cap) {
+        arr = (char*)JGENC_REALLOC(arr, (size_t)len * element_size);
+    }
+    *arr_pp = arr;
+    *ptrlen = len;
+    return 0;
+}
+
 // parse array of string like
 //    [1, 2, 3, 8, 3, 5]
 static int json_unmarshal_array_internal_int(sstr_t content,
@@ -2022,6 +2305,18 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                                                            &sub, txt);
                         break;
                     }
+                    case FIELD_TYPE_ONEOF:
+                        r = json_unmarshal_oneof_internal(
+                            content, pos,
+                            (char*)base + count * fi->type_size,
+                            fi->oneof_tag_field,
+                            fi->enum_strings,
+                            fi->oneof_variant_structs,
+                            fi->enum_count,
+                            fi->oneof_tag_offset,
+                            fi->oneof_value_offset,
+                            txt);
+                        break;
                     default:
                         r = -1;
                         break;
@@ -2154,6 +2449,21 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                         (int**)(fi->offset + param->instance_ptr), &len,
                         fi->enum_strings, fi->enum_count, txt);
                     break;
+                case FIELD_TYPE_ONEOF: {
+                    int r2 = json_unmarshal_array_internal_oneof(
+                        content, pos,
+                        (void**)(fi->offset + param->instance_ptr), &len,
+                        fi->type_size,
+                        fi->oneof_tag_field,
+                        fi->enum_strings,
+                        fi->oneof_variant_structs,
+                        fi->enum_count,
+                        fi->oneof_tag_offset,
+                        fi->oneof_value_offset,
+                        txt);
+                    if (r2 < 0) return -1;
+                    break;
+                }
                 default: {
                     sstr_t e = PERROR(pos, "unsupported field type %d",
                                       fi->field_type);
@@ -2303,6 +2613,22 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                     return r;
                 }
                 break;
+
+            case FIELD_TYPE_ONEOF: {
+                r = json_unmarshal_oneof_internal(
+                    content, pos,
+                    (char*)param->instance_ptr + fi->offset,
+                    fi->oneof_tag_field,
+                    fi->enum_strings,
+                    fi->oneof_variant_structs,
+                    fi->enum_count,
+                    fi->oneof_tag_offset,
+                    fi->oneof_value_offset,
+                    txt);
+                if (r < 0) {
+                    return -1;
+                }
+            } break;
         }
         if (fi->has_field_offset >= 0) {
             *(bool*)((char*)param->instance_ptr + fi->has_field_offset) = true;

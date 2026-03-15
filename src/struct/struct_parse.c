@@ -139,6 +139,29 @@ static void enum_container_value_free(void* ptr) {
     enum_container_free((struct enum_container*)ptr);
 }
 
+static void oneof_variant_free(struct oneof_variant* v) {
+    while (v) {
+        struct oneof_variant* next = v->next;
+        sstr_free(v->name);
+        sstr_free(v->struct_type_name);
+        free(v);
+        v = next;
+    }
+}
+
+static void oneof_container_free(struct oneof_container* oc) {
+    if (oc) {
+        sstr_free(oc->name);
+        sstr_free(oc->tag_field);
+        oneof_variant_free(oc->variants);
+        free(oc);
+    }
+}
+
+static void oneof_container_value_free(void* ptr) {
+    oneof_container_free((struct oneof_container*)ptr);
+}
+
 struct struct_parser* struct_parser_new() {
     struct struct_parser* parser =
         (struct struct_parser*)malloc(sizeof(struct struct_parser));
@@ -160,6 +183,15 @@ struct struct_parser* struct_parser_new() {
         free(parser);
         return NULL;
     }
+    parser->oneof_map =
+        hash_map_new(STRUCT_MAP_BUCKET_SIZE, sstr_key_hash, sstr_key_cmp,
+                     sstr_key_free, oneof_container_value_free);
+    if (parser->oneof_map == NULL) {
+        hash_map_free(parser->enum_map);
+        hash_map_free(parser->struct_map);
+        free(parser);
+        return NULL;
+    }
     parser->pos.col = 0;
     parser->pos.line = 1;
     parser->pos.offset = 0;
@@ -173,6 +205,7 @@ void struct_parser_free(struct struct_parser* parser) {
     if (parser) {
         hash_map_free(parser->struct_map);
         hash_map_free(parser->enum_map);
+        hash_map_free(parser->oneof_map);
         if (parser->diag) {
             diag_engine_free(parser->diag);
             parser->diag = NULL;
@@ -458,14 +491,15 @@ static void skip_to_semicolon(struct struct_parser* parser, sstr_t content,
 
 static void skip_to_top_level(struct struct_parser* parser, sstr_t content,
                               struct struct_token* token) {
-    /* Skip tokens until we find struct/enum/# or EOF */
+    /* Skip tokens until we find struct/enum/oneof/# or EOF */
     while (1) {
         int tk = next_token(parser, content, token);
         if (tk == TOKEN_EOF) return;
         if (tk == TOKEN_SHARPE) return;
         if (tk == TOKEN_IDENTIFY &&
             (sstr_compare_c(token->txt, "struct") == 0 ||
-             sstr_compare_c(token->txt, "enum") == 0)) {
+             sstr_compare_c(token->txt, "enum") == 0 ||
+             sstr_compare_c(token->txt, "oneof") == 0)) {
             return;
         }
     }
@@ -557,6 +591,7 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     sub_parser.struct_map = parser->struct_map;
     // then we step into the sub file.
     sub_parser.enum_map = parser->enum_map;
+    sub_parser.oneof_map = parser->oneof_map;
     // sub-parser gets its own diag engine for correct filename/source
     sub_parser.diag = diag_engine_new(sstr_cstr(file), sstr_cstr(sub_content),
                                       (long)sstr_length(sub_content));
@@ -796,8 +831,11 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
     } else {
         // check if type_name is a known enum
         void* enum_val = NULL;
+        void* oneof_val = NULL;
         if (hash_map_find(parser->enum_map, type_name, &enum_val) == HASH_MAP_OK) {
             type_id = FIELD_TYPE_ENUM;
+        } else if (hash_map_find(parser->oneof_map, type_name, &oneof_val) == HASH_MAP_OK) {
+            type_id = FIELD_TYPE_ONEOF;
         } else {
             type_id = FIELD_TYPE_STRUCT;
         }
@@ -992,7 +1030,7 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
         v->index = idx++;
     }
 
-    // Check for duplicate enum name or name clash with struct
+    // Check for duplicate enum name or name clash with struct/oneof
     void* existing = NULL;
     if (hash_map_find(parser->enum_map, ec->name, &existing) == HASH_MAP_OK) {
         PERROR(parser, "duplicate enum name '%s'", sstr_cstr(ec->name));
@@ -1004,7 +1042,194 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
         enum_container_free(ec);
         return -1;
     }
+    if (hash_map_find(parser->oneof_map, ec->name, &existing) == HASH_MAP_OK) {
+        PERROR(parser, "'%s' already defined as a oneof", sstr_cstr(ec->name));
+        enum_container_free(ec);
+        return -1;
+    }
     hash_map_insert(parser->enum_map, sstr_dup(ec->name), ec);
+    return had_error ? -1 : 0;
+}
+
+// parse a oneof body: name '{' [@tag "tagname"] (StructType variant_name ';')+ '}'
+// the 'oneof' keyword must already be consumed by caller.
+static int parse_oneof_body(struct struct_parser* parser, sstr_t content,
+                             struct struct_token* token) {
+    // 'name'
+    int tk = next_token(parser, content, token);
+    if (tk != TOKEN_IDENTIFY) {
+        PERROR(parser, "expected oneof name, found '%s'",
+               token_type_str(token));
+        return -1;
+    }
+    sstr_t oneof_name = token->txt;
+    token->txt = NULL;
+    int oneof_name_line = parser->pos.line;
+    int oneof_name_col = parser->pos.col;
+
+    // '{'
+    tk = next_token(parser, content, token);
+    if (tk != TOKEN_LEFT_BRACE) {
+        PERROR(parser, "expected '{', found '%s'",
+               token_type_str(token));
+        sstr_free(oneof_name);
+        return -1;
+    }
+
+    struct oneof_container* oc =
+        (struct oneof_container*)malloc(sizeof(struct oneof_container));
+    if (oc == NULL) {
+        sstr_free(oneof_name);
+        return -1;
+    }
+    oc->name = oneof_name;
+    oc->tag_field = sstr("type");  // default tag field name
+    oc->variants = NULL;
+    oc->count = 0;
+    oc->name_line = oneof_name_line;
+    oc->name_col = oneof_name_col;
+    oc->filename = parser->name;
+
+    int had_error = 0;
+    while (1) {
+        tk = next_meaningful_token(parser, content, token);
+        if (tk == TOKEN_RIGHT_BRACE) {
+            break;
+        }
+        if (tk == TOKEN_EOF) {
+            PERROR(parser, "unexpected end of file in oneof '%s'",
+                   sstr_cstr(oneof_name));
+            oneof_container_free(oc);
+            return -1;
+        }
+
+        // @tag "field_name" annotation
+        if (tk == TOKEN_AT) {
+            tk = next_token(parser, content, token);
+            if (tk != TOKEN_IDENTIFY || sstr_compare_c(token->txt, "tag") != 0) {
+                PERROR(parser, "expected 'tag' after '@' in oneof, found '%s'",
+                       token_type_str(token));
+                had_error = 1;
+                continue;
+            }
+            tk = next_token(parser, content, token);
+            if (tk != TOKEN_STRING) {
+                PERROR(parser, "expected string after '@tag' in oneof, found '%s'",
+                       token_type_str(token));
+                had_error = 1;
+                continue;
+            }
+            sstr_free(oc->tag_field);
+            oc->tag_field = token->txt;
+            token->txt = NULL;
+            continue;
+        }
+
+        // expect: StructType variant_name ';'
+        if (tk != TOKEN_IDENTIFY) {
+            PERROR(parser, "expected struct type name in oneof, found '%s'",
+                   token_type_str(token));
+            had_error = 1;
+            while (token->type != TOKEN_SEMICOLON &&
+                   token->type != TOKEN_RIGHT_BRACE &&
+                   token->type != TOKEN_EOF) {
+                next_token(parser, content, token);
+            }
+            if (token->type == TOKEN_RIGHT_BRACE) break;
+            continue;
+        }
+        sstr_t struct_type = token->txt;
+        token->txt = NULL;
+
+        tk = next_token(parser, content, token);
+        if (tk != TOKEN_IDENTIFY) {
+            PERROR(parser, "expected variant name in oneof, found '%s'",
+                   token_type_str(token));
+            sstr_free(struct_type);
+            had_error = 1;
+            while (token->type != TOKEN_SEMICOLON &&
+                   token->type != TOKEN_RIGHT_BRACE &&
+                   token->type != TOKEN_EOF) {
+                next_token(parser, content, token);
+            }
+            if (token->type == TOKEN_RIGHT_BRACE) break;
+            continue;
+        }
+        sstr_t variant_name = token->txt;
+        token->txt = NULL;
+
+        tk = next_token(parser, content, token);
+        if (tk != TOKEN_SEMICOLON) {
+            PERROR(parser, "expected ';' after variant declaration, found '%s'",
+                   token_type_str(token));
+            sstr_free(struct_type);
+            sstr_free(variant_name);
+            had_error = 1;
+            while (token->type != TOKEN_SEMICOLON &&
+                   token->type != TOKEN_RIGHT_BRACE &&
+                   token->type != TOKEN_EOF) {
+                next_token(parser, content, token);
+            }
+            if (token->type == TOKEN_RIGHT_BRACE) break;
+            continue;
+        }
+
+        struct oneof_variant* v =
+            (struct oneof_variant*)malloc(sizeof(struct oneof_variant));
+        if (v == NULL) {
+            sstr_free(struct_type);
+            sstr_free(variant_name);
+            oneof_container_free(oc);
+            return -1;
+        }
+        v->name = variant_name;
+        v->struct_type_name = struct_type;
+        v->index = oc->count;
+        v->next = oc->variants;
+        oc->variants = v;
+        oc->count++;
+    }
+
+    if (oc->count == 0) {
+        PERROR(parser, "oneof '%s' has no variants", sstr_cstr(oneof_name));
+        oneof_container_free(oc);
+        return -1;
+    }
+
+    // reverse the variants list so they are in order
+    struct oneof_variant* prev = NULL;
+    struct oneof_variant* cur = oc->variants;
+    while (cur) {
+        struct oneof_variant* next = cur->next;
+        cur->next = prev;
+        prev = cur;
+        cur = next;
+    }
+    oc->variants = prev;
+    // re-index after reversing
+    int idx = 0;
+    for (struct oneof_variant* v = oc->variants; v; v = v->next) {
+        v->index = idx++;
+    }
+
+    // Check for duplicate name or clashes with struct/enum
+    void* existing = NULL;
+    if (hash_map_find(parser->oneof_map, oc->name, &existing) == HASH_MAP_OK) {
+        PERROR(parser, "duplicate oneof name '%s'", sstr_cstr(oc->name));
+        oneof_container_free(oc);
+        return -1;
+    }
+    if (hash_map_find(parser->struct_map, oc->name, &existing) == HASH_MAP_OK) {
+        PERROR(parser, "'%s' already defined as a struct", sstr_cstr(oc->name));
+        oneof_container_free(oc);
+        return -1;
+    }
+    if (hash_map_find(parser->enum_map, oc->name, &existing) == HASH_MAP_OK) {
+        PERROR(parser, "'%s' already defined as an enum", sstr_cstr(oc->name));
+        oneof_container_free(oc);
+        return -1;
+    }
+    hash_map_insert(parser->oneof_map, sstr_dup(oc->name), oc);
     return had_error ? -1 : 0;
 }
 
@@ -1104,11 +1329,12 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
             continue;
         }
 
-        // expect 'struct' or 'enum' keyword
+        // expect 'struct', 'enum', or 'oneof' keyword
         if (tk != TOKEN_IDENTIFY ||
             (sstr_compare_c(token.txt, "struct") != 0 &&
-             sstr_compare_c(token.txt, "enum") != 0)) {
-            PERROR(parser, "expected 'struct', 'enum' or '#include', found '%s'",
+             sstr_compare_c(token.txt, "enum") != 0 &&
+             sstr_compare_c(token.txt, "oneof") != 0)) {
+            PERROR(parser, "expected 'struct', 'enum', 'oneof' or '#include', found '%s'",
                    token_type_str(&token));
             // recovery: skip to next top-level keyword
             skip_to_top_level(parser, content, &token);
@@ -1119,11 +1345,20 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
                 if (r != 0) continue;
                 continue;
             }
-            // Fall through: token is 'struct' or 'enum'
+            // Fall through: token is 'struct', 'enum', or 'oneof'
         }
 
         if (token.txt && sstr_compare_c(token.txt, "enum") == 0) {
             int r = parse_enum_body(parser, content, &token);
+            if (r != 0) {
+                // error already recorded; continue parsing
+                continue;
+            }
+            continue;
+        }
+
+        if (token.txt && sstr_compare_c(token.txt, "oneof") == 0) {
+            int r = parse_oneof_body(parser, content, &token);
             if (r != 0) {
                 // error already recorded; continue parsing
                 continue;
@@ -1143,7 +1378,7 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
             // we insert fields into sct->fields to the head of the list,
             // so the list is reversed.
             struct_field_reverse(&sct->fields);
-            // Check for duplicate struct name or name clash with enum
+            // Check for duplicate struct name or name clash with enum/oneof
             void* existing = NULL;
             if (hash_map_find(parser->struct_map, sct->name, &existing) == HASH_MAP_OK) {
                 PERROR(parser, "duplicate struct name '%s'", sstr_cstr(sct->name));
@@ -1152,6 +1387,11 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
             }
             if (hash_map_find(parser->enum_map, sct->name, &existing) == HASH_MAP_OK) {
                 PERROR(parser, "'%s' already defined as an enum", sstr_cstr(sct->name));
+                struct_container_free(sct);
+                continue;
+            }
+            if (hash_map_find(parser->oneof_map, sct->name, &existing) == HASH_MAP_OK) {
+                PERROR(parser, "'%s' already defined as a oneof", sstr_cstr(sct->name));
                 struct_container_free(sct);
                 continue;
             }
@@ -1198,6 +1438,7 @@ struct validate_ctx {
     struct diag_engine* diag;
     struct hash_map* struct_map;
     struct hash_map* enum_map;
+    struct hash_map* oneof_map;
 };
 
 static void validate_struct_fields(void* key, void* value, void* ptr) {
@@ -1224,6 +1465,14 @@ static void validate_struct_fields(void* key, void* value, void* ptr) {
             if (hash_map_find(ctx->struct_map, f->type_name, &found) != HASH_MAP_OK) {
                 diag_emit(ctx->diag, DIAG_ERROR, f->line, f->col,
                           "use of undefined type '%s' in struct '%s' field '%s'",
+                          sstr_cstr(f->type_name), sname, sstr_cstr(f->name));
+            }
+        }
+        if (f->type == FIELD_TYPE_ONEOF) {
+            void* found = NULL;
+            if (hash_map_find(ctx->oneof_map, f->type_name, &found) != HASH_MAP_OK) {
+                diag_emit(ctx->diag, DIAG_ERROR, f->line, f->col,
+                          "use of undefined oneof type '%s' in struct '%s' field '%s'",
                           sstr_cstr(f->type_name), sname, sstr_cstr(f->name));
             }
         }
@@ -1299,6 +1548,40 @@ static void validate_enum_values(void* key, void* value, void* ptr) {
     }
 }
 
+static void validate_oneof_variants(void* key, void* value, void* ptr) {
+    (void)key;
+    struct oneof_container* oc = (struct oneof_container*)value;
+    struct validate_ctx* ctx = (struct validate_ctx*)ptr;
+    const char* oname = sstr_cstr(oc->name);
+
+    /* Check that all variant struct types exist */
+    for (struct oneof_variant* v = oc->variants; v; v = v->next) {
+        void* found = NULL;
+        if (hash_map_find(ctx->struct_map, v->struct_type_name, &found) != HASH_MAP_OK) {
+            diag_emit(ctx->diag, DIAG_ERROR, oc->name_line, oc->name_col,
+                      "variant '%s' references undefined struct '%s' in oneof '%s'",
+                      sstr_cstr(v->name), sstr_cstr(v->struct_type_name), oname);
+        }
+    }
+
+    /* Check for duplicate variant names */
+    for (struct oneof_variant* v = oc->variants; v; v = v->next) {
+        for (struct oneof_variant* w = v->next; w; w = w->next) {
+            if (sstr_compare(v->name, w->name) == 0) {
+                diag_emit(ctx->diag, DIAG_ERROR, oc->name_line, oc->name_col,
+                          "duplicate variant name '%s' in oneof '%s'",
+                          sstr_cstr(v->name), oname);
+            }
+        }
+    }
+
+    /* Check oneof name against C keywords */
+    if (oc->name && is_c_keyword(oname)) {
+        diag_emit(ctx->diag, DIAG_WARNING, oc->name_line, oc->name_col,
+                  "oneof name '%s' is a C keyword", oname);
+    }
+}
+
 int struct_parser_validate(struct struct_parser* parser) {
     if (parser == NULL) return 0;
 
@@ -1312,9 +1595,11 @@ int struct_parser_validate(struct struct_parser* parser) {
     ctx.diag = diag;
     ctx.struct_map = parser->struct_map;
     ctx.enum_map = parser->enum_map;
+    ctx.oneof_map = parser->oneof_map;
 
     hash_map_for_each(parser->struct_map, validate_struct_fields, &ctx);
     hash_map_for_each(parser->enum_map, validate_enum_values, &ctx);
+    hash_map_for_each(parser->oneof_map, validate_oneof_variants, &ctx);
 
     int has_errors = diag_has_errors(diag);
     if (diag->count > 0) {

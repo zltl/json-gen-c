@@ -1191,8 +1191,8 @@ static void gen_oneof_marshal(struct oneof_container* oc, sstr_t source) {
     sstr_append_cstr(source,
         "    sstr_append_of(out, \"\\\"\", 1);\n");
     sstr_printf_append(source,
-        "    if (obj->tag >= 0 && obj->tag < %S_tag_count) {\n"
-        "        sstr_append_cstr(out, %S_tag_strings[obj->tag]);\n"
+        "    if ((int)obj->tag >= 0 && (int)obj->tag < %S_tag_count) {\n"
+        "        sstr_append_cstr(out, %S_tag_strings[(int)obj->tag]);\n"
         "    }\n",
         oc->name, oc->name);
     sstr_append_cstr(source,
@@ -2086,6 +2086,10 @@ int gencode_source_begin(sstr_t source) {
         "#endif\n\n");
 
     sstr_append_of(source, json_parse_h, (size_t)json_parse_h_len);
+    // Forward-declare json_next_token so oneof unmarshal code (generated
+    // before json_parse.c is appended) can call it.
+    sstr_append_cstr(source,
+        "static int json_next_token(sstr_t content, struct json_pos* pos, sstr_t txt);\n\n");
     gen_code_scalar_marshal_array(source);
     return 0;
 }

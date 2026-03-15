@@ -18,13 +18,14 @@ json\-gen\-c \- generate C code for JSON serialization and deserialization
 .SH DESCRIPTION
 .B json\-gen\-c
 reads a schema definition file (\f[C].json\-gen\-c\f[R]) containing
-struct and enum declarations and generates C source code to serialize
-(marshal) C structs to JSON and deserialize (unmarshal) JSON back to
-C structs.
+struct, enum, and oneof declarations and generates C source code to
+serialize (marshal) C structs to JSON and deserialize (unmarshal) JSON
+back to C structs.
 .PP
-The generated code supports nested structs, enums, dynamic and
-fixed\-size arrays, key\-value maps, optional and nullable fields,
-JSON field aliases, default values, and precise\-width integer types.
+The generated code supports nested structs, enums, tagged unions
+(oneof), dynamic and fixed\-size arrays, key\-value maps, optional and
+nullable fields, JSON field aliases, default values, and precise\-width
+integer types.
 .SH SCHEMA SYNTAX
 Schema files use a C\-like syntax with additional keywords.
 Comments are supported in both \f[C]//\f[R] single\-line and
@@ -56,6 +57,37 @@ Enum values are marshaled as JSON strings (e.g. \f[C]"GREEN"\f[R]) and
 unmarshaled from either strings or integers.
 Generated C constants are prefixed with the enum name
 (e.g. \f[C]Color_RED\f[R], \f[C]Color_GREEN\f[R]).
+.SS Tagged Unions (oneof)
+Tagged unions (discriminated unions) represent a value that can be one
+of several variant types, identified by a tag field in JSON:
+.IP
+.nf
+\f[C]
+oneof Shape {
+    @tag "type"
+    Circle circle;
+    Rectangle rectangle;
+}
+\f[R]
+.fi
+.PP
+\f[C]@tag "field"\f[R] sets the JSON discriminator key (defaults to
+\f[C]"type"\f[R] if omitted).
+Each variant references a previously defined struct.
+.PP
+JSON uses a flattened representation where the tag and variant fields
+are at the same level:
+.IP
+.nf
+\f[C]
+{"type":"circle","radius":5.0}
+\f[R]
+.fi
+.PP
+Generated C code uses an enum for the tag and a union for variant
+storage.
+Oneof types can be used as scalar fields, dynamic arrays, and
+fixed\-size arrays in structs.
 .SS Field Types
 The following scalar types are supported:
 .IP \[bu] 2
@@ -70,6 +102,8 @@ Precise\-width integers:
 Struct names (for nested structs)
 .IP \[bu] 2
 Enum names
+.IP \[bu] 2
+Oneof names (tagged unions)
 .SS Arrays
 .IP
 .nf
@@ -160,7 +194,7 @@ Types defined in included files are available for use as field types.
 Running \f[B]json\-gen\-c\f[R] produces four files in the output
 directory:
 .IP \[bu] 2
-\f[C]json.gen.h\f[R] \(en header with struct/enum definitions and
+\f[C]json.gen.h\f[R] \(en header with struct/enum/oneof definitions and
 function declarations.
 .IP \[bu] 2
 \f[C]json.gen.c\f[R] \(en implementation of all generated functions.

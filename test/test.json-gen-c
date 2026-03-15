@@ -253,3 +253,32 @@ struct DefaultMixed {
     sstr_t name;
     bool enabled = false;
 }
+
+// Oneof (tagged union) test structures
+struct Circle {
+    float radius;
+}
+
+struct Rectangle {
+    float width;
+    float height;
+}
+
+struct Triangle {
+    float base;
+    float height;
+    sstr_t label;
+}
+
+oneof Shape {
+    @tag "type"
+    Circle circle;
+    Rectangle rectangle;
+    Triangle triangle;
+}
+
+struct Drawing {
+    sstr_t name;
+    Shape shape;
+    Shape shapes[];
+}

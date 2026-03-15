@@ -8,7 +8,7 @@ include ../build.mk
 TEST_BUILD := $(BUILD_DIR)/test
 
 # Test source files
-TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc enum_test.cc fixed_array_test.cc map_test.cc optional_test.cc precise_int_test.cc diagnostic_test.cc alias_test.cc default_value_test.cc allocator_test.cc
+TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc enum_test.cc fixed_array_test.cc map_test.cc optional_test.cc precise_int_test.cc diagnostic_test.cc alias_test.cc default_value_test.cc allocator_test.cc oneof_test.cc
 TEST_OBJECTS := $(patsubst %.cc,$(TEST_BUILD)/%.o,$(TEST_SOURCES))
 
 # Generated files
@@ -32,9 +32,10 @@ DIAGNOSTIC_TEST := $(TEST_BUILD)/diagnostic_test
 ALIAS_TEST := $(TEST_BUILD)/alias_test
 DEFAULT_VALUE_TEST := $(TEST_BUILD)/default_value_test
 ALLOCATOR_TEST := $(TEST_BUILD)/allocator_test
+ONEOF_TEST := $(TEST_BUILD)/oneof_test
 
 # All test targets
-ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST) $(DIAGNOSTIC_TEST) $(ALIAS_TEST) $(DEFAULT_VALUE_TEST) $(ALLOCATOR_TEST)
+ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST) $(DIAGNOSTIC_TEST) $(ALIAS_TEST) $(DEFAULT_VALUE_TEST) $(ALLOCATOR_TEST) $(ONEOF_TEST)
 
 #==============================================================================
 # Build rules
@@ -137,6 +138,11 @@ $(ALLOCATOR_TEST): $(TEST_BUILD)/allocator_test.o $(GENERATED_OBJECTS)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
 
+$(ONEOF_TEST): $(TEST_BUILD)/oneof_test.o $(GENERATED_OBJECTS)
+	@echo "Linking oneof tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
 #==============================================================================
 # Test execution
 #==============================================================================
@@ -175,6 +181,8 @@ run: $(ALL_TESTS)
 	$(DEFAULT_VALUE_TEST)
 	@echo "=== Allocator Tests ==="
 	$(ALLOCATOR_TEST)
+	@echo "=== Oneof Tests ==="
+	$(ONEOF_TEST)
 	@echo "=== Bugfix Tests ==="
 	$(MAKE) run-bugfix
 	@echo "All tests completed successfully!"
@@ -217,6 +225,12 @@ run-bugfix: $(JSON_GEN_C)
 		|| (echo "FAIL: malformed_duplicate_enum_value should have failed" && false)
 	@! $(JSON_GEN_C) -in malformed_struct_enum_name_clash.json-gen-c -out $(TEST_BUILD)/malformed_out 2>/dev/null \
 		|| (echo "FAIL: malformed_struct_enum_name_clash should have failed" && false)
+	@! $(JSON_GEN_C) -in malformed_oneof_unknown_variant_type.json-gen-c -out $(TEST_BUILD)/malformed_out 2>/dev/null \
+		|| (echo "FAIL: malformed_oneof_unknown_variant_type should have failed" && false)
+	@! $(JSON_GEN_C) -in malformed_oneof_duplicate_variant.json-gen-c -out $(TEST_BUILD)/malformed_out 2>/dev/null \
+		|| (echo "FAIL: malformed_oneof_duplicate_variant should have failed" && false)
+	@! $(JSON_GEN_C) -in malformed_oneof_duplicate_name.json-gen-c -out $(TEST_BUILD)/malformed_out 2>/dev/null \
+		|| (echo "FAIL: malformed_oneof_duplicate_name should have failed" && false)
 	@! $(JSON_GEN_C) -in malformed_default_on_array.json-gen-c -out $(TEST_BUILD)/malformed_out 2>/dev/null \
 		|| (echo "FAIL: malformed_default_on_array should have failed" && false)
 	@! $(JSON_GEN_C) -in malformed_default_on_struct.json-gen-c -out $(TEST_BUILD)/malformed_out 2>/dev/null \

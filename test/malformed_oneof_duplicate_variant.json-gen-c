@@ -1,0 +1,14 @@
+// Duplicate variant names in oneof
+struct Circle {
+    float radius;
+}
+
+struct Ellipse {
+    float a;
+    float b;
+}
+
+oneof Shape {
+    Circle circle;
+    Ellipse circle;
+}

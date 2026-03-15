@@ -62,6 +62,7 @@ enum json_token {
 #define FIELD_TYPE_UINT16 14
 #define FIELD_TYPE_UINT32 15
 #define FIELD_TYPE_UINT64 16
+#define FIELD_TYPE_ONEOF 17
 
 #include <stdint.h>
 
@@ -79,6 +80,8 @@ struct json_pos {
     long offset;
 };
 
+static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt);
+static int json_next_token(sstr_t content, struct json_pos* pos, sstr_t txt);
 static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                                           struct json_parse_param* param,
                                           sstr_t txt);
@@ -135,6 +138,25 @@ static int json_unmarshal_array_internal_uint64_t(sstr_t content,
                                                   struct json_pos* pos,
                                                   uint64_t** ptr, int* ptrlen,
                                                   sstr_t txt);
+static int json_unmarshal_oneof_internal(sstr_t content, struct json_pos* pos,
+                                         void* instance,
+                                         const char* tag_field,
+                                         const char** variant_names,
+                                         const char** variant_struct_names,
+                                         int variant_count,
+                                         int tag_offset, int value_offset,
+                                         sstr_t txt);
+static int json_unmarshal_array_internal_oneof(
+    sstr_t content, struct json_pos* pos,
+    void** arr_pp, int* ptrlen, int element_size,
+    const char* tag_field,
+    const char** variant_names,
+    const char** variant_struct_names,
+    int variant_count,
+    int tag_offset, int value_offset,
+    sstr_t txt);
+static int json_unmarshal_ignore_value(sstr_t content, struct json_pos* pos,
+                                       sstr_t txt);
 
 int json_marshal_array_indent_int(int* obj, int len, int indent, int curindent,
                                   sstr_t out) {

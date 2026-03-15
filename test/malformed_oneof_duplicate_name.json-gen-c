@@ -1,0 +1,12 @@
+// Oneof name clashes with struct name
+struct Shape {
+    int x;
+}
+
+struct Circle {
+    float radius;
+}
+
+oneof Shape {
+    Circle circle;
+}

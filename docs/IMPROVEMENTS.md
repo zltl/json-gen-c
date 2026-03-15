@@ -13,7 +13,7 @@ This document tracks the current maturity of `json-gen-c`, completed foundationa
 | Type system | Growing | Enums, fixed-size arrays, maps, optional/nullable fields, and precise-width integers supported |
 | Ecosystem integration | Good | CMake, Meson, and pkg-config support; package manager distribution and Windows remaining |
 
-Summary: the project is already usable and reasonably mature at the core. Enum type support has been added, expanding the type system. It still needs broader type support (tagged unions), better ecosystem integration, and stronger developer ergonomics to reach a polished 1.0.
+Summary: the project is already usable and reasonably mature at the core. The type system is now comprehensive with enum, fixed/dynamic arrays, maps, optional/nullable, precise-width integers, and tagged unions (`oneof`). It still needs better ecosystem integration and stronger developer ergonomics to reach a polished 1.0.
 
 ## Completed Foundational Work
 
@@ -178,7 +178,17 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
       - Usable as scalar fields, fixed-size arrays, dynamic arrays, and map values.
       - Marshal uses efficient sstr_append helpers; unmarshal performs strict range checking.
       - Generated header includes `<stdint.h>` automatically.
-6. Evaluate a tagged union or `oneof` style feature as a longer-term extension.
+6. ~~Evaluate a tagged union or `oneof` style feature as a longer-term extension.~~  **Done.**
+    - New `oneof` keyword as a first-class type (alongside `struct` and `enum`).
+    - Schema syntax: `oneof Shape { @tag "type"  Circle circle; Rectangle rectangle; }`.
+    - `@tag "field"` annotation sets the JSON discriminator key (defaults to `"type"`).
+    - Flattened JSON representation: `{"type":"circle","radius":5.0}` (industry-standard externally-tagged format).
+    - Generated C code: tag enum, tagged union struct with C `union`, init/clear/marshal/unmarshal functions, array variants.
+    - Two-pass unmarshal: scans for tag field first (handles any position), then dispatches to variant struct's unmarshal.
+    - Usable as scalar fields, dynamic arrays, and fixed-size arrays in other structs.
+    - Full parser validation: undefined variant types, duplicate variant names, name clashes with structs/enums.
+    - 22 unit tests covering marshal, unmarshal, round-trip, error handling, arrays, and embedded oneof in parent structs.
+    - 3 negative test schemas for parser error detection.
 
 **Exit criteria:** each new type has parser coverage, generator coverage, runtime coverage, and example schemas.
 

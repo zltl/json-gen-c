@@ -231,6 +231,7 @@ The field type can be one of the following:
 - `bool`
 - an enum name
 - a struct name
+- a oneof name (tagged union)
 - `map<sstr_t, V>` where V is any of the above types
 
 If a field is a dynamic array, just append `[]` after the field name. For fixed-size arrays, use `[N]` where N is a positive integer (e.g., `int data[10];`).
@@ -248,6 +249,42 @@ In generated C code, each map is represented as a dynamic array of key-value ent
 
 ```c
 struct json_map_int { struct json_map_entry_int* entries; int len; };
+```
+
+### Tagged unions (oneof)
+
+Tagged unions (discriminated unions) represent a value that can be one of several types,
+identified by a discriminator tag field in JSON:
+
+```
+struct Circle {
+    float radius;
+}
+
+struct Rectangle {
+    float width;
+    float height;
+}
+
+oneof Shape {
+    @tag "type"
+    Circle circle;
+    Rectangle rectangle;
+}
+```
+
+- `@tag "field"` sets the JSON discriminator key (defaults to `"type"` if omitted).
+- Each variant references a previously defined struct.
+- JSON uses a flattened representation: `{"type":"circle","radius":5.0}`.
+
+Oneof types can be used as fields in structs:
+
+```
+struct Drawing {
+    sstr_t name;
+    Shape shape;       // scalar oneof
+    Shape shapes[];    // dynamic array of oneof
+}
 ```
 
 ## The JSON API

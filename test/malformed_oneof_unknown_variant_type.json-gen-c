@@ -1,0 +1,9 @@
+// Oneof references an undefined struct type
+struct Circle {
+    float radius;
+}
+
+oneof Shape {
+    Circle circle;
+    Hexagon hexagon;
+}
