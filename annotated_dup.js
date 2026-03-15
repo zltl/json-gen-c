@@ -9,6 +9,7 @@ var annotated_dup =
     [ "gen_fields_list_fn_param", "structgen__fields__list__fn__param.html", null ],
     [ "hash_map", "structhash__map.html", null ],
     [ "hash_map_entry", "structhash__map__entry.html", null ],
+    [ "include_node", "structinclude__node.html", null ],
     [ "json_context", "structjson__context.html", "structjson__context" ],
     [ "json_field_offset_item", "structjson__field__offset__item.html", null ],
     [ "json_parse_param", "structjson__parse__param.html", null ],

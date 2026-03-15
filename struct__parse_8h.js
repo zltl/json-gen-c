@@ -7,6 +7,7 @@ var struct__parse_8h =
     [ "struct_field", "structstruct__field.html", null ],
     [ "struct_container", "structstruct__container.html", null ],
     [ "pos", "structpos.html", null ],
+    [ "include_node", "structinclude__node.html", null ],
     [ "struct_parser", "structstruct__parser.html", null ],
     [ "struct_token", "structstruct__token.html", null ],
     [ "STRUCT_MAP_BUCKET_SIZE", "struct__parse_8h.html#a21d7e92f5ff8e6f151bcbb297f8c509a", null ],
