@@ -7,7 +7,7 @@
 #define JSON_CONTEXT_H
 
 #include <stdint.h>
-#include <pthread.h>
+#include "utils/compat.h"
 
 /**
  * @brief Field offset item structure for JSON parsing
@@ -31,7 +31,7 @@ struct json_context {
     int *entry_hash;                                    /**< Hash table for field lookups */
     int entry_hash_size;                               /**< Size of hash table */
     int item_count;                                    /**< Number of field offset items */
-    pthread_mutex_t mutex;                             /**< Mutex for thread safety */
+    compat_mutex_t mutex;                              /**< Mutex for thread safety */
 };
 
 /**

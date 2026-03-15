@@ -2,7 +2,7 @@
 #include "utils/error_codes.h"
 #include "utils/hash.h"
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define HASH_MAP_LOAD_FACTOR_THRESHOLD 0.75  /**< Load factor threshold for resizing */

@@ -17,7 +17,7 @@ struct json_context* json_context_new(void) {
     memset(ctx, 0, sizeof(struct json_context));
     
     // Initialize mutex
-    if (pthread_mutex_init(&ctx->mutex, NULL) != 0) {
+    if (compat_mutex_init(&ctx->mutex) != 0) {
         free(ctx);
         return NULL;
     }
@@ -30,7 +30,7 @@ void json_context_free(struct json_context* ctx) {
         return;
     }
     
-    pthread_mutex_destroy(&ctx->mutex);
+    compat_mutex_destroy(&ctx->mutex);
     
     // Note: We don't free field_offset_items and entry_hash here
     // as they are typically static/global data owned by the generated code
@@ -47,14 +47,14 @@ int json_context_init(struct json_context* ctx,
         return JSON_GEN_ERROR_INVALID_PARAM;
     }
     
-    pthread_mutex_lock(&ctx->mutex);
+    compat_mutex_lock(&ctx->mutex);
     
     ctx->field_offset_items = field_items;
     ctx->item_count = item_count;
     ctx->entry_hash = hash_table;
     ctx->entry_hash_size = hash_size;
     
-    pthread_mutex_unlock(&ctx->mutex);
+    compat_mutex_unlock(&ctx->mutex);
     
     return JSON_GEN_SUCCESS;
 }
@@ -95,11 +95,11 @@ struct json_field_offset_item* json_context_find_field(
         return NULL;
     }
     
-    pthread_mutex_lock(&ctx->mutex);
+    compat_mutex_lock(&ctx->mutex);
     
     if (ctx->entry_hash_size == 0 || ctx->entry_hash == NULL || 
         ctx->field_offset_items == NULL) {
-        pthread_mutex_unlock(&ctx->mutex);
+        compat_mutex_unlock(&ctx->mutex);
         return NULL;
     }
     
@@ -107,7 +107,7 @@ struct json_field_offset_item* json_context_find_field(
     int id = ctx->entry_hash[h];
     
     if (id < 0) {
-        pthread_mutex_unlock(&ctx->mutex);
+        compat_mutex_unlock(&ctx->mutex);
         return NULL;
     }
 
@@ -115,7 +115,7 @@ struct json_field_offset_item* json_context_find_field(
         struct json_field_offset_item* item = &ctx->field_offset_items[id];
         if (strcmp(struct_name, item->struct_name) == 0 &&
             strcmp(field_name, item->field_name) == 0) {
-            pthread_mutex_unlock(&ctx->mutex);
+            compat_mutex_unlock(&ctx->mutex);
             return item;
         }
         
@@ -131,6 +131,6 @@ struct json_field_offset_item* json_context_find_field(
         }
     } while (1);
 
-    pthread_mutex_unlock(&ctx->mutex);
+    compat_mutex_unlock(&ctx->mutex);
     return NULL;
 }

@@ -261,9 +261,15 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
     - **AUR:** `packaging/aur/PKGBUILD` for Arch Linux. Uses GitHub source tarball, standard `makepkg` workflow.
     - **Makefile install refactored:** Now uses standard `DESTDIR` + `PREFIX` variables (default `PREFIX=/usr/local`). All package formats use `make install DESTDIR=... PREFIX=/usr`.
     - **CI validation:** `.github/workflows/packaging.yml` runs on release tags to validate Homebrew formula syntax, Debian package build, and AUR PKGBUILD.
-4. Add Windows support.
-    - Validate GCC/Clang on Windows
-    - Validate MSVC compatibility where practical
+4. ~~Add Windows support.~~  **Done.**
+    - ~~Validate GCC/Clang on Windows~~
+    - ~~Validate MSVC compatibility where practical~~
+    - Created `src/utils/compat.h` portability header abstracting pthread (→ `CRITICAL_SECTION`), `isatty`/`fileno` (→ `_isatty`/`_fileno`), `strdup` (→ `_strdup`), and path separator detection.
+    - Removed non-standard `<malloc.h>` from all source files; `<stdlib.h>` suffices. Also fixes the embedded `sstr.c` output users receive.
+    - Bundled portable `getopt_long_only` implementation (`src/utils/getopt_compat.h/c`) for MSVC which lacks `<getopt.h>`.
+    - Fixed path separator handling in `struct_parse.c` to accept both `/` and `\` on Windows.
+    - Updated `CMakeLists.txt`: conditional getopt compilation, portable xxd replacement via `cmake/xxd.cmake`, MSVC `/W4 /WX` warning flags, Windows-aware thread linking.
+    - Added MSVC and MinGW CI jobs to `.github/workflows/test.yml`.
 5. ~~Consider Meson as an additional build integration option.~~  **Done.**
     - Root `meson.build` builds the executable with `custom_target` for `xxd` embedding, three static libraries, and install rules for the binary and man page.
 

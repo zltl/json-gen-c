@@ -3,15 +3,17 @@
  * @brief Diagnostic engine implementation.
  */
 
+#ifndef _WIN32
 #define _POSIX_C_SOURCE 200809L
+#endif
 
 #include "utils/diag.h"
+#include "utils/compat.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #define DIAG_INITIAL_CAPACITY 16
 #define DIAG_MAX_ERRORS_DEFAULT 20
@@ -90,7 +92,7 @@ void diag_emit(struct diag_engine *engine, enum diag_severity severity,
     entry->severity = severity;
     entry->line = line;
     entry->col = col;
-    entry->message = strdup(buf);
+    entry->message = compat_strdup(buf);
     if (entry->message == NULL) {
         return;
     }
@@ -158,7 +160,7 @@ static const char *severity_color(enum diag_severity sev) {
 void diag_print_all(struct diag_engine *engine, FILE *stream) {
     if (engine == NULL || engine->count == 0) return;
 
-    int use_color = isatty(fileno(stream));
+    int use_color = compat_isatty(compat_fileno(stream));
 
     for (int i = 0; i < engine->count; i++) {
         struct diag_entry *e = &engine->entries[i];

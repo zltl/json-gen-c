@@ -12,9 +12,18 @@ option(JSON_GEN_C_DEBUG "Enable debug output" OFF)
 option(JSON_GEN_C_SANITIZE "Enable AddressSanitizer" OFF)
 
 #==============================================================================
-# Find xxd (required for embedding runtime files)
+# Find xxd or provide a fallback for Windows
 #==============================================================================
-find_program(XXD_EXECUTABLE xxd REQUIRED)
+find_program(XXD_EXECUTABLE xxd)
+
+# Portable xxd replacement using CMake's file(READ ... HEX) + a small script
+if(NOT XXD_EXECUTABLE)
+    set(XXD_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/cmake/xxd.cmake")
+    if(NOT EXISTS "${XXD_SCRIPT}")
+        message(FATAL_ERROR "xxd not found and cmake/xxd.cmake fallback is missing")
+    endif()
+    message(STATUS "xxd not found, using cmake/xxd.cmake fallback")
+endif()
 
 #==============================================================================
 # Generate embedded code arrays via xxd
@@ -25,37 +34,79 @@ set(GENCODE_EXTRA_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/gencode")
 set(GENCODE_EXTRA_INC "${GENCODE_EXTRA_DIR}/extra_codes.inc")
 file(MAKE_DIRECTORY "${GENCODE_EXTRA_DIR}")
 
-add_custom_command(
-    OUTPUT "${GENCODE_EXTRA_INC}"
-    COMMAND ${XXD_EXECUTABLE} -i json_parse.c > "${GENCODE_EXTRA_INC}"
-    COMMAND ${XXD_EXECUTABLE} -i json_parse.h >> "${GENCODE_EXTRA_INC}"
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes"
-    DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/json_parse.c"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/json_parse.h"
-    COMMENT "Generating extra_codes.inc (json_parse runtime)"
-)
+if(XXD_EXECUTABLE)
+    add_custom_command(
+        OUTPUT "${GENCODE_EXTRA_INC}"
+        COMMAND ${XXD_EXECUTABLE} -i json_parse.c > "${GENCODE_EXTRA_INC}"
+        COMMAND ${XXD_EXECUTABLE} -i json_parse.h >> "${GENCODE_EXTRA_INC}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes"
+        DEPENDS
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/json_parse.c"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/json_parse.h"
+        COMMENT "Generating extra_codes.inc (json_parse runtime via xxd)"
+    )
+else()
+    add_custom_command(
+        OUTPUT "${GENCODE_EXTRA_INC}"
+        COMMAND ${CMAKE_COMMAND}
+            -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/json_parse.c"
+            -DVAR_NAME=json_parse_c -DMODE=write
+            -DOUTPUT_FILE="${GENCODE_EXTRA_INC}"
+            -P "${XXD_SCRIPT}"
+        COMMAND ${CMAKE_COMMAND}
+            -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/json_parse.h"
+            -DVAR_NAME=json_parse_h -DMODE=append
+            -DOUTPUT_FILE="${GENCODE_EXTRA_INC}"
+            -P "${XXD_SCRIPT}"
+        DEPENDS
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/json_parse.c"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/json_parse.h"
+            "${XXD_SCRIPT}"
+        COMMENT "Generating extra_codes.inc (json_parse runtime via cmake)"
+    )
+endif()
 
 # extra_codes_sstr.inc: embed sstr.c and sstr.h
 set(MAIN_EXTRA_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/main")
 set(MAIN_EXTRA_INC "${MAIN_EXTRA_DIR}/extra_codes_sstr.inc")
 file(MAKE_DIRECTORY "${MAIN_EXTRA_DIR}")
 
-add_custom_command(
-    OUTPUT "${MAIN_EXTRA_INC}"
-    COMMAND ${XXD_EXECUTABLE} -i sstr.c > "${MAIN_EXTRA_INC}"
-    COMMAND ${XXD_EXECUTABLE} -i sstr.h >> "${MAIN_EXTRA_INC}"
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/utils"
-    DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/sstr.c"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/sstr.h"
-    COMMENT "Generating extra_codes_sstr.inc (sstr runtime)"
-)
+if(XXD_EXECUTABLE)
+    add_custom_command(
+        OUTPUT "${MAIN_EXTRA_INC}"
+        COMMAND ${XXD_EXECUTABLE} -i sstr.c > "${MAIN_EXTRA_INC}"
+        COMMAND ${XXD_EXECUTABLE} -i sstr.h >> "${MAIN_EXTRA_INC}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/utils"
+        DEPENDS
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/sstr.c"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/sstr.h"
+        COMMENT "Generating extra_codes_sstr.inc (sstr runtime via xxd)"
+    )
+else()
+    add_custom_command(
+        OUTPUT "${MAIN_EXTRA_INC}"
+        COMMAND ${CMAKE_COMMAND}
+            -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/src/utils/sstr.c"
+            -DVAR_NAME=sstr_c -DMODE=write
+            -DOUTPUT_FILE="${MAIN_EXTRA_INC}"
+            -P "${XXD_SCRIPT}"
+        COMMAND ${CMAKE_COMMAND}
+            -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/src/utils/sstr.h"
+            -DVAR_NAME=sstr_h -DMODE=append
+            -DOUTPUT_FILE="${MAIN_EXTRA_INC}"
+            -P "${XXD_SCRIPT}"
+        DEPENDS
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/sstr.c"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/sstr.h"
+            "${XXD_SCRIPT}"
+        COMMENT "Generating extra_codes_sstr.inc (sstr runtime via cmake)"
+    )
+endif()
 
 #==============================================================================
 # Utils library
 #==============================================================================
-add_library(json_gen_c_utils STATIC
+set(UTILS_SOURCES
     src/utils/sstr.c
     src/utils/diag.c
     src/utils/error_codes.c
@@ -64,11 +115,20 @@ add_library(json_gen_c_utils STATIC
     src/utils/io.c
     src/utils/json_context.c
 )
+if(WIN32)
+    list(APPEND UTILS_SOURCES src/utils/getopt_compat.c)
+endif()
+
+add_library(json_gen_c_utils STATIC ${UTILS_SOURCES})
 target_include_directories(json_gen_c_utils PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
-find_package(Threads REQUIRED)
-target_link_libraries(json_gen_c_utils PUBLIC Threads::Threads)
+if(WIN32)
+    # Windows: no pthreads needed; compat.h uses CRITICAL_SECTION
+else()
+    find_package(Threads REQUIRED)
+    target_link_libraries(json_gen_c_utils PUBLIC Threads::Threads)
+endif()
 
 #==============================================================================
 # Struct library
@@ -118,9 +178,13 @@ if(JSON_GEN_C_SANITIZE)
     target_link_options(json-gen-c PRIVATE -fsanitize=address)
 endif()
 
-# Compiler warnings (match existing Makefile)
+# Compiler warnings
 foreach(tgt json_gen_c_utils json_gen_c_struct json_gen_c_gencode json-gen-c)
-    target_compile_options(${tgt} PRIVATE -Wall -Wextra -Werror -Wno-unused-result)
+    if(MSVC)
+        target_compile_options(${tgt} PRIVATE /W4 /WX)
+    else()
+        target_compile_options(${tgt} PRIVATE -Wall -Wextra -Werror -Wno-unused-result)
+    endif()
 endforeach()
 
 #==============================================================================

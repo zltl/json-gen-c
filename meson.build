@@ -9,7 +9,13 @@ project('json-gen-c', 'c',
 )
 
 cc = meson.get_compiler('c')
-thread_dep = dependency('threads')
+
+if host_machine.system() == 'windows'
+    thread_dep = dependency('', required: false)
+else
+    thread_dep = dependency('threads')
+endif
+
 xxd = find_program('xxd', required: true)
 
 add_project_arguments('-Wno-unused-result', language: 'c')
@@ -51,7 +57,7 @@ gen_inc = include_directories('.')  # build dir is added implicitly
 # Libraries
 #==============================================================================
 
-utils_lib = static_library('utils',
+utils_sources = [
     'src/utils/sstr.c',
     'src/utils/diag.c',
     'src/utils/error_codes.c',
@@ -59,6 +65,13 @@ utils_lib = static_library('utils',
     'src/utils/hash_map.c',
     'src/utils/io.c',
     'src/utils/json_context.c',
+]
+if host_machine.system() == 'windows'
+    utils_sources += 'src/utils/getopt_compat.c'
+endif
+
+utils_lib = static_library('utils',
+    utils_sources,
     include_directories: 'src',
     dependencies: thread_dep,
 )

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <getopt.h>
+#include "utils/getopt_compat.h"
 
 #include "gencode/gencode.h"
 #include "struct/struct_parse.h"

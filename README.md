@@ -85,6 +85,24 @@ cmake --build . -j$(nproc)
 sudo cmake --install .
 ```
 
+**Windows (CMake + MSVC)**:
+
+```cmd
+mkdir build && cd build
+cmake ..
+cmake --build . --config Release
+```
+
+**Windows (CMake + MinGW)**:
+
+```cmd
+mkdir build && cd build
+cmake .. -G "MinGW Makefiles"
+cmake --build .
+```
+
+> Note: On Windows, CMake automatically uses a built-in `xxd` replacement (`cmake/xxd.cmake`). No external tools beyond a C compiler and CMake are needed.
+
 **Meson**:
 
 ```bash

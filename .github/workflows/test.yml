@@ -54,3 +54,37 @@ jobs:
         UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
       run: JSON_SANITIZE=1 make test
 
+  windows-msvc:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Configure with CMake (MSVC)
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: cmake --build build --config Release
+    - name: Verify binary runs
+      run: build\Release\json-gen-c.exe --version
+    - name: Test code generation
+      run: |
+        mkdir testout
+        build\Release\json-gen-c.exe -in test\test.json-gen-c -out testout
+      shell: cmd
+
+  windows-mingw:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Configure with CMake (MinGW)
+      run: cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: cmake --build build
+    - name: Verify binary runs
+      run: build\json-gen-c.exe --version
+    - name: Test code generation
+      run: |
+        mkdir testout
+        build\json-gen-c.exe -in test\test.json-gen-c -out testout
+      shell: cmd
+

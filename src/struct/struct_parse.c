@@ -5,12 +5,12 @@
 #include "struct/struct_parse.h"
 
 #include <ctype.h>
-#include <malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "utils/diag.h"
+#include "utils/compat.h"
 #include "utils/hash_map.h"
 #include "utils/io.h"
 #include "utils/sstr.h"
@@ -552,7 +552,7 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     }
     
     int fname_len = strlen(parser->name);
-    while (fname_len >= 0 && parser->name[fname_len] != '/') {
+    while (fname_len >= 0 && !compat_is_path_sep(parser->name[fname_len])) {
         fname_len--;
     }
     if (fname_len >= 0) {  // Fixed: was '!0' which is always true
