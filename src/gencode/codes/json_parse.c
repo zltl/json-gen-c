@@ -2101,6 +2101,7 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                     ar_param.instance_ptr = fi->offset + param->instance_ptr;
                     ar_param.in_array = 1;
                     ar_param.in_struct = 0;
+                    ar_param.depth = param->depth;
                     ar_param.struct_name = fi->field_type_name;
                     ar_param.field_name = fi->field_name;
                     int r = json_unmarshal_array_internal(content, pos,
@@ -2332,6 +2333,7 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                 sub_param.in_struct = 1;
                 sub_param.depth = param->depth + 1;
                 sub_param.struct_name = fi->field_type_name;
+                sub_param.field_name = fi->field_name;
                 tk = json_unmarshal_struct_internal(content, pos, &sub_param,
                                                     txt);
                 if (tk == -1) {
