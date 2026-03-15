@@ -1,0 +1,22 @@
+Source: json-gen-c
+Section: devel
+Priority: optional
+Maintainer: json-gen-c maintainers <https://github.com/zltl/json-gen-c>
+Build-Depends: debhelper-compat (= 13), gcc, make, xxd
+Standards-Version: 4.6.2
+Homepage: https://github.com/zltl/json-gen-c
+Vcs-Browser: https://github.com/zltl/json-gen-c
+Vcs-Git: https://github.com/zltl/json-gen-c.git
+Rules-Requires-Root: no
+
+Package: json-gen-c
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Schema-first JSON code generator for C
+ json-gen-c is a fast, tiny code generator that turns C struct definitions
+ into fully-featured JSON serializers and deserializers. It uses a schema-first
+ workflow with zero runtime reflection.
+ .
+ Features include: structs, enums, tagged unions (oneof), fixed/dynamic arrays,
+ maps, optional/nullable fields, precise-width integers, JSON field aliases,
+ default values, and custom allocator support.

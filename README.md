@@ -95,6 +95,39 @@ sudo ninja -C builddir install
 
 See [BUILD_SYSTEM.md](BUILD_SYSTEM.md) for pkg-config integration, `find_package(JsonGenC)`, and the `json_gen_c_generate()` CMake macro.
 
+### Package Managers
+
+**Homebrew** (macOS/Linux):
+
+```bash
+brew install zltl/tap/json-gen-c
+```
+
+To set up the tap, see [`packaging/homebrew/`](packaging/homebrew/).
+
+**Debian/Ubuntu** (from source package):
+
+```bash
+# Install build dependencies
+sudo apt install build-essential debhelper devscripts xxd
+
+# Build the .deb
+cp -r packaging/debian .
+dpkg-buildpackage -us -uc -b
+sudo dpkg -i ../json-gen-c_*.deb
+```
+
+**Arch Linux (AUR)**:
+
+```bash
+# Using an AUR helper
+yay -S json-gen-c
+
+# Or manually
+cd packaging/aur
+makepkg -si
+```
+
 ## Quick Start
 
 [example](./example/example.json-gen-c)

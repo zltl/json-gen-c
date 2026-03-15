@@ -1,0 +1,8 @@
+json-gen-c (0.9.0-1) unstable; urgency=medium
+
+  * Initial packaging for Debian.
+  * Supports structs, enums, tagged unions (oneof), fixed/dynamic arrays,
+    maps, optional/nullable fields, precise-width integers, JSON field
+    aliases, default values, and custom allocator hooks.
+
+ -- json-gen-c maintainers <https://github.com/zltl/json-gen-c>  Sun, 01 Jan 2025 00:00:00 +0000

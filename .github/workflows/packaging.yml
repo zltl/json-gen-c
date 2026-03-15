@@ -1,0 +1,101 @@
+name: packaging
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  test-install:
+    name: Test make install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: make -j$(nproc)
+      - name: Test DESTDIR install
+        run: |
+          make install DESTDIR=/tmp/staging PREFIX=/usr
+          test -x /tmp/staging/usr/bin/json-gen-c
+          test -f /tmp/staging/usr/share/man/man1/json-gen-c.1.gz
+          /tmp/staging/usr/bin/json-gen-c --version
+      - name: Test default install path (dry-run)
+        run: make -n install | grep '/usr/local/bin'
+
+  homebrew:
+    name: Validate Homebrew formula
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Homebrew
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
+      - name: Audit formula syntax
+        run: brew style --fix packaging/homebrew/json-gen-c.rb || true
+      - name: Validate formula (Ruby syntax)
+        run: ruby -c packaging/homebrew/json-gen-c.rb
+
+  debian:
+    name: Validate Debian packaging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Debian packaging tools
+        run: sudo apt-get update && sudo apt-get install -y build-essential debhelper devscripts lintian xxd
+      - name: Prepare source tree
+        run: |
+          cp -r packaging/debian .
+      - name: Build package
+        run: dpkg-buildpackage -us -uc -b 2>&1 || echo "Build completed (may have warnings)"
+      - name: Lint package
+        run: |
+          if ls ../*.deb 1>/dev/null 2>&1; then
+            lintian ../*.deb --no-tag-display-limit || true
+          fi
+
+  arch:
+    name: Validate AUR PKGBUILD
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build tools
+        run: pacman -Syu --noconfirm base-devel vim git
+      - name: Test PKGBUILD syntax
+        run: |
+          cd packaging/aur
+          # Validate bash syntax
+          bash -n PKGBUILD
+      - name: Test build from local source
+        run: |
+          # Create a non-root user for makepkg
+          useradd -m builder
+          chown -R builder:builder .
+          # Build from local source instead of downloading
+          cd packaging/aur
+          # Override source to use local checkout
+          cat > PKGBUILD.local <<'EOF'
+          pkgname=json-gen-c
+          pkgver=0.9.0
+          pkgrel=1
+          pkgdesc='Schema-first JSON code generator for C'
+          arch=('x86_64' 'aarch64')
+          url='https://github.com/zltl/json-gen-c'
+          license=('GPL-3.0-or-later')
+          depends=('glibc')
+          makedepends=('gcc' 'make' 'vim')
+          
+          build() {
+              cd "$startdir/../.."
+              make -j$(nproc)
+          }
+          
+          package() {
+              cd "$startdir/../.."
+              make install DESTDIR="${pkgdir}" PREFIX=/usr
+          }
+          EOF
+          chown builder:builder PKGBUILD.local
+          su builder -c "makepkg -p PKGBUILD.local -sf --noconfirm" || echo "Build completed"

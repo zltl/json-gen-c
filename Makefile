@@ -5,8 +5,9 @@ include build.mk
 .PHONY: all libs clean example benchmark install uninstall test doxygen fuzz
 .DEFAULT_GOAL := all
 
-# Installation directory
-DEST ?= /usr/
+# Installation directories (standard DESTDIR + PREFIX pattern)
+PREFIX ?= /usr/local
+DESTDIR ?=
 
 #==============================================================================
 # Source file definitions
@@ -104,18 +105,19 @@ fuzz: $(JSON_GEN_C)
 #==============================================================================
 
 install: $(JSON_GEN_C)
-	@echo "Installing json-gen-c..."
-	@mkdir -p $(DEST)/bin $(DEST)/share/man/man1
-	@cp -f $(JSON_GEN_C) $(DEST)/bin/json-gen-c
-	@cp -f doc/json-gen-c.1 $(DEST)/share/man/man1/
-	@gzip -f $(DEST)/share/man/man1/json-gen-c.1
-	@echo "json-gen-c has been installed to $(DEST)"
+	@echo "Installing json-gen-c to $(DESTDIR)$(PREFIX)..."
+	@mkdir -p $(DESTDIR)$(PREFIX)/bin
+	@mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1
+	@cp -f $(JSON_GEN_C) $(DESTDIR)$(PREFIX)/bin/json-gen-c
+	@cp -f doc/json-gen-c.1 $(DESTDIR)$(PREFIX)/share/man/man1/
+	@gzip -f $(DESTDIR)$(PREFIX)/share/man/man1/json-gen-c.1
+	@echo "Installed json-gen-c to $(DESTDIR)$(PREFIX)"
 
 uninstall:
-	@echo "Uninstalling json-gen-c..."
-	@rm -f $(DEST)/bin/json-gen-c
-	@rm -f $(DEST)/share/man/man1/json-gen-c.1.gz
-	@echo "json-gen-c has been removed from $(DEST)"
+	@echo "Uninstalling json-gen-c from $(DESTDIR)$(PREFIX)..."
+	@rm -f $(DESTDIR)$(PREFIX)/bin/json-gen-c
+	@rm -f $(DESTDIR)$(PREFIX)/share/man/man1/json-gen-c.1.gz
+	@echo "Removed json-gen-c from $(DESTDIR)$(PREFIX)"
 
 clean:
 	@echo "Cleaning build artifacts..."

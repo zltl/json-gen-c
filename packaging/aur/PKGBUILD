@@ -1,0 +1,24 @@
+# Maintainer: json-gen-c maintainers <https://github.com/zltl/json-gen-c>
+
+pkgname=json-gen-c
+pkgver=0.9.0
+pkgrel=1
+pkgdesc='Schema-first JSON code generator for C'
+arch=('x86_64' 'aarch64')
+url='https://github.com/zltl/json-gen-c'
+license=('GPL-3.0-or-later')
+depends=('glibc')
+makedepends=('gcc' 'make' 'vim')  # vim provides xxd
+source=("${pkgname}-${pkgver}.tar.gz::https://github.com/zltl/${pkgname}/archive/refs/tags/v${pkgver}.tar.gz")
+# TODO: Update sha256sum after creating the v0.9.0 release tag
+sha256sums=('SKIP')
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    make -j"$(nproc)"
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make install DESTDIR="${pkgdir}" PREFIX=/usr
+}

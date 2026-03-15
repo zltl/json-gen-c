@@ -1,0 +1,17 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	$(MAKE) -j$(shell nproc)
+
+override_dh_auto_install:
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/json-gen-c PREFIX=/usr
+
+override_dh_auto_clean:
+	$(MAKE) clean
+
+override_dh_auto_test:

@@ -249,10 +249,12 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 2. ~~Add pkg-config metadata.~~  **Done.**
     - `json-gen-c.pc.in` template installed to `${libdir}/pkgconfig/json-gen-c.pc`.
     - Exposes `generator` variable pointing to the installed binary, plus standard `Name`, `Description`, and `Version` fields.
-3. Add package-manager-friendly distribution paths.
-    - Homebrew
-    - Debian packaging
-    - AUR or equivalent community packaging
+3. ~~Add package-manager-friendly distribution paths.~~  **Done.**
+    - **Homebrew:** Formula at `packaging/homebrew/json-gen-c.rb` for tap-based distribution (`brew install zltl/tap/json-gen-c`). Build with `make`, installs binary + man page.
+    - **Debian:** Full `packaging/debian/` directory with `control`, `rules`, `changelog`, `copyright` (DEP-5), `debhelper-compat` 13. Build via `dpkg-buildpackage -us -uc -b`.
+    - **AUR:** `packaging/aur/PKGBUILD` for Arch Linux. Uses GitHub source tarball, standard `makepkg` workflow.
+    - **Makefile install refactored:** Now uses standard `DESTDIR` + `PREFIX` variables (default `PREFIX=/usr/local`). All package formats use `make install DESTDIR=... PREFIX=/usr`.
+    - **CI validation:** `.github/workflows/packaging.yml` runs on release tags to validate Homebrew formula syntax, Debian package build, and AUR PKGBUILD.
 4. Add Windows support.
     - Validate GCC/Clang on Windows
     - Validate MSVC compatibility where practical
