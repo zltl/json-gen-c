@@ -29,70 +29,71 @@ var NAVTREE =
     [ "Contents", "index.html#autotoc_md1", null ],
     [ "Overview", "index.html#autotoc_md2", null ],
     [ "Build and Install", "index.html#autotoc_md3", [
-      [ "Alternative Build Systems", "index.html#autotoc_md4", null ]
+      [ "Alternative Build Systems", "index.html#autotoc_md4", null ],
+      [ "Package Managers", "index.html#autotoc_md5", null ]
     ] ],
-    [ "Quick Start", "index.html#autotoc_md5", [
-      [ "Define Structs", "index.html#autotoc_md6", null ],
-      [ "Compiling Your Struct Definition File", "index.html#autotoc_md7", null ],
-      [ "Use Your Generated Codes", "index.html#autotoc_md8", [
-        [ "To Serialize Structs to JSON", "index.html#autotoc_md9", null ],
-        [ "To Serialize Array of Structs to JSON", "index.html#autotoc_md10", null ],
-        [ "To Deserialize JSON to Structs", "index.html#autotoc_md11", null ],
-        [ "To Deserialize JSON to Array of Structs", "index.html#autotoc_md12", null ]
+    [ "Quick Start", "index.html#autotoc_md6", [
+      [ "Define Structs", "index.html#autotoc_md7", null ],
+      [ "Compiling Your Struct Definition File", "index.html#autotoc_md8", null ],
+      [ "Use Your Generated Codes", "index.html#autotoc_md9", [
+        [ "To Serialize Structs to JSON", "index.html#autotoc_md10", null ],
+        [ "To Serialize Array of Structs to JSON", "index.html#autotoc_md11", null ],
+        [ "To Deserialize JSON to Structs", "index.html#autotoc_md12", null ],
+        [ "To Deserialize JSON to Array of Structs", "index.html#autotoc_md13", null ]
       ] ]
     ] ],
-    [ "Build System", "index.html#autotoc_md13", null ],
-    [ "The Format of Structs Definition File", "index.html#autotoc_md14", [
-      [ "Map fields", "index.html#autotoc_md15", null ],
-      [ "Tagged unions (oneof)", "index.html#autotoc_md16", null ]
+    [ "Build System", "index.html#autotoc_md14", null ],
+    [ "The Format of Structs Definition File", "index.html#autotoc_md15", [
+      [ "Map fields", "index.html#autotoc_md16", null ],
+      [ "Tagged unions (oneof)", "index.html#autotoc_md17", null ]
     ] ],
-    [ "The JSON API", "index.html#autotoc_md17", null ],
-    [ "More Resources", "index.html#autotoc_md18", null ],
-    [ "Contributing & Community", "index.html#autotoc_md19", null ],
-    [ "License", "index.html#autotoc_md20", null ],
+    [ "The JSON API", "index.html#autotoc_md18", null ],
+    [ "More Resources", "index.html#autotoc_md19", null ],
+    [ "Contributing & Community", "index.html#autotoc_md20", null ],
+    [ "License", "index.html#autotoc_md21", null ],
     [ "Contributing to json-gen-c", "md_CONTRIBUTING.html", [
-      [ "Ways to Contribute", "md_CONTRIBUTING.html#autotoc_md22", null ],
-      [ "Development Environment", "md_CONTRIBUTING.html#autotoc_md23", null ],
-      [ "Coding Guidelines", "md_CONTRIBUTING.html#autotoc_md24", null ],
-      [ "Pull Request Checklist", "md_CONTRIBUTING.html#autotoc_md25", null ],
-      [ "Communication", "md_CONTRIBUTING.html#autotoc_md26", null ]
+      [ "Ways to Contribute", "md_CONTRIBUTING.html#autotoc_md23", null ],
+      [ "Development Environment", "md_CONTRIBUTING.html#autotoc_md24", null ],
+      [ "Coding Guidelines", "md_CONTRIBUTING.html#autotoc_md25", null ],
+      [ "Pull Request Checklist", "md_CONTRIBUTING.html#autotoc_md26", null ],
+      [ "Communication", "md_CONTRIBUTING.html#autotoc_md27", null ]
     ] ],
     [ "Getting Started with json-gen-c", "md_docs_2GETTING__STARTED.html", [
-      [ "Prerequisites", "md_docs_2GETTING__STARTED.html#autotoc_md28", null ],
-      [ "1. Install json-gen-c", "md_docs_2GETTING__STARTED.html#autotoc_md29", null ],
-      [ "2. Describe Your Data", "md_docs_2GETTING__STARTED.html#autotoc_md30", null ],
-      [ "3. Generate Code", "md_docs_2GETTING__STARTED.html#autotoc_md31", null ],
-      [ "4. Use the Generated API", "md_docs_2GETTING__STARTED.html#autotoc_md32", null ],
-      [ "5. Regenerate on Schema Changes", "md_docs_2GETTING__STARTED.html#autotoc_md33", null ],
-      [ "6. Learn More", "md_docs_2GETTING__STARTED.html#autotoc_md34", null ]
+      [ "Prerequisites", "md_docs_2GETTING__STARTED.html#autotoc_md29", null ],
+      [ "1. Install json-gen-c", "md_docs_2GETTING__STARTED.html#autotoc_md30", null ],
+      [ "2. Describe Your Data", "md_docs_2GETTING__STARTED.html#autotoc_md31", null ],
+      [ "3. Generate Code", "md_docs_2GETTING__STARTED.html#autotoc_md32", null ],
+      [ "4. Use the Generated API", "md_docs_2GETTING__STARTED.html#autotoc_md33", null ],
+      [ "5. Regenerate on Schema Changes", "md_docs_2GETTING__STARTED.html#autotoc_md34", null ],
+      [ "6. Learn More", "md_docs_2GETTING__STARTED.html#autotoc_md35", null ]
     ] ],
     [ "Project Improvement Plan", "md_docs_2IMPROVEMENTS.html", [
-      [ "Current Assessment", "md_docs_2IMPROVEMENTS.html#autotoc_md36", null ],
-      [ "Completed Foundational Work", "md_docs_2IMPROVEMENTS.html#autotoc_md37", [
-        [ "Implement Hash Map Resizing", "md_docs_2IMPROVEMENTS.html#autotoc_md38", null ],
-        [ "Optimize <tt>hash_2s</tt>", "md_docs_2IMPROVEMENTS.html#autotoc_md39", null ],
-        [ "Unify Hash Functions", "md_docs_2IMPROVEMENTS.html#autotoc_md40", null ],
-        [ "Use <tt>stdbool.h</tt>", "md_docs_2IMPROVEMENTS.html#autotoc_md41", null ],
-        [ "Improve Argument Parsing", "md_docs_2IMPROVEMENTS.html#autotoc_md42", null ],
-        [ "Improve Error Handling Consistency", "md_docs_2IMPROVEMENTS.html#autotoc_md43", null ],
-        [ "Fix Parser Off-by-One Bug", "md_docs_2IMPROVEMENTS.html#autotoc_md44", null ],
-        [ "Refactor Top-Level <tt>#include</tt> Parsing", "md_docs_2IMPROVEMENTS.html#autotoc_md45", null ],
-        [ "Harden File I/O", "md_docs_2IMPROVEMENTS.html#autotoc_md46", null ],
-        [ "Add Enum Type Support", "md_docs_2IMPROVEMENTS.html#autotoc_md47", null ],
-        [ "Add Fixed-Size Array Support", "md_docs_2IMPROVEMENTS.html#autotoc_md48", null ],
-        [ "Add Map/Dictionary Support", "md_docs_2IMPROVEMENTS.html#autotoc_md49", null ]
+      [ "Current Assessment", "md_docs_2IMPROVEMENTS.html#autotoc_md37", null ],
+      [ "Completed Foundational Work", "md_docs_2IMPROVEMENTS.html#autotoc_md38", [
+        [ "Implement Hash Map Resizing", "md_docs_2IMPROVEMENTS.html#autotoc_md39", null ],
+        [ "Optimize <tt>hash_2s</tt>", "md_docs_2IMPROVEMENTS.html#autotoc_md40", null ],
+        [ "Unify Hash Functions", "md_docs_2IMPROVEMENTS.html#autotoc_md41", null ],
+        [ "Use <tt>stdbool.h</tt>", "md_docs_2IMPROVEMENTS.html#autotoc_md42", null ],
+        [ "Improve Argument Parsing", "md_docs_2IMPROVEMENTS.html#autotoc_md43", null ],
+        [ "Improve Error Handling Consistency", "md_docs_2IMPROVEMENTS.html#autotoc_md44", null ],
+        [ "Fix Parser Off-by-One Bug", "md_docs_2IMPROVEMENTS.html#autotoc_md45", null ],
+        [ "Refactor Top-Level <tt>#include</tt> Parsing", "md_docs_2IMPROVEMENTS.html#autotoc_md46", null ],
+        [ "Harden File I/O", "md_docs_2IMPROVEMENTS.html#autotoc_md47", null ],
+        [ "Add Enum Type Support", "md_docs_2IMPROVEMENTS.html#autotoc_md48", null ],
+        [ "Add Fixed-Size Array Support", "md_docs_2IMPROVEMENTS.html#autotoc_md49", null ],
+        [ "Add Map/Dictionary Support", "md_docs_2IMPROVEMENTS.html#autotoc_md50", null ]
       ] ],
-      [ "Roadmap", "md_docs_2IMPROVEMENTS.html#autotoc_md50", [
-        [ "Phase 1: Bug Fixes and Technical Debt Cleanup", "md_docs_2IMPROVEMENTS.html#autotoc_md51", null ],
-        [ "Phase 2: Type System Expansion", "md_docs_2IMPROVEMENTS.html#autotoc_md52", null ],
-        [ "Phase 3: Developer Experience", "md_docs_2IMPROVEMENTS.html#autotoc_md53", null ],
-        [ "Phase 4: Build Ecosystem and Cross-Platform Support", "md_docs_2IMPROVEMENTS.html#autotoc_md54", null ],
-        [ "Phase 5: Performance and Reliability", "md_docs_2IMPROVEMENTS.html#autotoc_md55", null ],
-        [ "Phase 6: Long-Term Vision", "md_docs_2IMPROVEMENTS.html#autotoc_md56", null ]
+      [ "Roadmap", "md_docs_2IMPROVEMENTS.html#autotoc_md51", [
+        [ "Phase 1: Bug Fixes and Technical Debt Cleanup", "md_docs_2IMPROVEMENTS.html#autotoc_md52", null ],
+        [ "Phase 2: Type System Expansion", "md_docs_2IMPROVEMENTS.html#autotoc_md53", null ],
+        [ "Phase 3: Developer Experience", "md_docs_2IMPROVEMENTS.html#autotoc_md54", null ],
+        [ "Phase 4: Build Ecosystem and Cross-Platform Support", "md_docs_2IMPROVEMENTS.html#autotoc_md55", null ],
+        [ "Phase 5: Performance and Reliability", "md_docs_2IMPROVEMENTS.html#autotoc_md56", null ],
+        [ "Phase 6: Long-Term Vision", "md_docs_2IMPROVEMENTS.html#autotoc_md57", null ]
       ] ],
-      [ "Key Files", "md_docs_2IMPROVEMENTS.html#autotoc_md57", null ],
-      [ "Project Direction Notes", "md_docs_2IMPROVEMENTS.html#autotoc_md58", null ],
-      [ "Open Design Questions", "md_docs_2IMPROVEMENTS.html#autotoc_md59", null ]
+      [ "Key Files", "md_docs_2IMPROVEMENTS.html#autotoc_md58", null ],
+      [ "Project Direction Notes", "md_docs_2IMPROVEMENTS.html#autotoc_md59", null ],
+      [ "Open Design Questions", "md_docs_2IMPROVEMENTS.html#autotoc_md60", null ]
     ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
