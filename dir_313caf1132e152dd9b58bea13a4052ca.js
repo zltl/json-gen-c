@@ -1,9 +1,12 @@
 var dir_313caf1132e152dd9b58bea13a4052ca =
 [
+    [ "compat.h", "compat_8h.html", null ],
     [ "diag.c", "diag_8c.html", "diag_8c" ],
     [ "diag.h", "diag_8h.html", "diag_8h" ],
     [ "error_codes.c", "error__codes_8c.html", "error__codes_8c" ],
     [ "error_codes.h", "error__codes_8h.html", "error__codes_8h" ],
+    [ "getopt_compat.c", "getopt__compat_8c.html", null ],
+    [ "getopt_compat.h", "getopt__compat_8h.html", null ],
     [ "hash.h", "hash_8h_source.html", null ],
     [ "hash_map.h", "hash__map_8h.html", "hash__map_8h" ],
     [ "io.h", "io_8h.html", null ],

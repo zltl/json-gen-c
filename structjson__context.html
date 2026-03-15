@@ -96,8 +96,8 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a5bdf348f68a8cf968366bc80819d0f9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a68e37cfd129ca260b31f26b22b6f26ae" id="r_a68e37cfd129ca260b31f26b22b6f26ae"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structjson__context.html#a68e37cfd129ca260b31f26b22b6f26ae">item_count</a></td></tr>
 <tr class="separator:a68e37cfd129ca260b31f26b22b6f26ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f05c2b2c288b31e33890b6b7801f911" id="r_a4f05c2b2c288b31e33890b6b7801f911"><td class="memItemLeft" align="right" valign="top">pthread_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structjson__context.html#a4f05c2b2c288b31e33890b6b7801f911">mutex</a></td></tr>
-<tr class="separator:a4f05c2b2c288b31e33890b6b7801f911"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2ca57edf07f6f572c91b3325889fd63" id="r_af2ca57edf07f6f572c91b3325889fd63"><td class="memItemLeft" align="right" valign="top">compat_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structjson__context.html#af2ca57edf07f6f572c91b3325889fd63">mutex</a></td></tr>
+<tr class="separator:af2ca57edf07f6f572c91b3325889fd63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Thread-safe JSON parsing context This structure replaces global variables to ensure thread safety. </p>
@@ -162,14 +162,14 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a4f05c2b2c288b31e33890b6b7801f911" name="a4f05c2b2c288b31e33890b6b7801f911"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4f05c2b2c288b31e33890b6b7801f911">&#9670;&#160;</a></span>mutex</h2>
+<a id="af2ca57edf07f6f572c91b3325889fd63" name="af2ca57edf07f6f572c91b3325889fd63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2ca57edf07f6f572c91b3325889fd63">&#9670;&#160;</a></span>mutex</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">pthread_mutex_t json_context::mutex</td>
+          <td class="memname">compat_mutex_t json_context::mutex</td>
         </tr>
       </table>
 </div><div class="memdoc">

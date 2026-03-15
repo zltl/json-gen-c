@@ -347,9 +347,15 @@ Phase 4: Build Ecosystem and Cross-Platform Support</h2>
 <li><b>CI validation:</b> <code>.github/workflows/packaging.yml</code> runs on release tags to validate Homebrew formula syntax, Debian package build, and AUR PKGBUILD.</li>
 </ul>
 </li>
-<li>Add Windows support.<ul>
-<li>Validate GCC/Clang on Windows</li>
-<li>Validate MSVC compatibility where practical</li>
+<li><strike>Add Windows support.</strike> <b>Done.</b><ul>
+<li><strike>Validate GCC/Clang on Windows</strike></li>
+<li><strike>Validate MSVC compatibility where practical</strike></li>
+<li>Created <code><a class="el" href="compat_8h.html" title="Cross-platform compatibility abstractions for Windows and POSIX.">src/utils/compat.h</a></code> portability header abstracting pthread (→ <code>CRITICAL_SECTION</code>), <code>isatty</code>/<code>fileno</code> (→ <code>_isatty</code>/<code>_fileno</code>), <code>strdup</code> (→ <code>_strdup</code>), and path separator detection.</li>
+<li>Removed non-standard <code>&lt;malloc.h&gt;</code> from all source files; <code>&lt;stdlib.h&gt;</code> suffices. Also fixes the embedded <code><a class="el" href="sstr_8c.html" title="Implementation of the sstr.h header file.">sstr.c</a></code> output users receive.</li>
+<li>Bundled portable <code>getopt_long_only</code> implementation (<code><a class="el" href="getopt__compat_8h.html" title="Portable getopt_long implementation for systems without &lt;getopt.h&gt;.">src/utils/getopt_compat.h</a>/c</code>) for MSVC which lacks <code>&lt;getopt.h&gt;</code>.</li>
+<li>Fixed path separator handling in <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">struct_parse.c</a></code> to accept both <code>/</code> and <code>\</code> on Windows.</li>
+<li>Updated <code>CMakeLists.txt</code>: conditional getopt compilation, portable xxd replacement via <code>cmake/xxd.cmake</code>, MSVC <code>/W4 /WX</code> warning flags, Windows-aware thread linking.</li>
+<li>Added MSVC and MinGW CI jobs to <code>.github/workflows/test.yml</code>.</li>
 </ul>
 </li>
 <li><strike>Consider Meson as an additional build integration option.</strike> <b>Done.</b><ul>

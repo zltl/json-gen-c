@@ -1,0 +1,11 @@
+<map id="src/utils/compat.h" name="src/utils/compat.h">
+<area shape="rect" id="Node000001" title="Cross&#45;platform compatibility abstractions for Windows and POSIX." alt="" coords="195,5,334,31"/>
+<area shape="rect" id="Node000002" href="$struct__parse_8c.html" title="parse struct definition file." alt="" coords="5,79,183,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="226,38,123,81,121,76,223,33"/>
+<area shape="rect" id="Node000003" href="$diag_8c.html" title="Diagnostic engine implementation." alt="" coords="207,79,323,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="267,44,267,79,262,79,262,44"/>
+<area shape="rect" id="Node000004" href="$json__context_8h.html" title="Thread&#45;safe context structure for JSON parsing." alt="" coords="347,79,519,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="305,34,406,76,404,81,303,38"/>
+<area shape="rect" id="Node000005" href="$json__context_8c.html" title="Implementation of thread&#45;safe JSON parsing context." alt="" coords="347,152,518,177"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="435,118,435,152,430,152,430,118"/>
+</map>

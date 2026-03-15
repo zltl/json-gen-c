@@ -76,11 +76,11 @@ $(document).ready(function(){initNavTree('struct__parse_8c.html',''); initResiza
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="struct__parse_8h_source.html">struct/struct_parse.h</a>&quot;</code><br />
 <code>#include &lt;ctype.h&gt;</code><br />
-<code>#include &lt;malloc.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="diag_8h_source.html">utils/diag.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="compat_8h_source.html">utils/compat.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="hash__map_8h_source.html">utils/hash_map.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="io_8h_source.html">utils/io.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="sstr_8h_source.html">utils/sstr.h</a>&quot;</code><br />
@@ -96,39 +96,43 @@ Include dependency graph for struct_parse.c:</div>
 <area shape="rect" href="diag_8h.html" title="Diagnostic engine for clang&#45;style error reporting." alt="" coords="34,152,129,177"/>
 <area shape="poly" title=" " alt="" coords="362,29,225,48,165,62,124,81,112,93,102,108,89,140,84,138,97,106,108,90,121,76,163,57,224,43,361,24"/>
 <area shape="rect" title=" " alt="" coords="5,225,72,251"/>
-<area shape="poly" title=" " alt="" coords="362,22,301,27,233,37,163,54,97,81,71,95,52,109,37,127,24,153,20,168,21,183,29,212,24,214,16,184,15,167,19,151,33,124,48,105,68,91,95,76,161,49,232,32,300,22,362,17"/>
+<area shape="poly" title=" " alt="" coords="362,22,301,27,234,37,164,55,98,81,72,95,52,109,37,127,24,153,20,168,21,183,29,212,24,214,15,184,15,167,19,151,33,124,49,105,69,91,96,76,163,50,232,32,301,22,362,17"/>
 <area shape="rect" href="hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="255,152,388,177"/>
 <area shape="poly" title=" " alt="" coords="426,33,393,53,361,80,342,110,330,140,325,138,337,107,357,77,390,48,424,28"/>
-<area shape="rect" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="321,225,410,251"/>
-<area shape="poly" title=" " alt="" coords="440,33,421,53,406,80,401,106,404,127,406,150,403,178,384,215,380,213,397,177,401,150,398,128,396,105,402,78,417,50,436,29"/>
+<area shape="rect" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="314,225,403,251"/>
+<area shape="poly" title=" " alt="" coords="439,33,420,53,405,80,400,106,403,127,407,150,403,178,393,199,381,216,376,213,388,196,397,177,401,150,398,128,395,106,400,78,416,50,435,29"/>
 <area shape="rect" title=" " alt="" coords="415,79,486,104"/>
 <area shape="poly" title=" " alt="" coords="453,31,453,65,448,65,448,31"/>
-<area shape="rect" title=" " alt="" coords="510,79,589,104"/>
-<area shape="poly" title=" " alt="" coords="468,29,524,68,521,73,465,33"/>
-<area shape="rect" title=" " alt="" coords="613,79,683,104"/>
-<area shape="poly" title=" " alt="" coords="483,28,604,71,602,76,481,33"/>
-<area shape="rect" title=" " alt="" coords="707,79,778,104"/>
-<area shape="poly" title=" " alt="" coords="498,28,695,76,693,81,497,33"/>
-<area shape="rect" href="io_8h.html" title="file operation helper functions." alt="" coords="617,152,695,177"/>
-<area shape="poly" title=" " alt="" coords="540,20,612,25,687,36,752,52,776,63,793,77,800,90,799,103,792,115,780,125,747,141,710,154,708,149,745,137,778,120,788,111,794,102,795,92,789,80,773,68,750,57,686,41,612,31,539,25"/>
-<area shape="rect" href="error__codes_8h.html" title="Unified error code definitions for json&#45;gen&#45;c." alt="" coords="854,79,997,104"/>
-<area shape="poly" title=" " alt="" coords="527,28,841,75,840,80,527,33"/>
+<area shape="rect" title=" " alt="" coords="510,79,581,104"/>
+<area shape="poly" title=" " alt="" coords="467,29,520,68,517,72,464,33"/>
+<area shape="rect" title=" " alt="" coords="605,79,675,104"/>
+<area shape="poly" title=" " alt="" coords="482,28,597,71,595,76,480,33"/>
+<area shape="rect" href="compat_8h.html" title="Cross&#45;platform compatibility abstractions for Windows and POSIX." alt="" coords="700,79,815,104"/>
+<area shape="poly" title=" " alt="" coords="501,28,695,73,694,78,499,33"/>
+<area shape="rect" href="io_8h.html" title="file operation helper functions." alt="" coords="818,152,897,177"/>
+<area shape="poly" title=" " alt="" coords="540,20,620,27,704,37,778,53,807,64,828,77,840,90,849,106,858,138,852,139,844,108,836,93,825,81,805,69,777,59,703,43,619,32,539,26"/>
+<area shape="rect" href="error__codes_8h.html" title="Unified error code definitions for json&#45;gen&#45;c." alt="" coords="890,79,1033,104"/>
+<area shape="poly" title=" " alt="" coords="533,28,877,76,876,81,532,33"/>
 <area shape="rect" title=" " alt="" coords="157,299,232,324"/>
 <area shape="poly" title=" " alt="" coords="214,105,199,285,194,284,208,104"/>
 <area shape="poly" title=" " alt="" coords="192,106,116,148,113,143,190,102"/>
 <area shape="poly" title=" " alt="" coords="231,102,293,142,290,147,228,106"/>
-<area shape="poly" title=" " alt="" coords="216,104,224,139,233,158,245,176,276,201,312,218,309,223,273,205,241,179,228,161,219,141,211,105"/>
+<area shape="poly" title=" " alt="" coords="216,104,225,139,233,158,245,176,274,200,308,218,306,223,272,205,241,179,228,161,220,140,211,105"/>
 <area shape="poly" title=" " alt="" coords="77,179,55,215,50,212,72,176"/>
 <area shape="poly" title=" " alt="" coords="313,180,216,290,212,287,309,176"/>
-<area shape="poly" title=" " alt="" coords="331,176,353,212,349,215,326,179"/>
-<area shape="poly" title=" " alt="" coords="339,253,236,296,234,291,337,248"/>
+<area shape="poly" title=" " alt="" coords="330,176,349,212,344,215,325,179"/>
+<area shape="poly" title=" " alt="" coords="333,253,235,296,233,291,331,248"/>
 <area shape="rect" title=" " alt="" coords="256,299,331,324"/>
-<area shape="poly" title=" " alt="" coords="355,253,317,291,313,287,352,249"/>
+<area shape="poly" title=" " alt="" coords="350,253,315,290,311,287,346,249"/>
 <area shape="rect" title=" " alt="" coords="355,299,437,324"/>
-<area shape="poly" title=" " alt="" coords="373,250,388,285,383,287,368,252"/>
+<area shape="poly" title=" " alt="" coords="367,250,386,285,381,288,362,252"/>
 <area shape="rect" title=" " alt="" coords="462,299,533,324"/>
-<area shape="poly" title=" " alt="" coords="388,248,465,290,463,294,385,253"/>
-<area shape="poly" title=" " alt="" coords="617,178,424,225,423,220,616,173"/>
+<area shape="poly" title=" " alt="" coords="382,248,464,290,461,295,380,253"/>
+<area shape="rect" title=" " alt="" coords="710,152,794,177"/>
+<area shape="poly" title=" " alt="" coords="759,105,757,139,751,138,754,104"/>
+<area shape="rect" title=" " alt="" coords="611,152,685,177"/>
+<area shape="poly" title=" " alt="" coords="741,106,679,147,676,142,738,102"/>
+<area shape="poly" title=" " alt="" coords="818,178,807,180,592,212,417,233,417,228,591,207,806,175,817,173"/>
 </map>
 </div>
 </div><table class="memberdecls">
