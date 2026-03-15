@@ -172,6 +172,12 @@ struct pos {
     long offset;
 };
 
+// linked list node for tracking include stack (circular include detection)
+struct include_node {
+    const char* path;
+    struct include_node* parent;
+};
+
 /**
  * @brief parser context
  *
@@ -189,6 +195,8 @@ struct struct_parser {
     char *name;
     // diagnostic engine (owned by top-level parser, shared with sub-parsers)
     struct diag_engine *diag;
+    // include stack for circular include detection (linked list, not owned)
+    struct include_node* include_stack;
 };
 
 // token types of struct definitions, return by next_token()

@@ -262,7 +262,8 @@ static void gen_code_struct_unmarshal_struct(struct struct_container* st,
                      "    param.instance_ptr = obj;\n"
                      "    param.field_name = \"\";\n"
                      "    param.in_array = 0;\n"
-                     "    param.in_struct = 1;\n");
+                     "    param.in_struct = 1;\n"
+                     "    param.depth = 0;\n");
     sstr_printf_append(source, "    param.struct_name = \"%S\";\n", st->name);
     sstr_append_cstr(
         source,
@@ -294,7 +295,8 @@ static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
                      "    struct json_parse_param ar_param;\n"
                      "    ar_param.instance_ptr = obj;\n"
                      "    ar_param.in_array = 1;\n"
-                     "    ar_param.in_struct = 0;\n");
+                     "    ar_param.in_struct = 0;\n"
+                     "    ar_param.depth = 0;\n");
     sstr_printf_append(source, "    ar_param.struct_name = \"%S\";\n",
                        st->name);
     sstr_append_cstr(source,

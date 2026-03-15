@@ -64,12 +64,17 @@ enum json_token {
 #define FIELD_TYPE_UINT64 16
 #define FIELD_TYPE_ONEOF 17
 
+#ifndef JSON_MAX_DEPTH
+#define JSON_MAX_DEPTH 256
+#endif
+
 #include <stdint.h>
 
 struct json_parse_param {
     void* instance_ptr;
     int in_array;
     int in_struct;
+    int depth;
     const char* struct_name;
     const char* field_name;
 };
@@ -145,7 +150,7 @@ static int json_unmarshal_oneof_internal(sstr_t content, struct json_pos* pos,
                                          const char** variant_struct_names,
                                          int variant_count,
                                          int tag_offset, int value_offset,
-                                         sstr_t txt);
+                                         int depth, sstr_t txt);
 static int json_unmarshal_array_internal_oneof(
     sstr_t content, struct json_pos* pos,
     void** arr_pp, int* ptrlen, int element_size,
@@ -154,7 +159,7 @@ static int json_unmarshal_array_internal_oneof(
     const char** variant_struct_names,
     int variant_count,
     int tag_offset, int value_offset,
-    sstr_t txt);
+    int depth, sstr_t txt);
 static int json_unmarshal_ignore_value(sstr_t content, struct json_pos* pos,
                                        sstr_t txt);
 

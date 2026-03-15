@@ -197,6 +197,7 @@ struct struct_parser* struct_parser_new() {
     parser->pos.offset = 0;
     parser->name = NULL;
     parser->diag = NULL;
+    parser->include_stack = NULL;
 
     return parser;
 }
@@ -565,6 +566,15 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
         token->txt = NULL;
     }
 
+    // Check for circular includes
+    for (struct include_node* node = parser->include_stack; node; node = node->parent) {
+        if (strcmp(node->path, sstr_cstr(file)) == 0) {
+            PERROR(parser, "circular include detected: \"%s\"", sstr_cstr(file));
+            sstr_free(file);
+            return JSON_GEN_ERROR_PARSE;
+        }
+    }
+
     // read the contents of the file
     sstr_t sub_content = sstr_new();
     if (sub_content == NULL) {
@@ -592,6 +602,11 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     // then we step into the sub file.
     sub_parser.enum_map = parser->enum_map;
     sub_parser.oneof_map = parser->oneof_map;
+    // Track include stack for circular detection
+    struct include_node this_node;
+    this_node.path = sstr_cstr(file);
+    this_node.parent = parser->include_stack;
+    sub_parser.include_stack = &this_node;
     // sub-parser gets its own diag engine for correct filename/source
     sub_parser.diag = diag_engine_new(sstr_cstr(file), sstr_cstr(sub_content),
                                       (long)sstr_length(sub_content));
@@ -619,6 +634,110 @@ static int next_meaningful_token(struct struct_parser* parser, sstr_t content,
         tk = next_token(parser, content, token);
     }
     return tk;
+}
+
+/**
+ * @brief Look up a primitive type name and return its FIELD_TYPE_* enum value.
+ * @return The corresponding FIELD_TYPE_* value, or -1 if not a primitive type.
+ */
+static int lookup_primitive_type(sstr_t type_name) {
+    static const struct {
+        const char* name;
+        int type_id;
+    } type_table[] = {
+        { TYPE_NAME_INT,    FIELD_TYPE_INT },
+        { TYPE_NAME_BOOL,   FIELD_TYPE_BOOL },
+        { TYPE_NAME_LONG,   FIELD_TYPE_LONG },
+        { TYPE_NAME_FLOAT,  FIELD_TYPE_FLOAT },
+        { TYPE_NAME_DOUBLE, FIELD_TYPE_DOUBLE },
+        { TYPE_NAME_SSTR,   FIELD_TYPE_SSTR },
+        { TYPE_NAME_INT8,   FIELD_TYPE_INT8 },
+        { TYPE_NAME_INT16,  FIELD_TYPE_INT16 },
+        { TYPE_NAME_INT32,  FIELD_TYPE_INT32 },
+        { TYPE_NAME_INT64,  FIELD_TYPE_INT64 },
+        { TYPE_NAME_UINT8,  FIELD_TYPE_UINT8 },
+        { TYPE_NAME_UINT16, FIELD_TYPE_UINT16 },
+        { TYPE_NAME_UINT32, FIELD_TYPE_UINT32 },
+        { TYPE_NAME_UINT64, FIELD_TYPE_UINT64 },
+    };
+    for (int i = 0; i < (int)(sizeof(type_table) / sizeof(type_table[0])); i++) {
+        if (sstr_compare_c(type_name, type_table[i].name) == 0) {
+            return type_table[i].type_id;
+        }
+    }
+    return -1;
+}
+
+/**
+ * @brief Parse a map<key_type, value_type> field type.
+ * Expects the tokenizer to have just consumed "map". Reads the <K,V> parameter.
+ * @return 0 on success, -1 on error.
+ */
+static int parse_map_field(struct struct_parser* parser, sstr_t content,
+                           struct struct_token* token, struct struct_field* field,
+                           sstr_t type_name) {
+    token->txt = NULL;
+    // next token should be TOKEN_STRING from <...> (tokenizer treats <> like quotes)
+    next_token(parser, content, token);
+    if (token->type != TOKEN_STRING) {
+        PERROR(parser, "expected '<key_type, value_type>' after 'map'");
+        sstr_free(type_name);
+        return -1;
+    }
+    // token->txt contains e.g. "sstr_t, int"
+    // find the comma separator
+    char* params = sstr_cstr(token->txt);
+    char* comma = strchr(params, ',');
+    if (comma == NULL) {
+        PERROR(parser, "expected ',' in map type parameters");
+        sstr_free(type_name);
+        return -1;
+    }
+    // extract and trim key type
+    while (*params == ' ') params++;
+    char* key_end = comma;
+    while (key_end > params && *(key_end - 1) == ' ') key_end--;
+    // extract and trim value type
+    char* val_start = comma + 1;
+    while (*val_start == ' ') val_start++;
+    char* val_end = params + sstr_length(token->txt);
+    while (val_end > val_start && *(val_end - 1) == ' ') val_end--;
+
+    // validate key type is sstr_t
+    int key_len = (int)(key_end - params);
+    if (key_len != 6 || strncmp(params, "sstr_t", 6) != 0) {
+        PERROR(parser, "map key type must be 'sstr_t', got '%.*s'",
+               key_len, params);
+        sstr_free(type_name);
+        return -1;
+    }
+
+    // determine value type
+    int val_len = (int)(val_end - val_start);
+    sstr_t val_type_name = sstr_of(val_start, val_len);
+    int map_val_type = lookup_primitive_type(val_type_name);
+    if (map_val_type < 0) {
+        void* enum_val = NULL;
+        if (hash_map_find(parser->enum_map, val_type_name, &enum_val) == HASH_MAP_OK) {
+            map_val_type = FIELD_TYPE_ENUM;
+        } else {
+            map_val_type = FIELD_TYPE_STRUCT;
+        }
+    }
+
+    field->type = FIELD_TYPE_MAP;
+    field->map_value_type = map_val_type;
+    if (map_val_type == FIELD_TYPE_BOOL) {
+        field->map_value_type_name = sstr("int");
+        sstr_free(val_type_name);
+    } else {
+        field->map_value_type_name = val_type_name;
+    }
+    // type_name for map fields: "map" (used for identification)
+    field->type_name = type_name;
+    sstr_free(token->txt);
+    token->txt = NULL;
+    return 0;
 }
 
 static int struct_parse_field(struct struct_parser* parser, sstr_t content,
@@ -707,129 +826,15 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
     // handle map<key_type, value_type> syntax
     if (sstr_compare_c(type_name, "map") == 0) {
         type_id = FIELD_TYPE_MAP;
-        token->txt = NULL;
-        // next token should be TOKEN_STRING from <...> (tokenizer treats <> like quotes)
-        tk = next_token(parser, content, token);
-        if (token->type != TOKEN_STRING) {
-            PERROR(parser, "expected '<key_type, value_type>' after 'map'");
-            sstr_free(type_name);
+        if (parse_map_field(parser, content, token, field, type_name) < 0) {
             return -1;
         }
-        // token->txt contains e.g. "sstr_t, int"
-        // find the comma separator
-        char* params = sstr_cstr(token->txt);
-        char* comma = strchr(params, ',');
-        if (comma == NULL) {
-            PERROR(parser, "expected ',' in map type parameters");
-            sstr_free(type_name);
-            return -1;
-        }
-        // extract and trim key type
-        while (*params == ' ') params++;
-        char* key_end = comma;
-        while (key_end > params && *(key_end - 1) == ' ') key_end--;
-        // extract and trim value type
-        char* val_start = comma + 1;
-        while (*val_start == ' ') val_start++;
-        char* val_end = params + sstr_length(token->txt);
-        while (val_end > val_start && *(val_end - 1) == ' ') val_end--;
-
-        // validate key type is sstr_t
-        int key_len = (int)(key_end - params);
-        if (key_len != 6 || strncmp(params, "sstr_t", 6) != 0) {
-            PERROR(parser, "map key type must be 'sstr_t', got '%.*s'",
-                   key_len, params);
-            sstr_free(type_name);
-            return -1;
-        }
-
-        // determine value type
-        int val_len = (int)(val_end - val_start);
-        sstr_t val_type_name = sstr_of(val_start, val_len);
-        int map_val_type;
-        if (sstr_compare_c(val_type_name, TYPE_NAME_INT) == 0) {
-            map_val_type = FIELD_TYPE_INT;
-        } else if (sstr_compare_c(val_type_name, TYPE_NAME_BOOL) == 0) {
-            map_val_type = FIELD_TYPE_BOOL;
-        } else if (sstr_compare_c(val_type_name, TYPE_NAME_LONG) == 0) {
-            map_val_type = FIELD_TYPE_LONG;
-        } else if (sstr_compare_c(val_type_name, TYPE_NAME_FLOAT) == 0) {
-            map_val_type = FIELD_TYPE_FLOAT;
-        } else if (sstr_compare_c(val_type_name, TYPE_NAME_DOUBLE) == 0) {
-            map_val_type = FIELD_TYPE_DOUBLE;
-        } else if (sstr_compare_c(val_type_name, TYPE_NAME_SSTR) == 0) {
-            map_val_type = FIELD_TYPE_SSTR;
-        } else if (sstr_compare_c(val_type_name, TYPE_NAME_INT8) == 0) {
-            map_val_type = FIELD_TYPE_INT8;
-        } else if (sstr_compare_c(val_type_name, TYPE_NAME_INT16) == 0) {
-            map_val_type = FIELD_TYPE_INT16;
-        } else if (sstr_compare_c(val_type_name, TYPE_NAME_INT32) == 0) {
-            map_val_type = FIELD_TYPE_INT32;
-        } else if (sstr_compare_c(val_type_name, TYPE_NAME_INT64) == 0) {
-            map_val_type = FIELD_TYPE_INT64;
-        } else if (sstr_compare_c(val_type_name, TYPE_NAME_UINT8) == 0) {
-            map_val_type = FIELD_TYPE_UINT8;
-        } else if (sstr_compare_c(val_type_name, TYPE_NAME_UINT16) == 0) {
-            map_val_type = FIELD_TYPE_UINT16;
-        } else if (sstr_compare_c(val_type_name, TYPE_NAME_UINT32) == 0) {
-            map_val_type = FIELD_TYPE_UINT32;
-        } else if (sstr_compare_c(val_type_name, TYPE_NAME_UINT64) == 0) {
-            map_val_type = FIELD_TYPE_UINT64;
-        } else {
-            void* enum_val = NULL;
-            if (hash_map_find(parser->enum_map, val_type_name, &enum_val) == HASH_MAP_OK) {
-                map_val_type = FIELD_TYPE_ENUM;
-            } else {
-                map_val_type = FIELD_TYPE_STRUCT;
-            }
-        }
-
-        field->type = FIELD_TYPE_MAP;
-        field->map_value_type = map_val_type;
-        if (map_val_type == FIELD_TYPE_BOOL) {
-            field->map_value_type_name = sstr("int");
-            sstr_free(val_type_name);
-        } else {
-            field->map_value_type_name = val_type_name;
-        }
-        // type_name for map fields: "map" (used for identification)
-        field->type_name = type_name;
-        sstr_free(token->txt);
-        token->txt = NULL;
         goto parse_field_name;
     }
 
     // get type id of typename.
-    if (sstr_compare_c(type_name, TYPE_NAME_INT) == 0) {
-        type_id = FIELD_TYPE_INT;
-    } else if (sstr_compare_c(type_name, TYPE_NAME_BOOL) == 0) {
-        type_id = FIELD_TYPE_BOOL;
-    } else if (sstr_compare_c(type_name, TYPE_NAME_LONG) == 0) {
-        type_id = FIELD_TYPE_LONG;
-    } else if (sstr_compare_c(type_name, TYPE_NAME_FLOAT) == 0) {
-        type_id = FIELD_TYPE_FLOAT;
-    } else if (sstr_compare_c(type_name, TYPE_NAME_DOUBLE) == 0) {
-        type_id = FIELD_TYPE_DOUBLE;
-    } else if (sstr_compare_c(type_name, TYPE_NAME_SSTR) == 0) {
-        type_id = FIELD_TYPE_SSTR;
-    } else if (sstr_compare_c(type_name, TYPE_NAME_INT8) == 0) {
-        type_id = FIELD_TYPE_INT8;
-    } else if (sstr_compare_c(type_name, TYPE_NAME_INT16) == 0) {
-        type_id = FIELD_TYPE_INT16;
-    } else if (sstr_compare_c(type_name, TYPE_NAME_INT32) == 0) {
-        type_id = FIELD_TYPE_INT32;
-    } else if (sstr_compare_c(type_name, TYPE_NAME_INT64) == 0) {
-        type_id = FIELD_TYPE_INT64;
-    } else if (sstr_compare_c(type_name, TYPE_NAME_UINT8) == 0) {
-        type_id = FIELD_TYPE_UINT8;
-    } else if (sstr_compare_c(type_name, TYPE_NAME_UINT16) == 0) {
-        type_id = FIELD_TYPE_UINT16;
-    } else if (sstr_compare_c(type_name, TYPE_NAME_UINT32) == 0) {
-        type_id = FIELD_TYPE_UINT32;
-    } else if (sstr_compare_c(type_name, TYPE_NAME_UINT64) == 0) {
-        type_id = FIELD_TYPE_UINT64;
-    } else {
-        // check if type_name is a known enum
+    type_id = lookup_primitive_type(type_name);
+    if (type_id < 0) {
         void* enum_val = NULL;
         void* oneof_val = NULL;
         if (hash_map_find(parser->enum_map, type_name, &enum_val) == HASH_MAP_OK) {
@@ -1323,7 +1328,8 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
             // handle '#include "filename"'
             int r = struct_parse_include(parser, content, &token);
             if (r != 0) {
-                // include failed; continue to next top-level construct
+                // Propagate include failure to parent diag so overall parse fails
+                PERROR(parser, "failed to process include directive");
                 continue;
             }
             continue;
@@ -1342,7 +1348,10 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
             if (token.type == TOKEN_EOF) break;
             if (token.type == TOKEN_SHARPE) {
                 int r = struct_parse_include(parser, content, &token);
-                if (r != 0) continue;
+                if (r != 0) {
+                    PERROR(parser, "failed to process include directive");
+                    continue;
+                }
                 continue;
             }
             // Fall through: token is 'struct', 'enum', or 'oneof'

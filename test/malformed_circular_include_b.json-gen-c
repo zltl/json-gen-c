@@ -1,0 +1,6 @@
+// This file includes a, which includes b — circular
+#include "malformed_circular_include_a.json-gen-c"
+
+struct B {
+    int y;
+}

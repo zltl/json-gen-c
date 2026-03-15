@@ -148,6 +148,11 @@ int main(int argc, char **argv) {
         cleanup_and_exit(content, NULL, NULL, NULL, JSON_GEN_ERROR_MEMORY);
     }
     parser->name = options.input_file;
+    // Set up include stack with the root file for circular detection
+    struct include_node root_include;
+    root_include.path = options.input_file;
+    root_include.parent = NULL;
+    parser->include_stack = &root_include;
 
     // Parse the struct definition
     r = struct_parser_parse(parser, content);
