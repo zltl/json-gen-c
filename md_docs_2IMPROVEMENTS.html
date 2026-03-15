@@ -197,7 +197,15 @@ Phase 1: Bug Fixes and Technical Debt Cleanup</h2>
 <li>Keep parser regression coverage growing for edge cases around comments, includes, empty files, and malformed trailing tokens.</li>
 <li>Continue refactoring parser internals so responsibilities are clearer and easier to extend.</li>
 <li>Remove small remaining inconsistencies in diagnostics, naming, and internal APIs.</li>
-<li>Audit the generated code template for duplicated logic and simplify where possible.</li>
+<li><strike>Audit the generated code template for duplicated logic and simplify where possible.</strike> <b>Done.</b><ul>
+<li>Table-driven marshal refactoring in <code>src/gencode/gencode.c</code>: replaced 4 duplicated <code>FIELD_TYPE_*</code> switch blocks (~268 lines) with a <code><a class="el" href="structmarshal__numeric__info.html">marshal_numeric_info</a></code> lookup table + <code>emit_numeric_marshal()</code> helper, plus merged identical init/clear cases.</li>
+<li>Map marshal value block: 10 case arms → table lookup + 3 explicit cases (SSTR, STRUCT, ENUM).</li>
+<li>Struct marshal block: same table lookup; BOOL retains special if/else true/false path; STRUCT/ONEOF merged.</li>
+<li>Init block: merged INT/BOOL/LONG/INT8-UINT64 (identical <code>= 0</code>), FLOAT/DOUBLE (identical <code>= 0.0</code>), STRUCT/ONEOF.</li>
+<li>Clear block: merged ENUM with integer cases, STRUCT/ONEOF.</li>
+<li>Net reduction: 63 lines (171 deleted, 108 added). Generated output verified byte-identical.</li>
+</ul>
+</li>
 </ol>
 <p><b>Exit criteria:</b> CI stays green, regression tests cover recent parser and generator fixes, and the parsing/codegen core is stable enough for feature work.</p>
 <h2><a class="anchor" id="autotoc_md53"></a>

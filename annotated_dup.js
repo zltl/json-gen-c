@@ -14,6 +14,7 @@ var annotated_dup =
     [ "json_field_offset_item", "structjson__field__offset__item.html", null ],
     [ "json_parse_param", "structjson__parse__param.html", null ],
     [ "json_pos", "structjson__pos.html", null ],
+    [ "marshal_numeric_info", "structmarshal__numeric__info.html", null ],
     [ "oneof_container", "structoneof__container.html", null ],
     [ "oneof_variant", "structoneof__variant.html", null ],
     [ "options", "structoptions.html", "structoptions" ],
