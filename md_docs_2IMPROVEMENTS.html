@@ -339,26 +339,32 @@ Phase 4: Build Ecosystem and Cross-Platform Support</h2>
 <h2><a class="anchor" id="autotoc_md54"></a>
 Phase 5: Performance and Reliability</h2>
 <ol type="1">
-<li>Add custom allocator support.<ul>
-<li>Allow generated code to use caller-provided allocation and free hooks.</li>
-<li>Important for embedded targets and arena allocators.</li>
+<li><strike>Add custom allocator support.</strike><ul>
+<li><strike>Allow generated code to use caller-provided allocation and free hooks.</strike></li>
+<li><strike>Important for embedded targets and arena allocators.</strike></li>
+<li><b>Completed:</b> <code>JGENC_MALLOC</code>/<code>JGENC_REALLOC</code>/<code>JGENC_FREE</code> compile-time macros for sstr and generated code. Runtime <code>json_gen_c_set_alloc()</code> API with function pointers. 4 allocator tests passing.</li>
 </ul>
 </li>
-<li>Add fuzz testing.<ul>
-<li>Schema parser fuzzing</li>
-<li>JSON parser fuzzing</li>
+<li><strike>Add fuzz testing.</strike><ul>
+<li><strike>Schema parser fuzzing</strike></li>
+<li><strike>JSON parser fuzzing</strike></li>
+<li><b>Completed:</b> libFuzzer harnesses in <code>fuzz/</code> for schema parser and JSON unmarshal. Seed corpora. Found and fixed a real crash: missing colon consumption before <code>json_unmarshal_ignore_value()</code> for unknown fields.</li>
 </ul>
 </li>
-<li>Add memory tooling in CI.<ul>
-<li>AddressSanitizer</li>
-<li>Leak checking</li>
-<li>Optional Valgrind runs where practical</li>
+<li><strike>Add memory tooling in CI.</strike><ul>
+<li><strike>AddressSanitizer</strike></li>
+<li><strike>Leak checking</strike></li>
+<li><strike>Optional Valgrind runs where practical</strike></li>
+<li><b>Completed:</b> <code>JSON_SANITIZE=1</code> enables ASan+UBSan (<code>-fsanitize=address,undefined</code>). Dedicated <code>sanitizer</code> CI job in GitHub Actions. Fixed UBSan issues: signed integer overflow in <code>sstr_append_int_str</code> / <code>sstr_append_long_str</code> and test random number generation.</li>
 </ul>
 </li>
-<li>Build comparative benchmarks against similar JSON libraries and code-generation approaches.</li>
+<li><strike>Build comparative benchmarks against similar JSON libraries and code-generation approaches.</strike><ul>
+<li><b>Completed:</b> Added nested struct and string-heavy benchmarks. Added cJSON comparison benchmarks (marshal + unmarshal for scalar and nested structs). Results show json-gen-c produces typed structs directly while cJSON builds an untyped tree.</li>
+</ul>
+</li>
 <li>Investigate selective parsing or SIMD-assisted fast paths only after correctness and coverage are strong.</li>
 </ol>
-<p><b>Exit criteria:</b> the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments.</p>
+<p><b>Exit criteria:</b> the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments. <b>Items 1–4 completed.</b></p>
 <h2><a class="anchor" id="autotoc_md55"></a>
 Phase 6: Long-Term Vision</h2>
 <ol type="1">
