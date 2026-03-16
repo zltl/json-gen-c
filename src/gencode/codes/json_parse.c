@@ -932,6 +932,193 @@ static int json_field_is_selected(const struct json_parse_param* param,
             (UINT64_C(1) << (fi->field_index % 64))) != 0;
 }
 
+static void json_clear_struct_value(void* instance_ptr, const char* struct_name);
+
+static struct json_field_offset_item* json_array_length_field(
+    const struct json_field_offset_item* fi) {
+    struct json_field_offset_item* len_fi;
+    sstr_t field_len_name = sstr(fi->field_name);
+    sstr_append_cstr(field_len_name, "_len");
+    len_fi = json_field_offset_item_find(fi->struct_name, sstr_cstr(field_len_name));
+    sstr_free(field_len_name);
+    return len_fi;
+}
+
+static void json_clear_map_value(void* value_ptr,
+                                 const struct json_field_offset_item* fi) {
+    switch (fi->map_value_type) {
+        case FIELD_TYPE_SSTR:
+            sstr_free(*(sstr_t*)value_ptr);
+            *(sstr_t*)value_ptr = NULL;
+            break;
+        case FIELD_TYPE_STRUCT:
+            json_clear_struct_value(value_ptr, fi->field_type_name);
+            break;
+        default:
+            break;
+    }
+}
+
+static void json_clear_map_container(void* map_ptr,
+                                     const struct json_field_offset_item* fi) {
+    char* entries = *(char**)map_ptr;
+    int len = *(int*)((char*)map_ptr + sizeof(void*));
+    int i;
+
+    for (i = 0; i < len; i++) {
+        char* entry = entries + (size_t)i * fi->map_entry_size;
+        sstr_free(*(sstr_t*)entry);
+        json_clear_map_value(entry + fi->map_value_offset, fi);
+    }
+    JGENC_FREE(entries);
+    *(char**)map_ptr = NULL;
+    *(int*)((char*)map_ptr + sizeof(void*)) = 0;
+}
+
+static void json_clear_oneof_value(void* value_ptr,
+                                   const struct json_field_offset_item* fi) {
+    int tag;
+
+    if (fi->oneof_variant_structs != NULL && fi->enum_count > 0) {
+        tag = *(int*)((char*)value_ptr + fi->oneof_tag_offset);
+        if (tag >= 0 && tag < fi->enum_count) {
+            json_clear_struct_value((char*)value_ptr + fi->oneof_value_offset,
+                                    fi->oneof_variant_structs[tag]);
+        }
+    }
+    memset(value_ptr, 0, (size_t)fi->type_size);
+}
+
+static void json_clear_field_value(void* instance_ptr,
+                                   const struct json_field_offset_item* fi) {
+    char* field_ptr = (char*)instance_ptr + fi->offset;
+    int i;
+
+    if (fi->field_type == FIELD_TYPE_MAP) {
+        if (fi->is_array) {
+            struct json_field_offset_item* len_fi = json_array_length_field(fi);
+            int len = len_fi ? *(int*)((char*)instance_ptr + len_fi->offset) : 0;
+            char* arr = *(char**)field_ptr;
+            for (i = 0; i < len; i++) {
+                json_clear_map_container(arr + (size_t)i * fi->type_size, fi);
+            }
+            JGENC_FREE(arr);
+            *(char**)field_ptr = NULL;
+            if (len_fi) {
+                *(int*)((char*)instance_ptr + len_fi->offset) = 0;
+            }
+        } else {
+            json_clear_map_container(field_ptr, fi);
+        }
+        if (fi->has_field_offset >= 0) {
+            *(bool*)((char*)instance_ptr + fi->has_field_offset) = false;
+        }
+        return;
+    }
+
+    if (fi->is_array && fi->array_size > 0) {
+        if (fi->field_type == FIELD_TYPE_SSTR) {
+            for (i = 0; i < fi->array_size; i++) {
+                sstr_free(((sstr_t*)field_ptr)[i]);
+                ((sstr_t*)field_ptr)[i] = NULL;
+            }
+        } else if (fi->field_type == FIELD_TYPE_STRUCT) {
+            for (i = 0; i < fi->array_size; i++) {
+                json_clear_struct_value(field_ptr + (size_t)i * fi->type_size,
+                                        fi->field_type_name);
+            }
+        } else if (fi->field_type == FIELD_TYPE_ONEOF) {
+            for (i = 0; i < fi->array_size; i++) {
+                json_clear_oneof_value(field_ptr + (size_t)i * fi->type_size, fi);
+            }
+        } else if (fi->field_type == FIELD_TYPE_FLOAT) {
+            for (i = 0; i < fi->array_size; i++) {
+                ((float*)field_ptr)[i] = 0.0f;
+            }
+        } else if (fi->field_type == FIELD_TYPE_DOUBLE) {
+            for (i = 0; i < fi->array_size; i++) {
+                ((double*)field_ptr)[i] = 0.0;
+            }
+        } else {
+            memset(field_ptr, 0, (size_t)fi->type_size * (size_t)fi->array_size);
+        }
+        if (fi->has_field_offset >= 0) {
+            *(bool*)((char*)instance_ptr + fi->has_field_offset) = false;
+        }
+        return;
+    }
+
+    if (fi->is_array) {
+        struct json_field_offset_item* len_fi = json_array_length_field(fi);
+        int len = len_fi ? *(int*)((char*)instance_ptr + len_fi->offset) : 0;
+        char* arr = *(char**)field_ptr;
+
+        if (fi->field_type == FIELD_TYPE_SSTR) {
+            for (i = 0; i < len; i++) {
+                sstr_free(((sstr_t*)arr)[i]);
+            }
+        } else if (fi->field_type == FIELD_TYPE_STRUCT) {
+            for (i = 0; i < len; i++) {
+                json_clear_struct_value(arr + (size_t)i * fi->type_size,
+                                        fi->field_type_name);
+            }
+        } else if (fi->field_type == FIELD_TYPE_ONEOF) {
+            for (i = 0; i < len; i++) {
+                json_clear_oneof_value(arr + (size_t)i * fi->type_size, fi);
+            }
+        }
+
+        JGENC_FREE(arr);
+        *(char**)field_ptr = NULL;
+        if (len_fi) {
+            *(int*)((char*)instance_ptr + len_fi->offset) = 0;
+        }
+        if (fi->has_field_offset >= 0) {
+            *(bool*)((char*)instance_ptr + fi->has_field_offset) = false;
+        }
+        return;
+    }
+
+    switch (fi->field_type) {
+        case FIELD_TYPE_FLOAT:
+            *(float*)field_ptr = 0.0f;
+            break;
+        case FIELD_TYPE_DOUBLE:
+            *(double*)field_ptr = 0.0;
+            break;
+        case FIELD_TYPE_SSTR:
+            sstr_free(*(sstr_t*)field_ptr);
+            *(sstr_t*)field_ptr = NULL;
+            break;
+        case FIELD_TYPE_STRUCT:
+            json_clear_struct_value(field_ptr, fi->field_type_name);
+            break;
+        case FIELD_TYPE_ONEOF:
+            json_clear_oneof_value(field_ptr, fi);
+            break;
+        default:
+            memset(field_ptr, 0, (size_t)fi->type_size);
+            break;
+    }
+    if (fi->has_field_offset >= 0) {
+        *(bool*)((char*)instance_ptr + fi->has_field_offset) = false;
+    }
+}
+
+static void json_clear_struct_value(void* instance_ptr, const char* struct_name) {
+    int i;
+    for (i = 0; json_field_offset_item[i].field_name != NULL; i++) {
+        struct json_field_offset_item* fi = &json_field_offset_item[i];
+        if (fi->field_index < 0) {
+            continue;
+        }
+        if (strcmp(fi->struct_name, struct_name) != 0) {
+            continue;
+        }
+        json_clear_field_value(instance_ptr, fi);
+    }
+}
+
 /**
  * @brief Scan a JSON object for a specific string-valued key without consuming
  *        the object.  Used by oneof (tagged union) unmarshal to discover the
@@ -1850,6 +2037,9 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                 return -1;
             }
             continue;
+        }
+        if (param->field_mask != NULL) {
+            json_clear_field_value(param->instance_ptr, fi);
         }
 
         // Handle nullable fields: accept JSON null

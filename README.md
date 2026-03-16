@@ -246,7 +246,7 @@ A_clear(&a);
 
 struct A *a = NULL;
 int len = 0;
-json_unmarshal_array_A(&a, &len, json_str);
+json_unmarshal_array_A(json_str, &a, &len);
 // ...
 int i;
 for (i = 0; i < len; ++i) {
@@ -254,6 +254,31 @@ for (i = 0; i < len; ++i) {
 }
 free(a);
 ```
+
+#### To Selectively Deserialize Top-Level Fields
+
+```C
+struct User user;
+User_init(&user);
+
+uint64_t mask[User_FIELD_MASK_WORD_COUNT] = {0};
+JSON_GEN_C_FIELD_MASK_SET(mask, User_FIELD_email);
+JSON_GEN_C_FIELD_MASK_SET(mask, User_FIELD_scores);
+
+json_unmarshal_selected_User(json_str, &user,
+                             mask, User_FIELD_MASK_WORD_COUNT);
+```
+
+Selective unmarshal only updates the chosen top-level fields that are present in
+the JSON input. Unselected top-level fields stay unchanged.
+
+Selected fields are treated as whole-field replacements: if a selected field is a
+string, array, map, nested struct, or oneof, its previous stored value is cleared
+before the new JSON value is parsed. This API does **not** provide nested field
+masks; selecting a nested struct field means replacing that nested field as a whole.
+
+Field-mask constants use the generated **C field names**, even when `@json`
+aliases change the JSON key names.
 
 ## Build System
 
@@ -363,8 +388,40 @@ int json_unmarshal_<struct_name>(sstr_t in, struct <struct_name>*obj);
 
 // unmarshal a json string to array of struct
 // return 0 if success.
-int json_unmarshal_<struct_name>(sstr_t in, struct <struct_name>**obj, int *len);
+int json_unmarshal_array_<struct_name>(sstr_t in, struct <struct_name>**obj, int *len);
+
+// generated top-level field indices
+enum <struct_name>_field_index {
+    <struct_name>_FIELD_<field_name> = 0,
+    ...
+    <struct_name>_FIELD_COUNT = N
+};
+
+// number of uint64_t words needed for the field mask
+#define <struct_name>_FIELD_MASK_WORD_COUNT ...
+
+// selectively unmarshal chosen top-level fields
+int json_unmarshal_selected_<struct_name>(
+    sstr_t in,
+    struct <struct_name> *obj,
+    const uint64_t *field_mask,
+    int field_mask_word_count);
 ```
+
+Use the generated helper macros to manage mask bits:
+
+```C
+JSON_GEN_C_FIELD_MASK_SET(mask_words, field_index);
+JSON_GEN_C_FIELD_MASK_CLEAR(mask_words, field_index);
+JSON_GEN_C_FIELD_MASK_TEST(mask_words, field_index);
+```
+
+For `json_unmarshal_selected_<struct_name>()`:
+
+- passing `NULL` or too few mask words returns an error
+- unselected top-level fields are left unchanged
+- selected fields that appear in the JSON input replace the old stored field value
+- field indices use C member names, not aliased JSON key names
 
 ## More Resources
 

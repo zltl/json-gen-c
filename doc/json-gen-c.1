@@ -229,6 +229,22 @@ int json_unmarshal_T(sstr_t in, struct T *obj);
 // Unmarshal JSON array to heap\-allocated array
 int json_unmarshal_array_T(sstr_t in,
     struct T **obj, int *len);
+
+// Generated top\-level field indices
+enum T_field_index {
+    T_FIELD_name = 0,
+    ...
+    T_FIELD_COUNT = N
+};
+
+// Number of uint64_t words needed for the field mask
+#define T_FIELD_MASK_WORD_COUNT ...
+
+// Selectively unmarshal chosen top\-level fields
+int json_unmarshal_selected_T(sstr_t in,
+    struct T *obj,
+    const uint64_t *field_mask,
+    int field_mask_word_count);
 \f[R]
 .fi
 .PP
@@ -237,6 +253,31 @@ The caller must call \f[C]T_init()\f[R] before use and
 \f[C]T_clear()\f[R] after use to avoid memory leaks.
 For \f[C]json_unmarshal_array_T()\f[R], the caller must also
 \f[C]free()\f[R] the returned array pointer.
+.PP
+Selective unmarshal masks are built with the generated helper macros:
+.IP
+.nf
+\f[C]
+JSON_GEN_C_FIELD_MASK_SET(mask_words, field_index);
+JSON_GEN_C_FIELD_MASK_CLEAR(mask_words, field_index);
+JSON_GEN_C_FIELD_MASK_TEST(mask_words, field_index);
+\f[R]
+.fi
+.PP
+For \f[C]json_unmarshal_selected_T()\f[R]:
+.IP \[bu] 2
+Passing \f[C]NULL\f[R] or too few mask words returns an error.
+.IP \[bu] 2
+Unselected top\-level fields remain unchanged.
+.IP \[bu] 2
+Selected fields present in the JSON input replace the old stored field
+value as a whole field.
+.IP \[bu] 2
+Selecting a nested struct / oneof / array / map field replaces that
+top\-level field; there is no nested field mask in this first version.
+.IP \[bu] 2
+Field indices use generated C member names even when \f[C]@json\f[R]
+aliases rename the JSON keys.
 .SH USAGE EXAMPLE
 Create a schema file \f[C]user.json\-gen\-c\f[R]:
 .IP

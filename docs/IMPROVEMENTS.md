@@ -299,8 +299,11 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 5. Investigate selective parsing or SIMD-assisted fast paths only after correctness and coverage are strong.
    - **Partially completed:** added a first-pass field-mask selective unmarshal API for generated structs.
    - Runtime selective unmarshal now skips unselected known fields using the existing value-skip path, preserving the full-unmarshal APIs unchanged.
+   - Selected fields now use whole-field replacement semantics, clearing old heap-backed storage before parsing the replacement value. This avoids leaks on repeated selective updates and makes selected `null` for nullable fields clear the old stored value.
    - Added focused selective-parse tests covering aliased fields, untouched-field preservation, nested-object skipping, and invalid mask rejection.
-   - Added a partial-field benchmark for `string_heavy` to compare targeted extraction against full unmarshal.
+   - Expanded selective regression coverage to nullable clearing, dynamic/fixed array replacement, nested struct replacement, map replacement, and oneof replacement.
+   - Added README/man-page documentation for the generated field-mask API and its current scope limits.
+   - Added partial-field benchmarks for `string_heavy` and `nested` to compare targeted extraction against full unmarshal.
    - SIMD-specific fast paths remain deferred until real benchmark data justifies architecture-specific work.
 
 **Exit criteria:** the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments. **Items 1–4 completed; item 5 now has a first selective-parsing implementation.**

@@ -164,6 +164,36 @@ static void BM_unmarshal_nested(benchmark::State& state) {
     nested_clear(&obj);
 }
 
+static void BM_unmarshal_nested_selected(benchmark::State& state) {
+    struct nested seed;
+    nested_init(&seed);
+    seed.name = sstr("John Doe");
+    seed.age = 42;
+    init_address(&seed.home_addr, "123 Main St", "Springfield", "IL", "62701");
+    init_address(&seed.work_addr, "456 Oak Ave", "Chicago", "IL", "60601");
+
+    sstr_t content = sstr_new();
+    json_marshal_nested(&seed, content);
+
+    uint64_t field_mask[nested_FIELD_MASK_WORD_COUNT] = {0};
+    JSON_GEN_C_FIELD_MASK_SET(field_mask, nested_FIELD_name);
+    JSON_GEN_C_FIELD_MASK_SET(field_mask, nested_FIELD_age);
+
+    size_t total = 0;
+    for (auto _ : state) {
+        struct nested obj;
+        nested_init(&obj);
+        json_unmarshal_selected_nested(
+            content, &obj, field_mask, nested_FIELD_MASK_WORD_COUNT);
+        total += sstr_length(content);
+        nested_clear(&obj);
+    }
+
+    state.SetBytesProcessed((int64_t)total);
+    sstr_free(content);
+    nested_clear(&seed);
+}
+
 // ============================================================================
 // json-gen-c string-heavy struct benchmarks
 // ============================================================================
@@ -351,6 +381,7 @@ BENCHMARK(BM_unmarshal_scalar_array)
     ->Args({64});
 BENCHMARK(BM_marshal_nested);
 BENCHMARK(BM_unmarshal_nested);
+BENCHMARK(BM_unmarshal_nested_selected);
 BENCHMARK(BM_marshal_string_heavy);
 BENCHMARK(BM_unmarshal_string_heavy);
 BENCHMARK(BM_unmarshal_string_heavy_selected);

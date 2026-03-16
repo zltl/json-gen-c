@@ -1529,7 +1529,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
 
     sstr_printf_append(param->source,
                        "    {0, sizeof(struct %S), %d, \"\", \"\", \"%S\", 0"
-                       ", NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0, -1},\n",
+                       ", NULL, 0, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0, -1},\n",
                        st->name, FIELD_TYPE_STRUCT, st->name);
     sstr_t empty_s = sstr_new();
     gen_hash_arr(st->name, empty_s, param);
@@ -1556,17 +1556,17 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                 sstr_printf_append(param->source,
                     "    {offsetof(struct %S, %S), sizeof(struct json_map_%s), "
                     "%d, \"%S\", \"%S\", \"%S\", 1, %s, %s, 0, %d, "
-                    "sizeof(struct json_map_entry_%s)",
+                    "sizeof(struct json_map_entry_%s), "
+                    "(int)offsetof(struct json_map_entry_%s, value)",
                     st->name, field->name, sfx,
                     FIELD_TYPE_MAP, field->map_value_type_name,
                     JSON_KEY(field), st->name,
                     enum_strings_expr, enum_count_expr,
-                    field->map_value_type, sfx);
+                    field->map_value_type, sfx, sfx);
                 if (field->is_optional || field->is_nullable) {
                     sstr_printf_append(
                         param->source,
-                        ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0, "
-                        "%d},\n",
+                        ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0, %d},\n",
                         field->is_nullable, st->name, field->name,
                         field_index);
                 } else {
@@ -1579,7 +1579,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                 sstr_printf_append(param->source,
                     "    {offsetof(struct %S, %S_len), sizeof(int), "
                     "%d, \"int\", \"%S_len\", \"%S\", 0, NULL, 0, 0, 0, 0, 0, "
-                    "-1, NULL, NULL, 0, 0, -1},\n",
+                    "0, -1, NULL, NULL, 0, 0, -1},\n",
                     st->name, field->name, FIELD_TYPE_INT,
                     JSON_KEY(field), st->name);
                 sstr_t tmp = sstr_dup(JSON_KEY(field));
@@ -1591,17 +1591,17 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                 sstr_printf_append(param->source,
                     "    {offsetof(struct %S, %S), sizeof(struct json_map_%s), "
                     "%d, \"%S\", \"%S\", \"%S\", 0, %s, %s, 0, %d, "
-                    "sizeof(struct json_map_entry_%s)",
+                    "sizeof(struct json_map_entry_%s), "
+                    "(int)offsetof(struct json_map_entry_%s, value)",
                     st->name, field->name, sfx,
                     FIELD_TYPE_MAP, field->map_value_type_name,
                     JSON_KEY(field), st->name,
                     enum_strings_expr, enum_count_expr,
-                    field->map_value_type, sfx);
+                    field->map_value_type, sfx, sfx);
                 if (field->is_optional || field->is_nullable) {
                     sstr_printf_append(
                         param->source,
-                        ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0, "
-                        "%d},\n",
+                        ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0, %d},\n",
                         field->is_nullable, st->name, field->name,
                         field_index);
                 } else {
@@ -1617,7 +1617,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             sstr_printf_append(param->source,
                                "    {offsetof(struct %S, %S), sizeof(struct "
                                "%S), %d, \"%S\", \"%S\", "
-                               "\"%S\", %d, NULL, 0, %d, 0, 0",
+                               "\"%S\", %d, NULL, 0, %d, 0, 0, 0",
                                st->name, field->name, field->type_name,
                                field->type, field->type_name, JSON_KEY(field),
                                st->name, field->is_array, field->array_size);
@@ -1644,7 +1644,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             sstr_printf_append(param->source,
                                "    {offsetof(struct %S, %S), sizeof(struct "
                                "%S), %d, \"%S\", \"%S\", "
-                               "\"%S\", %d, %S_tag_strings, %S_tag_count, %d, 0, 0",
+                               "\"%S\", %d, %S_tag_strings, %S_tag_count, %d, 0, 0, 0",
                                st->name, field->name, field->type_name,
                                field->type, field->type_name, JSON_KEY(field),
                                st->name, field->is_array,
@@ -1673,7 +1673,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             sstr_printf_append(
                 param->source,
                 "    {offsetof(struct %S, %S), sizeof(int), %d, \"%S\", \"%S\", "
-                "\"%S\", %d, %S_enum_strings, %S_enum_count, %d, 0, 0",
+                "\"%S\", %d, %S_enum_strings, %S_enum_count, %d, 0, 0, 0",
                 st->name, field->name, field->type,
                 field->type_name, JSON_KEY(field),
                 st->name, field->is_array,
@@ -1694,7 +1694,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             sstr_printf_append(
                 param->source,
                 "    {offsetof(struct %S, %S), sizeof(%S), %d, \"%S\", \"%S\", "
-                "\"%S\", %d, NULL, 0, %d, 0, 0",
+                "\"%S\", %d, NULL, 0, %d, 0, 0, 0",
                 st->name, field->name, field->type_name, field->type,
                 field->type_name, JSON_KEY(field), st->name, field->is_array,
                 field->array_size);
@@ -1715,7 +1715,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             // dynamic array: generate _len field entry
             sstr_printf_append(param->source, "    {offsetof(struct %S, %S_len), sizeof(int), "
                                "%d, \"int\", \"%S_len\", "
-                               "\"%S\", %d, NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0, -1},\n",
+                               "\"%S\", %d, NULL, 0, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0, -1},\n",
                                st->name, field->name, FIELD_TYPE_INT,
                                JSON_KEY(field), st->name, 0);
             sstr_t tmp = sstr_dup(JSON_KEY(field));
@@ -1820,6 +1820,7 @@ static void gen_code_offset_map(struct hash_map* struct_map,
                      "    int array_size;\n"
                      "    int map_value_type;\n"
                      "    int map_entry_size;\n"
+                     "    int map_value_offset;\n"
                      "    int is_nullable;\n"
                      "    int has_field_offset;\n"
                      "    const char* oneof_tag_field;\n"
@@ -1842,7 +1843,7 @@ static void gen_code_offset_map(struct hash_map* struct_map,
     param.hash_arr = (int*)malloc(sizeof(int) * param.hash_size);
     memset(param.hash_arr, -1, sizeof(int) * param.hash_size);
     hash_map_for_each(struct_map, gen_fields_list_fn, &param);
-    sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0, NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0, -1}};\n");
+    sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0, NULL, 0, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0, -1}};\n");
 
     sstr_printf_append(
         source, "int json_entry_hash_size = %d;\nint json_entry_hash[%d] = {",
