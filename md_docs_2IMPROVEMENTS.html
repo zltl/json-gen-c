@@ -194,9 +194,19 @@ Roadmap</h1>
 <h2><a class="anchor" id="autotoc_md52"></a>
 Phase 1: Bug Fixes and Technical Debt Cleanup</h2>
 <ol type="1">
-<li>Keep parser regression coverage growing for edge cases around comments, includes, empty files, and malformed trailing tokens.</li>
-<li>Continue refactoring parser internals so responsibilities are clearer and easier to extend.</li>
-<li>Remove small remaining inconsistencies in diagnostics, naming, and internal APIs.</li>
+<li><strike>Keep parser regression coverage growing for edge cases around comments, includes, empty files, and malformed trailing tokens.</strike> <b>Done.</b><ul>
+<li>Expanded parser regression coverage in <code>test/diagnostic_test.cc</code> for whitespace-only input, include recovery, malformed trailing top-level tokens, comment-prefixed malformed input, and name-clash validation around <code>oneof</code>.</li>
+<li>Added <code>test/malformed_trailing_top_level_token.json-gen-c</code> to the negative-schema suite.</li>
+</ul>
+</li>
+<li><strike>Continue refactoring parser internals so responsibilities are clearer and easier to extend.</strike> <b>Done.</b><ul>
+<li>Refactored <code><a class="el" href="struct__parse_8c.html" title="parse struct definition file.">src/struct/struct_parse.c</a></code> to extract top-level token classification/dispatch and shared top-level registration checks, reducing duplicated <code>#include</code> / <code>struct</code> / <code>enum</code> / <code>oneof</code> control flow.</li>
+</ul>
+</li>
+<li><strike>Remove small remaining inconsistencies in diagnostics, naming, and internal APIs.</strike> <b>Done.</b><ul>
+<li>Tightened parser diagnostic wording around <code>#include</code>, made <code>token_type_str()</code> const-correct, and ensured top-level parse failure propagation stays accurate without adding duplicate diagnostics.</li>
+</ul>
+</li>
 <li><strike>Audit the generated code template for duplicated logic and simplify where possible.</strike> <b>Done.</b><ul>
 <li>Table-driven marshal refactoring in <code>src/gencode/gencode.c</code>: replaced 4 duplicated <code>FIELD_TYPE_*</code> switch blocks (~268 lines) with a <code><a class="el" href="structmarshal__numeric__info.html">marshal_numeric_info</a></code> lookup table + <code>emit_numeric_marshal()</code> helper, plus merged identical init/clear cases.</li>
 <li>Map marshal value block: 10 case arms → table lookup + 3 explicit cases (SSTR, STRUCT, ENUM).</li>
@@ -207,7 +217,7 @@ Phase 1: Bug Fixes and Technical Debt Cleanup</h2>
 </ul>
 </li>
 </ol>
-<p><b>Exit criteria:</b> CI stays green, regression tests cover recent parser and generator fixes, and the parsing/codegen core is stable enough for feature work.</p>
+<p><b>Exit criteria:</b> CI stays green, regression tests cover recent parser and generator fixes, and the parsing/codegen core is stable enough for feature work. <b>Completed.</b></p>
 <h2><a class="anchor" id="autotoc_md53"></a>
 Phase 2: Type System Expansion</h2>
 <ol type="1">
@@ -390,9 +400,16 @@ Phase 5: Performance and Reliability</h2>
 <li><b>Completed:</b> Added nested struct and string-heavy benchmarks. Added cJSON comparison benchmarks (marshal + unmarshal for scalar and nested structs). Results show json-gen-c produces typed structs directly while cJSON builds an untyped tree.</li>
 </ul>
 </li>
-<li>Investigate selective parsing or SIMD-assisted fast paths only after correctness and coverage are strong.</li>
+<li>Investigate selective parsing or SIMD-assisted fast paths only after correctness and coverage are strong.<ul>
+<li><b>Partially completed:</b> added a first-pass field-mask selective unmarshal API for generated structs.</li>
+<li>Runtime selective unmarshal now skips unselected known fields using the existing value-skip path, preserving the full-unmarshal APIs unchanged.</li>
+<li>Added focused selective-parse tests covering aliased fields, untouched-field preservation, nested-object skipping, and invalid mask rejection.</li>
+<li>Added a partial-field benchmark for <code>string_heavy</code> to compare targeted extraction against full unmarshal.</li>
+<li>SIMD-specific fast paths remain deferred until real benchmark data justifies architecture-specific work.</li>
+</ul>
+</li>
 </ol>
-<p><b>Exit criteria:</b> the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments. <b>Items 1–4 completed.</b></p>
+<p><b>Exit criteria:</b> the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments. <b>Items 1–4 completed; item 5 now has a first selective-parsing implementation.</b></p>
 <h2><a class="anchor" id="autotoc_md57"></a>
 Phase 6: Long-Term Vision</h2>
 <ol type="1">
