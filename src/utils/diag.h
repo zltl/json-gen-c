@@ -14,6 +14,13 @@
 
 #include <stdio.h>
 
+#if defined(__clang__) || defined(__GNUC__)
+#define DIAG_PRINTF_FORMAT(fmt_index, first_arg) \
+    __attribute__((format(printf, fmt_index, first_arg)))
+#else
+#define DIAG_PRINTF_FORMAT(fmt_index, first_arg)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -71,7 +78,7 @@ void diag_engine_free(struct diag_engine *engine);
  */
 void diag_emit(struct diag_engine *engine, enum diag_severity severity,
                int line, int col, const char *fmt, ...)
-    __attribute__((format(printf, 5, 6)));
+    DIAG_PRINTF_FORMAT(5, 6);
 
 /**
  * @brief Print all accumulated diagnostics to a stream.

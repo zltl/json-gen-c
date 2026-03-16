@@ -1713,7 +1713,8 @@ static void gen_code_offset_map(struct hash_map* struct_map,
         param.hash_size, param.hash_size);
     for (int i = 0; i < param.hash_size; i++) {
         char tmp_str[32];
-        sprintf(tmp_str, i == 0 ? "%d" : ", %d", param.hash_arr[i]);
+        snprintf(tmp_str, sizeof(tmp_str), i == 0 ? "%d" : ", %d",
+                 param.hash_arr[i]);
         sstr_append_cstr(source, tmp_str);
     }
     sstr_append_cstr(source, "};\n");

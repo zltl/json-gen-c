@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -35,6 +36,11 @@
          ? (SSTR(s))->un.short_str                                        \
          : (SSTR(s)->type == SSTR_TYPE_LONG ? (SSTR(s)->un.long_str.data) \
                                             : (SSTR(s)->un.ref_str.data)))
+
+static int sstr_size_to_int(size_t value) {
+    assert(value <= (size_t)INT_MAX);
+    return (int)value;
+}
 
 static void char_to_hex(unsigned char c, unsigned char* buf, bool cap) {
     static const unsigned char hex[] = "0123456789abcdef";
@@ -659,7 +665,7 @@ int sstr_parse_long(sstr_t s, long* v) {
         *v = -*v;
     }
 
-    return i;
+    return sstr_size_to_int(i);
 }
 
 int sstr_parse_int(sstr_t* s, int* v) {
@@ -772,7 +778,7 @@ int sstr_parse_double(sstr_t s, double* v) {
         *v = -*v;
     }
 
-    return i;
+    return sstr_size_to_int(i);
 }
 
 int sstr_json_escape_string_append(sstr_t out, sstr_t in) {
@@ -811,7 +817,7 @@ int sstr_json_escape_string_append(sstr_t out, sstr_t in) {
                 default: {
                     // escape and print as unicode codepoint
                     char tmp[7] = {0};
-                    sprintf(tmp, "u%04x", *(data + i));
+                    snprintf(tmp, sizeof(tmp), "u%04x", *(data + i));
                     sstr_append_cstr(out, tmp);
                 }
             }
