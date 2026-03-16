@@ -215,6 +215,40 @@ static void BM_unmarshal_string_heavy(benchmark::State& state) {
     string_heavy_clear(&obj);
 }
 
+static void BM_unmarshal_string_heavy_selected(benchmark::State& state) {
+    struct string_heavy seed;
+    string_heavy_init(&seed);
+    seed.first_name = sstr("Alexander");
+    seed.last_name = sstr("Constantinovich");
+    seed.email = sstr("alexander.constantinovich@example.com");
+    seed.phone = sstr("+1-555-123-4567");
+    seed.bio = sstr("A software engineer with over 15 years of experience in distributed systems and compiler design.");
+    seed.website = sstr("https://example.com/alexander");
+    seed.company = sstr("Acme Corporation International");
+    seed.title = sstr("Principal Software Engineer");
+
+    sstr_t content = sstr_new();
+    json_marshal_string_heavy(&seed, content);
+
+    uint64_t field_mask[string_heavy_FIELD_MASK_WORD_COUNT] = {0};
+    JSON_GEN_C_FIELD_MASK_SET(field_mask, string_heavy_FIELD_email);
+    JSON_GEN_C_FIELD_MASK_SET(field_mask, string_heavy_FIELD_phone);
+
+    size_t total = 0;
+    for (auto _ : state) {
+        struct string_heavy obj;
+        string_heavy_init(&obj);
+        json_unmarshal_selected_string_heavy(
+            content, &obj, field_mask, string_heavy_FIELD_MASK_WORD_COUNT);
+        total += sstr_length(content);
+        string_heavy_clear(&obj);
+    }
+
+    state.SetBytesProcessed((int64_t)total);
+    sstr_free(content);
+    string_heavy_clear(&seed);
+}
+
 // ============================================================================
 // cJSON comparison benchmarks (scalar)
 // ============================================================================
@@ -319,6 +353,7 @@ BENCHMARK(BM_marshal_nested);
 BENCHMARK(BM_unmarshal_nested);
 BENCHMARK(BM_marshal_string_heavy);
 BENCHMARK(BM_unmarshal_string_heavy);
+BENCHMARK(BM_unmarshal_string_heavy_selected);
 BENCHMARK(BM_cjson_marshal_scalar);
 BENCHMARK(BM_cjson_unmarshal_scalar);
 BENCHMARK(BM_cjson_marshal_nested);

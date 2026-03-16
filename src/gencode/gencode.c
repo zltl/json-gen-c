@@ -38,6 +38,23 @@ static const char* map_suffix(struct struct_field* field) {
     return sstr_cstr(field->map_value_type_name);
 }
 
+static int count_struct_fields(struct struct_container* st) {
+    int count = 0;
+    struct struct_field* field = st->fields;
+    while (field) {
+        count++;
+        field = field->next;
+    }
+    return count;
+}
+
+static int field_mask_word_count_for_field_count(int field_count) {
+    if (field_count <= 0) {
+        return 1;
+    }
+    return (field_count + 63) / 64;
+}
+
 inline static unsigned int hash_2s(sstr_t key1, sstr_t key2) {
     unsigned int h = 0xbc9f1d34;
     h = hash_murmur(sstr_cstr(key1), sstr_length(key1), h);
@@ -250,6 +267,46 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
                        st->name, st->name);
 }
 
+static void gen_code_struct_selective_unmarshal_header(
+    struct struct_container* st, sstr_t header) {
+    int field_count = count_struct_fields(st);
+    int field_mask_word_count =
+        field_mask_word_count_for_field_count(field_count);
+    int field_index = 0;
+    struct struct_field* field = st->fields;
+
+    sstr_printf_append(header, "enum %S_field_index {\n", st->name);
+    while (field) {
+        sstr_printf_append(header, "    %S_FIELD_%S = %d,\n", st->name,
+                           field->name, field_index);
+        field_index++;
+        field = field->next;
+    }
+    sstr_printf_append(header, "    %S_FIELD_COUNT = %d\n};\n", st->name,
+                       field_count);
+    sstr_printf_append(header, "#define %S_FIELD_MASK_WORD_COUNT %d\n\n",
+                       st->name, field_mask_word_count);
+    sstr_printf_append(
+        header,
+        "/**\n"
+        " * @brief Selectively unmarshal JSON into chosen fields of struct %S.\n"
+        " * Unselected fields are left unchanged. Field constants use C field\n"
+        " * names even when @json aliases change the JSON keys.\n"
+        " *\n"
+        " * @param in the input json string.\n"
+        " * @param obj the output struct object.\n"
+        " * @param field_mask field-mask words populated with\n"
+        " *        JSON_GEN_C_FIELD_MASK_SET().\n"
+        " * @param field_mask_word_count number of words in field_mask.\n"
+        " */\n",
+        st->name);
+    sstr_printf_append(header,
+                       "int json_unmarshal_selected_%S(sstr_t in, struct %S* "
+                       "obj, const uint64_t* field_mask, "
+                       "int field_mask_word_count);\n\n",
+                       st->name, st->name);
+}
+
 static void gen_code_struct_unmarshal_struct(struct struct_container* st,
                                              sstr_t source) {
     sstr_printf_append(source,
@@ -260,10 +317,12 @@ static void gen_code_struct_unmarshal_struct(struct struct_container* st,
                      "    pos.col = 0; pos.line = 0; pos.offset = 0;\n"
                      "    struct json_parse_param param;\n"
                      "    param.instance_ptr = obj;\n"
-                     "    param.field_name = \"\";\n"
-                     "    param.in_array = 0;\n"
-                     "    param.in_struct = 1;\n"
-                     "    param.depth = 0;\n");
+                      "    param.field_name = \"\";\n"
+                      "    param.in_array = 0;\n"
+                      "    param.in_struct = 1;\n"
+                      "    param.depth = 0;\n"
+                      "    param.field_mask = NULL;\n"
+                      "    param.field_mask_word_count = 0;\n");
     sstr_printf_append(source, "    param.struct_name = \"%S\";\n", st->name);
     sstr_append_cstr(
         source,
@@ -273,7 +332,6 @@ static void gen_code_struct_unmarshal_struct(struct struct_container* st,
         "#ifdef JSON_DEBUG\n"
         "        printf(\"ERROR: %s\", sstr_cstr(txt));\n"
         "#endif\n");
-    sstr_printf_append(source, "        %S_clear(obj);\n", st->name);
     sstr_append_cstr(source,
                      "    }\n"
                      "    sstr_free(txt);\n"
@@ -293,10 +351,12 @@ static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
                      "    struct json_pos pos;\n"
                      "    pos.col = 0; pos.line = 0; pos.offset = 0;\n"
                      "    struct json_parse_param ar_param;\n"
-                     "    ar_param.instance_ptr = obj;\n"
-                     "    ar_param.in_array = 1;\n"
-                     "    ar_param.in_struct = 0;\n"
-                     "    ar_param.depth = 0;\n");
+                      "    ar_param.instance_ptr = obj;\n"
+                      "    ar_param.in_array = 1;\n"
+                      "    ar_param.in_struct = 0;\n"
+                      "    ar_param.depth = 0;\n"
+                      "    ar_param.field_mask = NULL;\n"
+                      "    ar_param.field_mask_word_count = 0;\n");
     sstr_printf_append(source, "    ar_param.struct_name = \"%S\";\n",
                        st->name);
     sstr_append_cstr(source,
@@ -321,6 +381,48 @@ static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
     sstr_append_cstr(source, "    sstr_free(txt);\n");
     sstr_append_cstr(source, "    return r;\n");
     sstr_append_cstr(source, "}\n\n");
+}
+
+static void gen_code_struct_unmarshal_selected_struct(
+    struct struct_container* st, sstr_t source) {
+    sstr_printf_append(
+        source,
+        "int json_unmarshal_selected_%S(sstr_t in, struct %S* obj, "
+        "const uint64_t* field_mask, int field_mask_word_count) {\n",
+        st->name, st->name);
+    sstr_printf_append(
+        source,
+        "    if (field_mask == NULL || field_mask_word_count < "
+        "%S_FIELD_MASK_WORD_COUNT) {\n"
+        "        return -1;\n"
+        "    }\n",
+        st->name);
+    sstr_append_cstr(source,
+                     "    struct json_pos pos;\n"
+                     "    pos.col = 0; pos.line = 0; pos.offset = 0;\n"
+                     "    struct json_parse_param param;\n"
+                     "    param.instance_ptr = obj;\n"
+                     "    param.field_name = \"\";\n"
+                     "    param.in_array = 0;\n"
+                     "    param.in_struct = 1;\n"
+                     "    param.depth = 0;\n"
+                     "    param.field_mask = field_mask;\n"
+                     "    param.field_mask_word_count = field_mask_word_count;\n");
+    sstr_printf_append(source, "    param.struct_name = \"%S\";\n", st->name);
+    sstr_append_cstr(
+        source,
+        "    sstr_t txt = sstr_new();\n"
+        "    int r = json_unmarshal_struct_internal(in, &pos, &param, txt);\n"
+        "    if (r < 0) {\n"
+        "#ifdef JSON_DEBUG\n"
+        "        printf(\"ERROR: %s\", sstr_cstr(txt));\n"
+        "#endif\n");
+    sstr_printf_append(source, "        %S_clear(obj);\n", st->name);
+    sstr_append_cstr(source,
+                     "    }\n"
+                     "    sstr_free(txt);\n"
+                     "    return r;\n"
+                     "}\n\n");
 }
 
 // Table-driven numeric marshal: maps FIELD_TYPE_* to the sstr_append function,
@@ -1346,6 +1448,7 @@ static void gen_code_struct(struct struct_container* st, sstr_t source,
                             sstr_t header) {
     // type definitions and function declares.
     gen_code_struct_header(st, header);
+    gen_code_struct_selective_unmarshal_header(st, header);
     // XXX_init()
     gen_code_struct_init(st, source);
     // XXX_clear()
@@ -1354,6 +1457,8 @@ static void gen_code_struct(struct struct_container* st, sstr_t source,
     gen_code_struct_marshal_struct(st, source);
     // json_unmarshal_XXX()
     gen_code_struct_unmarshal_struct(st, source);
+    // json_unmarshal_selected_XXX()
+    gen_code_struct_unmarshal_selected_struct(st, source);
     // json_unmarshal_array_XXX()
     gen_code_struct_unmarshal_array_struct(st, source);
     // json_marshal_array_XXX()
@@ -1420,12 +1525,12 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
     struct gen_fields_list_fn_param* param =
         (struct gen_fields_list_fn_param*)ptr;
     struct struct_field* field = st->fields;
+    int field_index = 0;
 
     sstr_printf_append(param->source,
                        "    {0, sizeof(struct %S), %d, \"\", \"\", \"%S\", 0"
-                       ", NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0},\n",
-                       st->name, FIELD_TYPE_STRUCT, st->name, st->name,
-                       st->name);
+                       ", NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0, -1},\n",
+                       st->name, FIELD_TYPE_STRUCT, st->name);
     sstr_t empty_s = sstr_new();
     gen_hash_arr(st->name, empty_s, param);
     sstr_free(empty_s);
@@ -1458,16 +1563,23 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                     enum_strings_expr, enum_count_expr,
                     field->map_value_type, sfx);
                 if (field->is_optional || field->is_nullable) {
-                    sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0},\n",
-                                       field->is_nullable, st->name, field->name);
+                    sstr_printf_append(
+                        param->source,
+                        ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0, "
+                        "%d},\n",
+                        field->is_nullable, st->name, field->name,
+                        field_index);
                 } else {
-                    sstr_append_cstr(param->source, ", 0, -1, NULL, NULL, 0, 0},\n");
+                    sstr_printf_append(
+                        param->source,
+                        ", 0, -1, NULL, NULL, 0, 0, %d},\n", field_index);
                 }
                 gen_hash_arr(st->name, JSON_KEY(field), param);
                 // _len field
                 sstr_printf_append(param->source,
                     "    {offsetof(struct %S, %S_len), sizeof(int), "
-                    "%d, \"int\", \"%S_len\", \"%S\", 0, NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0},\n",
+                    "%d, \"int\", \"%S_len\", \"%S\", 0, NULL, 0, 0, 0, 0, 0, "
+                    "-1, NULL, NULL, 0, 0, -1},\n",
                     st->name, field->name, FIELD_TYPE_INT,
                     JSON_KEY(field), st->name);
                 sstr_t tmp = sstr_dup(JSON_KEY(field));
@@ -1486,10 +1598,16 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                     enum_strings_expr, enum_count_expr,
                     field->map_value_type, sfx);
                 if (field->is_optional || field->is_nullable) {
-                    sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0},\n",
-                                       field->is_nullable, st->name, field->name);
+                    sstr_printf_append(
+                        param->source,
+                        ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0, "
+                        "%d},\n",
+                        field->is_nullable, st->name, field->name,
+                        field_index);
                 } else {
-                    sstr_append_cstr(param->source, ", 0, -1, NULL, NULL, 0, 0},\n");
+                    sstr_printf_append(
+                        param->source,
+                        ", 0, -1, NULL, NULL, 0, 0, %d},\n", field_index);
                 }
                 gen_hash_arr(st->name, JSON_KEY(field), param);
             }
@@ -1504,10 +1622,15 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                                field->type, field->type_name, JSON_KEY(field),
                                st->name, field->is_array, field->array_size);
             if (field->is_optional || field->is_nullable) {
-                sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0},\n",
-                                   field->is_nullable, st->name, field->name);
+                sstr_printf_append(
+                    param->source,
+                    ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0, "
+                    "%d},\n",
+                    field->is_nullable, st->name, field->name, field_index);
             } else {
-                sstr_append_cstr(param->source, ", 0, -1, NULL, NULL, 0, 0},\n");
+                sstr_printf_append(param->source,
+                                   ", 0, -1, NULL, NULL, 0, 0, %d},\n",
+                                   field_index);
             }
             gen_hash_arr(st->name, JSON_KEY(field), param);
         } else if (field->type == FIELD_TYPE_ONEOF) {
@@ -1538,11 +1661,12 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                 sstr_printf_append(param->source,
                     ", \"%S\", %S_variant_structs"
                     ", (int)offsetof(struct %S, tag)"
-                    ", (int)offsetof(struct %S, value)},\n",
+                    ", (int)offsetof(struct %S, value), %d},\n",
                     oc->tag_field, field->type_name,
-                    field->type_name, field->type_name);
+                    field->type_name, field->type_name, field_index);
             } else {
-                sstr_append_cstr(param->source, ", NULL, NULL, 0, 0},\n");
+                sstr_printf_append(param->source,
+                                   ", NULL, NULL, 0, 0, %d},\n", field_index);
             }
             gen_hash_arr(st->name, JSON_KEY(field), param);
         } else if (field->type == FIELD_TYPE_ENUM) {
@@ -1555,10 +1679,15 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                 st->name, field->is_array,
                 field->type_name, field->type_name, field->array_size);
             if (field->is_optional || field->is_nullable) {
-                sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0},\n",
-                                   field->is_nullable, st->name, field->name);
+                sstr_printf_append(
+                    param->source,
+                    ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0, "
+                    "%d},\n",
+                    field->is_nullable, st->name, field->name, field_index);
             } else {
-                sstr_append_cstr(param->source, ", 0, -1, NULL, NULL, 0, 0},\n");
+                sstr_printf_append(param->source,
+                                   ", 0, -1, NULL, NULL, 0, 0, %d},\n",
+                                   field_index);
             }
             gen_hash_arr(st->name, JSON_KEY(field), param);
         } else {
@@ -1570,10 +1699,15 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
                 field->type_name, JSON_KEY(field), st->name, field->is_array,
                 field->array_size);
             if (field->is_optional || field->is_nullable) {
-                sstr_printf_append(param->source, ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0},\n",
-                                   field->is_nullable, st->name, field->name);
+                sstr_printf_append(
+                    param->source,
+                    ", %d, offsetof(struct %S, has_%S), NULL, NULL, 0, 0, "
+                    "%d},\n",
+                    field->is_nullable, st->name, field->name, field_index);
             } else {
-                sstr_append_cstr(param->source, ", 0, -1, NULL, NULL, 0, 0},\n");
+                sstr_printf_append(param->source,
+                                   ", 0, -1, NULL, NULL, 0, 0, %d},\n",
+                                   field_index);
             }
             gen_hash_arr(st->name, JSON_KEY(field), param);
         }
@@ -1581,7 +1715,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             // dynamic array: generate _len field entry
             sstr_printf_append(param->source, "    {offsetof(struct %S, %S_len), sizeof(int), "
                                "%d, \"int\", \"%S_len\", "
-                               "\"%S\", %d, NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0},\n",
+                               "\"%S\", %d, NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0, -1},\n",
                                st->name, field->name, FIELD_TYPE_INT,
                                JSON_KEY(field), st->name, 0);
             sstr_t tmp = sstr_dup(JSON_KEY(field));
@@ -1590,6 +1724,7 @@ static void gen_fields_list_fn(void* key, void* value, void* ptr) {
             sstr_free(tmp);
         }
 
+        field_index++;
         field = field->next;
     }
 }
@@ -1691,6 +1826,7 @@ static void gen_code_offset_map(struct hash_map* struct_map,
                      "    const char** oneof_variant_structs;\n"
                      "    int oneof_tag_offset;\n"
                      "    int oneof_value_offset;\n"
+                     "    int field_index;\n"
                      "};\n\n");
     sstr_printf_append(
         source,
@@ -1706,7 +1842,7 @@ static void gen_code_offset_map(struct hash_map* struct_map,
     param.hash_arr = (int*)malloc(sizeof(int) * param.hash_size);
     memset(param.hash_arr, -1, sizeof(int) * param.hash_size);
     hash_map_for_each(struct_map, gen_fields_list_fn, &param);
-    sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0, NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0}};\n");
+    sstr_append_cstr(source, "    {0, 0, 0, NULL, NULL, NULL, 0, NULL, 0, 0, 0, 0, 0, -1, NULL, NULL, 0, 0, -1}};\n");
 
     sstr_printf_append(
         source, "int json_entry_hash_size = %d;\nint json_entry_hash[%d] = {",
@@ -1800,6 +1936,19 @@ int gencode_head_guard_begin(sstr_t head) {
         "                          void* (*realloc_fn)(void*, size_t),\n"
         "                          void  (*free_fn)(void*));\n"
         "#endif\n\n");
+    sstr_append_cstr(
+        head,
+        "#define JSON_GEN_C_FIELD_MASK_WORD_COUNT(field_count) \\\n"
+        "    (((field_count) <= 0) ? 1 : (((field_count) + 63) / 64))\n"
+        "#define JSON_GEN_C_FIELD_MASK_SET(mask_words, field_index) \\\n"
+        "    ((mask_words)[(field_index) / 64u] |= \\\n"
+        "        (UINT64_C(1) << ((field_index) % 64u)))\n"
+        "#define JSON_GEN_C_FIELD_MASK_CLEAR(mask_words, field_index) \\\n"
+        "    ((mask_words)[(field_index) / 64u] &= \\\n"
+        "        ~(UINT64_C(1) << ((field_index) % 64u)))\n"
+        "#define JSON_GEN_C_FIELD_MASK_TEST(mask_words, field_index) \\\n"
+        "    (((mask_words)[(field_index) / 64u] & \\\n"
+        "        (UINT64_C(1) << ((field_index) % 64u))) != 0)\n\n");
     sstr_append_cstr(
         head,
         "/**\n"

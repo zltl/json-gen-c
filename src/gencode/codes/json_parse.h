@@ -77,6 +77,8 @@ struct json_parse_param {
     int depth;
     const char* struct_name;
     const char* field_name;
+    const uint64_t* field_mask;
+    int field_mask_word_count;
 };
 
 struct json_pos {

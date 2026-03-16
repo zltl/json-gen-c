@@ -1,0 +1,6 @@
+// Malformed: stray top-level token after an otherwise valid declaration
+struct Good {
+    int x;
+}
+
+trailing_token

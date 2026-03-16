@@ -143,9 +143,13 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 
 ### Phase 1: Bug Fixes and Technical Debt Cleanup
 
-1. Keep parser regression coverage growing for edge cases around comments, includes, empty files, and malformed trailing tokens.
-2. Continue refactoring parser internals so responsibilities are clearer and easier to extend.
-3. Remove small remaining inconsistencies in diagnostics, naming, and internal APIs.
+1. ~~Keep parser regression coverage growing for edge cases around comments, includes, empty files, and malformed trailing tokens.~~  **Done.**
+    - Expanded parser regression coverage in `test/diagnostic_test.cc` for whitespace-only input, include recovery, malformed trailing top-level tokens, comment-prefixed malformed input, and name-clash validation around `oneof`.
+    - Added `test/malformed_trailing_top_level_token.json-gen-c` to the negative-schema suite.
+2. ~~Continue refactoring parser internals so responsibilities are clearer and easier to extend.~~  **Done.**
+    - Refactored `src/struct/struct_parse.c` to extract top-level token classification/dispatch and shared top-level registration checks, reducing duplicated `#include` / `struct` / `enum` / `oneof` control flow.
+3. ~~Remove small remaining inconsistencies in diagnostics, naming, and internal APIs.~~  **Done.**
+    - Tightened parser diagnostic wording around `#include`, made `token_type_str()` const-correct, and ensured top-level parse failure propagation stays accurate without adding duplicate diagnostics.
 4. ~~Audit the generated code template for duplicated logic and simplify where possible.~~  **Done.**
     - Table-driven marshal refactoring in `src/gencode/gencode.c`: replaced 4 duplicated `FIELD_TYPE_*` switch blocks (~268 lines) with a `marshal_numeric_info` lookup table + `emit_numeric_marshal()` helper, plus merged identical init/clear cases.
     - Map marshal value block: 10 case arms → table lookup + 3 explicit cases (SSTR, STRUCT, ENUM).
@@ -154,7 +158,7 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
     - Clear block: merged ENUM with integer cases, STRUCT/ONEOF.
     - Net reduction: 63 lines (171 deleted, 108 added). Generated output verified byte-identical.
 
-**Exit criteria:** CI stays green, regression tests cover recent parser and generator fixes, and the parsing/codegen core is stable enough for feature work.
+**Exit criteria:** CI stays green, regression tests cover recent parser and generator fixes, and the parsing/codegen core is stable enough for feature work. **Completed.**
 
 ### Phase 2: Type System Expansion
 
@@ -293,8 +297,13 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 4. ~~Build comparative benchmarks against similar JSON libraries and code-generation approaches.~~
     - **Completed:** Added nested struct and string-heavy benchmarks. Added cJSON comparison benchmarks (marshal + unmarshal for scalar and nested structs). Results show json-gen-c produces typed structs directly while cJSON builds an untyped tree.
 5. Investigate selective parsing or SIMD-assisted fast paths only after correctness and coverage are strong.
+   - **Partially completed:** added a first-pass field-mask selective unmarshal API for generated structs.
+   - Runtime selective unmarshal now skips unselected known fields using the existing value-skip path, preserving the full-unmarshal APIs unchanged.
+   - Added focused selective-parse tests covering aliased fields, untouched-field preservation, nested-object skipping, and invalid mask rejection.
+   - Added a partial-field benchmark for `string_heavy` to compare targeted extraction against full unmarshal.
+   - SIMD-specific fast paths remain deferred until real benchmark data justifies architecture-specific work.
 
-**Exit criteria:** the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments. **Items 1–4 completed.**
+**Exit criteria:** the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments. **Items 1–4 completed; item 5 now has a first selective-parsing implementation.**
 
 ### Phase 6: Long-Term Vision
 

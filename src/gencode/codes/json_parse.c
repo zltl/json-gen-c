@@ -915,6 +915,23 @@ static int json_unmarshal_ignore_value(sstr_t content, struct json_pos* pos,
     return 0;
 }
 
+static int json_field_is_selected(const struct json_parse_param* param,
+                                  const struct json_field_offset_item* fi) {
+    int word_index;
+    if (param->field_mask == NULL) {
+        return 1;
+    }
+    if (fi->field_index < 0) {
+        return 0;
+    }
+    word_index = fi->field_index / 64;
+    if (word_index >= param->field_mask_word_count) {
+        return 0;
+    }
+    return (param->field_mask[word_index] &
+            (UINT64_C(1) << (fi->field_index % 64))) != 0;
+}
+
 /**
  * @brief Scan a JSON object for a specific string-valued key without consuming
  *        the object.  Used by oneof (tagged union) unmarshal to discover the
@@ -1085,6 +1102,8 @@ static int json_unmarshal_oneof_internal(sstr_t content, struct json_pos* pos,
     sub.depth = depth + 1;
     sub.struct_name = variant_struct_names[matched];
     sub.field_name = "";
+    sub.field_mask = NULL;
+    sub.field_mask_word_count = 0;
     r = json_unmarshal_struct_internal(content, pos, &sub, txt);
     if (r < 0) {
         return -1;
@@ -1498,6 +1517,8 @@ static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
         sub_param.depth = param->depth + 1;
         sub_param.struct_name = param->struct_name;
         sub_param.field_name = param->field_name;
+        sub_param.field_mask = NULL;
+        sub_param.field_mask_word_count = 0;
 
         int r = json_unmarshal_struct_internal(content, pos, &sub_param, txt);
         
@@ -1686,6 +1707,8 @@ static int json_unmarshal_map_object(sstr_t content, struct json_pos* pos,
                 sub.depth = depth + 1;
                 sub.struct_name = value_type_name;
                 sub.field_name = "";
+                sub.field_mask = NULL;
+                sub.field_mask_word_count = 0;
                 r = json_unmarshal_struct_internal(content, pos, &sub, txt);
                 break;
             }
@@ -1805,7 +1828,9 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                 sstr_free(e);
                 return -1;
             }
-            json_unmarshal_ignore_value(content, pos, txt);
+            if (json_unmarshal_ignore_value(content, pos, txt) != 0) {
+                return -1;
+            }
             continue;
         }
 #if JSON_DEBUG
@@ -1819,6 +1844,12 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
             sstr_append(txt, e);
             sstr_free(e);
             return -1;
+        }
+        if (!json_field_is_selected(param, fi)) {
+            if (json_unmarshal_ignore_value(content, pos, txt) != 0) {
+                return -1;
+            }
+            continue;
         }
 
         // Handle nullable fields: accept JSON null
@@ -2036,6 +2067,8 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                         sub.depth = param->depth + 1;
                         sub.struct_name = fi->field_type_name;
                         sub.field_name = fi->field_name;
+                        sub.field_mask = NULL;
+                        sub.field_mask_word_count = 0;
                         r = json_unmarshal_struct_internal(content, pos,
                                                            &sub, txt);
                         break;
@@ -2105,6 +2138,8 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                     ar_param.depth = param->depth;
                     ar_param.struct_name = fi->field_type_name;
                     ar_param.field_name = fi->field_name;
+                    ar_param.field_mask = NULL;
+                    ar_param.field_mask_word_count = 0;
                     int r = json_unmarshal_array_internal(content, pos,
                                                           &ar_param, &len, txt);
                     if (r < 0) {
@@ -2335,6 +2370,8 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                 sub_param.depth = param->depth + 1;
                 sub_param.struct_name = fi->field_type_name;
                 sub_param.field_name = fi->field_name;
+                sub_param.field_mask = NULL;
+                sub_param.field_mask_word_count = 0;
                 tk = json_unmarshal_struct_internal(content, pos, &sub_param,
                                                     txt);
                 if (tk == -1) {

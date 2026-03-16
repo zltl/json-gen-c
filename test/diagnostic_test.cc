@@ -352,6 +352,34 @@ protected:
         sstr_free(s);
         return r;
     }
+
+    bool diag_contains(const char* needle) const {
+        if (parser == nullptr || parser->diag == nullptr) {
+            return false;
+        }
+        for (int i = 0; i < parser->diag->count; i++) {
+            if (strstr(parser->diag->entries[i].message, needle) != nullptr) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool has_struct(const char* name) const {
+        sstr_t key = sstr(name);
+        void* value = nullptr;
+        int found = hash_map_find(parser->struct_map, key, &value);
+        sstr_free(key);
+        return found == HASH_MAP_OK && value != nullptr;
+    }
+
+    bool has_enum(const char* name) const {
+        sstr_t key = sstr(name);
+        void* value = nullptr;
+        int found = hash_map_find(parser->enum_map, key, &value);
+        sstr_free(key);
+        return found == HASH_MAP_OK && value != nullptr;
+    }
 };
 
 TEST_F(ParserDiagTest, ValidSchemaNoErrors) {
@@ -413,6 +441,17 @@ TEST_F(ParserDiagTest, MultipleTopLevelErrors) {
     EXPECT_LT(r, 0);
     ASSERT_NE(nullptr, parser->diag);
     EXPECT_GE(diag_error_count(parser->diag), 1);
+}
+
+TEST_F(ParserDiagTest, TrailingTopLevelTokenRecoveryKeepsFollowingEnum) {
+    int r = parse("struct Good { int x; }\n"
+                  "trailing_token\n"
+                  "enum State { READY, DONE }\n");
+    EXPECT_LT(r, 0);
+    ASSERT_NE(nullptr, parser->diag);
+    EXPECT_TRUE(diag_has_errors(parser->diag));
+    EXPECT_TRUE(has_struct("Good"));
+    EXPECT_TRUE(has_enum("State"));
 }
 
 TEST_F(ParserDiagTest, EnumMissingName) {
@@ -545,8 +584,25 @@ TEST_F(ParserDiagTest, IncludeNotFollowedByString) {
     EXPECT_TRUE(diag_has_errors(parser->diag));
 }
 
+TEST_F(ParserDiagTest, IncludeErrorDoesNotBlockFollowingStruct) {
+    int r = parse("#include \"nonexistent_file.json-gen-c\"\n"
+                  "struct Good { int x; }");
+    EXPECT_LT(r, 0);
+    ASSERT_NE(nullptr, parser->diag);
+    EXPECT_TRUE(diag_has_errors(parser->diag));
+    EXPECT_TRUE(diag_contains("not found"));
+    EXPECT_TRUE(has_struct("Good"));
+}
+
 TEST_F(ParserDiagTest, EmptyInputNoErrors) {
     int r = parse("");
+    EXPECT_EQ(0, r);
+    ASSERT_NE(nullptr, parser->diag);
+    EXPECT_FALSE(diag_has_errors(parser->diag));
+}
+
+TEST_F(ParserDiagTest, WhitespaceOnlyInputNoErrors) {
+    int r = parse("  \n\t  \r\n");
     EXPECT_EQ(0, r);
     ASSERT_NE(nullptr, parser->diag);
     EXPECT_FALSE(diag_has_errors(parser->diag));
@@ -557,6 +613,15 @@ TEST_F(ParserDiagTest, OnlyCommentsNoErrors) {
     EXPECT_EQ(0, r);
     ASSERT_NE(nullptr, parser->diag);
     EXPECT_FALSE(diag_has_errors(parser->diag));
+}
+
+TEST_F(ParserDiagTest, CommentThenUnexpectedTopLevelToken) {
+    int r = parse("// just a comment\n/* also a comment */\ntrailing_token");
+    EXPECT_LT(r, 0);
+    ASSERT_NE(nullptr, parser->diag);
+    EXPECT_TRUE(diag_has_errors(parser->diag));
+    EXPECT_TRUE(
+        diag_contains("expected 'struct', 'enum', 'oneof' or '#include'"));
 }
 
 TEST_F(ParserDiagTest, MultipleStructAndEnumErrors) {
@@ -683,6 +748,24 @@ TEST_F(SchemaValidationTest, StructEnumNameClash) {
     bool found = false;
     for (int i = 0; i < parser->diag->count; i++) {
         if (strstr(parser->diag->entries[i].message, "already defined as an enum") != nullptr) {
+            found = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(found);
+}
+
+TEST_F(SchemaValidationTest, OneofStructNameClash) {
+    int r = parse("struct Shape { int kind; }\n"
+                  "oneof Shape { Shape circle; }");
+    EXPECT_LT(r, 0);
+    ASSERT_NE(nullptr, parser->diag);
+    EXPECT_TRUE(diag_has_errors(parser->diag));
+
+    bool found = false;
+    for (int i = 0; i < parser->diag->count; i++) {
+        if (strstr(parser->diag->entries[i].message,
+                   "already defined as a struct") != nullptr) {
             found = true;
             break;
         }

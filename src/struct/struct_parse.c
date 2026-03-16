@@ -445,7 +445,7 @@ static int next_token(struct struct_parser* parser, sstr_t content,
     return tk;
 }
 
-static char* token_type_str(struct struct_token* token) {
+static const char* token_type_str(struct struct_token* token) {
     switch (token->type) {
         case TOKEN_AT:
             return "@";
@@ -481,6 +481,34 @@ static char* token_type_str(struct struct_token* token) {
     diag_emit(parser->diag, DIAG_ERROR, parser->pos.line, parser->pos.col, \
               fmt, ##__VA_ARGS__)
 
+enum top_level_item_kind {
+    TOP_LEVEL_ITEM_INVALID = 0,
+    TOP_LEVEL_ITEM_INCLUDE,
+    TOP_LEVEL_ITEM_STRUCT,
+    TOP_LEVEL_ITEM_ENUM,
+    TOP_LEVEL_ITEM_ONEOF,
+};
+
+static enum top_level_item_kind top_level_item_kind_from_token(
+    struct struct_token* token) {
+    if (token->type == TOKEN_SHARPE) {
+        return TOP_LEVEL_ITEM_INCLUDE;
+    }
+    if (token->type != TOKEN_IDENTIFY || token->txt == NULL) {
+        return TOP_LEVEL_ITEM_INVALID;
+    }
+    if (sstr_compare_c(token->txt, "struct") == 0) {
+        return TOP_LEVEL_ITEM_STRUCT;
+    }
+    if (sstr_compare_c(token->txt, "enum") == 0) {
+        return TOP_LEVEL_ITEM_ENUM;
+    }
+    if (sstr_compare_c(token->txt, "oneof") == 0) {
+        return TOP_LEVEL_ITEM_ONEOF;
+    }
+    return TOP_LEVEL_ITEM_INVALID;
+}
+
 /* Recovery helpers: skip tokens to synchronization points */
 static void skip_to_semicolon(struct struct_parser* parser, sstr_t content,
                               struct struct_token* token) {
@@ -496,11 +524,7 @@ static void skip_to_top_level(struct struct_parser* parser, sstr_t content,
     while (1) {
         int tk = next_token(parser, content, token);
         if (tk == TOKEN_EOF) return;
-        if (tk == TOKEN_SHARPE) return;
-        if (tk == TOKEN_IDENTIFY &&
-            (sstr_compare_c(token->txt, "struct") == 0 ||
-             sstr_compare_c(token->txt, "enum") == 0 ||
-             sstr_compare_c(token->txt, "oneof") == 0)) {
+        if (top_level_item_kind_from_token(token) != TOP_LEVEL_ITEM_INVALID) {
             return;
         }
     }
@@ -514,8 +538,8 @@ static void skip_to_top_level(struct struct_parser* parser, sstr_t content,
  * @param token Current token
  * @return 0 on success, negative on error
  */
-static int struct_parse_include(struct struct_parser* parser, sstr_t content,
-                                struct struct_token* token) {
+static int parse_include_directive(struct struct_parser* parser, sstr_t content,
+                                   struct struct_token* token) {
     // Validate input parameters
     if (parser == NULL || content == NULL || token == NULL) {
         return JSON_GEN_ERROR_INVALID_PARAM;
@@ -524,7 +548,7 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     // 'include'
     int tk = next_token(parser, content, token);
     if (tk != TOKEN_IDENTIFY || sstr_compare_c(token->txt, "include") != 0) {
-        PERROR(parser, "expect #include, but found %s",
+        PERROR(parser, "expected 'include' after '#', found '%s'",
                token_type_str(token));
         return JSON_GEN_ERROR_PARSE;
     }
@@ -532,7 +556,7 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     // '"filename"', or '<filename>'
     tk = next_token(parser, content, token);
     if (tk != TOKEN_STRING) {
-        PERROR(parser, "expect string file name, but found %s",
+        PERROR(parser, "expected string file name, found '%s'",
                token_type_str(token));
         return JSON_GEN_ERROR_PARSE;
     }
@@ -624,6 +648,92 @@ static int struct_parse_include(struct struct_parser* parser, sstr_t content,
     sstr_free(file);
 
     return r;
+}
+
+static const char* top_level_item_name(enum top_level_item_kind kind) {
+    switch (kind) {
+        case TOP_LEVEL_ITEM_STRUCT:
+            return "struct";
+        case TOP_LEVEL_ITEM_ENUM:
+            return "enum";
+        case TOP_LEVEL_ITEM_ONEOF:
+            return "oneof";
+        default:
+            return "item";
+    }
+}
+
+static const char* top_level_item_defined_as_name(enum top_level_item_kind kind) {
+    switch (kind) {
+        case TOP_LEVEL_ITEM_STRUCT:
+            return "a struct";
+        case TOP_LEVEL_ITEM_ENUM:
+            return "an enum";
+        case TOP_LEVEL_ITEM_ONEOF:
+            return "a oneof";
+        default:
+            return "an item";
+    }
+}
+
+static struct hash_map* top_level_item_map(struct struct_parser* parser,
+                                           enum top_level_item_kind kind) {
+    switch (kind) {
+        case TOP_LEVEL_ITEM_STRUCT:
+            return parser->struct_map;
+        case TOP_LEVEL_ITEM_ENUM:
+            return parser->enum_map;
+        case TOP_LEVEL_ITEM_ONEOF:
+            return parser->oneof_map;
+        default:
+            return NULL;
+    }
+}
+
+static int check_top_level_name_available(struct struct_parser* parser,
+                                          sstr_t name,
+                                          enum top_level_item_kind kind) {
+    void* existing = NULL;
+    struct hash_map* current_map = top_level_item_map(parser, kind);
+
+    if (current_map != NULL &&
+        hash_map_find(current_map, name, &existing) == HASH_MAP_OK) {
+        PERROR(parser, "duplicate %s name '%s'",
+               top_level_item_name(kind), sstr_cstr(name));
+        return -1;
+    }
+    if (kind != TOP_LEVEL_ITEM_STRUCT &&
+        hash_map_find(parser->struct_map, name, &existing) == HASH_MAP_OK) {
+        PERROR(parser, "'%s' already defined as %s", sstr_cstr(name),
+               top_level_item_defined_as_name(TOP_LEVEL_ITEM_STRUCT));
+        return -1;
+    }
+    if (kind != TOP_LEVEL_ITEM_ENUM &&
+        hash_map_find(parser->enum_map, name, &existing) == HASH_MAP_OK) {
+        PERROR(parser, "'%s' already defined as %s", sstr_cstr(name),
+               top_level_item_defined_as_name(TOP_LEVEL_ITEM_ENUM));
+        return -1;
+    }
+    if (kind != TOP_LEVEL_ITEM_ONEOF &&
+        hash_map_find(parser->oneof_map, name, &existing) == HASH_MAP_OK) {
+        PERROR(parser, "'%s' already defined as %s", sstr_cstr(name),
+               top_level_item_defined_as_name(TOP_LEVEL_ITEM_ONEOF));
+        return -1;
+    }
+    return 0;
+}
+
+static int register_top_level_item(struct struct_parser* parser, sstr_t name,
+                                   enum top_level_item_kind kind, void* item) {
+    struct hash_map* map = top_level_item_map(parser, kind);
+    if (map == NULL) {
+        return -1;
+    }
+    if (check_top_level_name_available(parser, name, kind) != 0) {
+        return -1;
+    }
+    hash_map_insert(map, sstr_dup(name), item);
+    return 0;
 }
 
 // skip semicolons and commas, return the next meaningful token
@@ -1035,24 +1145,11 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
         v->index = idx++;
     }
 
-    // Check for duplicate enum name or name clash with struct/oneof
-    void* existing = NULL;
-    if (hash_map_find(parser->enum_map, ec->name, &existing) == HASH_MAP_OK) {
-        PERROR(parser, "duplicate enum name '%s'", sstr_cstr(ec->name));
+    if (register_top_level_item(parser, ec->name, TOP_LEVEL_ITEM_ENUM, ec) !=
+        0) {
         enum_container_free(ec);
         return -1;
     }
-    if (hash_map_find(parser->struct_map, ec->name, &existing) == HASH_MAP_OK) {
-        PERROR(parser, "'%s' already defined as a struct", sstr_cstr(ec->name));
-        enum_container_free(ec);
-        return -1;
-    }
-    if (hash_map_find(parser->oneof_map, ec->name, &existing) == HASH_MAP_OK) {
-        PERROR(parser, "'%s' already defined as a oneof", sstr_cstr(ec->name));
-        enum_container_free(ec);
-        return -1;
-    }
-    hash_map_insert(parser->enum_map, sstr_dup(ec->name), ec);
     return had_error ? -1 : 0;
 }
 
@@ -1217,24 +1314,11 @@ static int parse_oneof_body(struct struct_parser* parser, sstr_t content,
         v->index = idx++;
     }
 
-    // Check for duplicate name or clashes with struct/enum
-    void* existing = NULL;
-    if (hash_map_find(parser->oneof_map, oc->name, &existing) == HASH_MAP_OK) {
-        PERROR(parser, "duplicate oneof name '%s'", sstr_cstr(oc->name));
+    if (register_top_level_item(parser, oc->name, TOP_LEVEL_ITEM_ONEOF, oc) !=
+        0) {
         oneof_container_free(oc);
         return -1;
     }
-    if (hash_map_find(parser->struct_map, oc->name, &existing) == HASH_MAP_OK) {
-        PERROR(parser, "'%s' already defined as a struct", sstr_cstr(oc->name));
-        oneof_container_free(oc);
-        return -1;
-    }
-    if (hash_map_find(parser->enum_map, oc->name, &existing) == HASH_MAP_OK) {
-        PERROR(parser, "'%s' already defined as an enum", sstr_cstr(oc->name));
-        oneof_container_free(oc);
-        return -1;
-    }
-    hash_map_insert(parser->oneof_map, sstr_dup(oc->name), oc);
     return had_error ? -1 : 0;
 }
 
@@ -1298,6 +1382,52 @@ static int parse_struct_body(struct struct_parser* parser, sstr_t content,
     return had_error ? -1 : 0;
 }
 
+static int parse_struct_definition(struct struct_parser* parser, sstr_t content,
+                                   struct struct_token* token) {
+    struct struct_container* sct = struct_container_new();
+    if (sct == NULL) {
+        return JSON_GEN_ERROR_MEMORY;
+    }
+
+    int r = parse_struct_body(parser, content, token, sct);
+    if (r != 0) {
+        struct_container_free(sct);
+        return r;
+    }
+    if (sct->name == NULL) {
+        struct_container_free(sct);
+        return 0;
+    }
+
+    // we insert fields into sct->fields at the head of the list, so reverse.
+    struct_field_reverse(&sct->fields);
+    if (register_top_level_item(parser, sct->name, TOP_LEVEL_ITEM_STRUCT, sct) !=
+        0) {
+        struct_container_free(sct);
+        return -1;
+    }
+    return 0;
+}
+
+static int parse_top_level_item(struct struct_parser* parser, sstr_t content,
+                                struct struct_token* token) {
+    switch (top_level_item_kind_from_token(token)) {
+        case TOP_LEVEL_ITEM_INCLUDE:
+            return parse_include_directive(parser, content, token);
+        case TOP_LEVEL_ITEM_STRUCT:
+            return parse_struct_definition(parser, content, token);
+        case TOP_LEVEL_ITEM_ENUM:
+            return parse_enum_body(parser, content, token);
+        case TOP_LEVEL_ITEM_ONEOF:
+            return parse_oneof_body(parser, content, token);
+        default:
+            PERROR(parser,
+                   "expected 'struct', 'enum', 'oneof' or '#include', found '%s'",
+                   token_type_str(token));
+            return JSON_GEN_ERROR_PARSE;
+    }
+}
+
 // parse a struct definition file.
 // return 0 if success, negative if error
 // if success, the parser->struct_map will store all structs.
@@ -1305,6 +1435,7 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
     struct struct_token token;
     token.txt = NULL;
     token.type = 0;
+    int had_error = 0;
 
     // Create diag engine if not already set (top-level parse)
     int owns_diag = 0;
@@ -1324,90 +1455,23 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
             break;
         }
 
-        if (tk == TOKEN_SHARPE) {
-            // handle '#include "filename"'
-            int r = struct_parse_include(parser, content, &token);
-            if (r != 0) {
-                // Propagate include failure to parent diag so overall parse fails
-                PERROR(parser, "failed to process include directive");
-                continue;
-            }
-            continue;
-        }
-
-        // expect 'struct', 'enum', or 'oneof' keyword
-        if (tk != TOKEN_IDENTIFY ||
-            (sstr_compare_c(token.txt, "struct") != 0 &&
-             sstr_compare_c(token.txt, "enum") != 0 &&
-             sstr_compare_c(token.txt, "oneof") != 0)) {
+        if (top_level_item_kind_from_token(&token) == TOP_LEVEL_ITEM_INVALID) {
             PERROR(parser, "expected 'struct', 'enum', 'oneof' or '#include', found '%s'",
                    token_type_str(&token));
+            had_error = 1;
             // recovery: skip to next top-level keyword
             skip_to_top_level(parser, content, &token);
             // Re-check what we landed on
-            if (token.type == TOKEN_EOF) break;
-            if (token.type == TOKEN_SHARPE) {
-                int r = struct_parse_include(parser, content, &token);
-                if (r != 0) {
-                    PERROR(parser, "failed to process include directive");
-                    continue;
-                }
-                continue;
+            if (token.type == TOKEN_EOF) {
+                break;
             }
-            // Fall through: token is 'struct', 'enum', or 'oneof'
         }
 
-        if (token.txt && sstr_compare_c(token.txt, "enum") == 0) {
-            int r = parse_enum_body(parser, content, &token);
-            if (r != 0) {
-                // error already recorded; continue parsing
-                continue;
-            }
-            continue;
-        }
-
-        if (token.txt && sstr_compare_c(token.txt, "oneof") == 0) {
-            int r = parse_oneof_body(parser, content, &token);
-            if (r != 0) {
-                // error already recorded; continue parsing
-                continue;
-            }
-            continue;
-        }
-
-        // parse struct body: name '{' fields '}'
-        struct struct_container* sct = struct_container_new();
-        int r = parse_struct_body(parser, content, &token, sct);
+        int r = parse_top_level_item(parser, content, &token);
         if (r != 0) {
-            struct_container_free(sct);
             // error already recorded; continue parsing
+            had_error = 1;
             continue;
-        }
-        if (sct->name) {
-            // we insert fields into sct->fields to the head of the list,
-            // so the list is reversed.
-            struct_field_reverse(&sct->fields);
-            // Check for duplicate struct name or name clash with enum/oneof
-            void* existing = NULL;
-            if (hash_map_find(parser->struct_map, sct->name, &existing) == HASH_MAP_OK) {
-                PERROR(parser, "duplicate struct name '%s'", sstr_cstr(sct->name));
-                struct_container_free(sct);
-                continue;
-            }
-            if (hash_map_find(parser->enum_map, sct->name, &existing) == HASH_MAP_OK) {
-                PERROR(parser, "'%s' already defined as an enum", sstr_cstr(sct->name));
-                struct_container_free(sct);
-                continue;
-            }
-            if (hash_map_find(parser->oneof_map, sct->name, &existing) == HASH_MAP_OK) {
-                PERROR(parser, "'%s' already defined as a oneof", sstr_cstr(sct->name));
-                struct_container_free(sct);
-                continue;
-            }
-            // then insert a struct into parser->struct_map;
-            hash_map_insert(parser->struct_map, sstr_dup(sct->name), sct);
-        } else {
-            struct_container_free(sct);
         }
     }
     token_clear(&token);
@@ -1416,7 +1480,7 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content) {
     if (owns_diag) {
         diag_print_all(parser->diag, stderr);
     }
-    if (diag_has_errors(parser->diag)) {
+    if (had_error || diag_has_errors(parser->diag)) {
         return JSON_GEN_ERROR_PARSE;
     }
 
