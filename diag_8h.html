@@ -66,6 +66,7 @@ $(document).ready(function(){initNavTree('diag_8h.html',''); initResizable(); })
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#define-members">Macros</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">diag.h File Reference</div></div>
@@ -110,6 +111,12 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiag__engine.html">diag_engine</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a1838cbd320f9f25af385a7637881e580" id="r_a1838cbd320f9f25af385a7637881e580"><td class="memItemLeft" align="right" valign="top"><a id="a1838cbd320f9f25af385a7637881e580" name="a1838cbd320f9f25af385a7637881e580"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>DIAG_PRINTF_FORMAT</b>(fmt_index,  first_arg)</td></tr>
+<tr class="separator:a1838cbd320f9f25af385a7637881e580"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:a99d5b1c815779e8cef37923a81971ca2" id="r_a99d5b1c815779e8cef37923a81971ca2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="diag_8h.html#a99d5b1c815779e8cef37923a81971ca2">diag_severity</a> { <b>DIAG_ERROR</b>
@@ -127,9 +134,9 @@ Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>diag_engine_free</b> (struct <a class="el" href="structdiag__engine.html">diag_engine</a> *engine)</td></tr>
 <tr class="memdesc:a13ba0c92327df716d0aa3c6a5f75e77f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free a diagnostic engine and all its entries. <br /></td></tr>
 <tr class="separator:a13ba0c92327df716d0aa3c6a5f75e77f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acc41c2f0b3ec07426e5aa7c25f9ca824" id="r_acc41c2f0b3ec07426e5aa7c25f9ca824"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="diag_8h.html#acc41c2f0b3ec07426e5aa7c25f9ca824">diag_emit</a> (struct <a class="el" href="structdiag__engine.html">diag_engine</a> *engine, enum <a class="el" href="diag_8h.html#a99d5b1c815779e8cef37923a81971ca2">diag_severity</a> severity, int line, int col, const char *fmt,...) __attribute__((format(printf</td></tr>
-<tr class="memdesc:acc41c2f0b3ec07426e5aa7c25f9ca824"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emit a diagnostic message.  <br /></td></tr>
-<tr class="separator:acc41c2f0b3ec07426e5aa7c25f9ca824"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4cfb48bb0694e49f926707b8d4aebdca" id="r_a4cfb48bb0694e49f926707b8d4aebdca"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="diag_8h.html#a4cfb48bb0694e49f926707b8d4aebdca">diag_emit</a> (struct <a class="el" href="structdiag__engine.html">diag_engine</a> *engine, enum <a class="el" href="diag_8h.html#a99d5b1c815779e8cef37923a81971ca2">diag_severity</a> severity, int line, int col, const char *fmt,...) DIAG_PRINTF_FORMAT(5</td></tr>
+<tr class="memdesc:a4cfb48bb0694e49f926707b8d4aebdca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emit a diagnostic message.  <br /></td></tr>
+<tr class="separator:a4cfb48bb0694e49f926707b8d4aebdca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2f15478d961f14d0e163fcdcaaee5c6" id="r_aa2f15478d961f14d0e163fcdcaaee5c6"><td class="memItemLeft" align="right" valign="top"><a id="aa2f15478d961f14d0e163fcdcaaee5c6" name="aa2f15478d961f14d0e163fcdcaaee5c6"></a>
 void void&#160;</td><td class="memItemRight" valign="bottom"><b>diag_print_all</b> (struct <a class="el" href="structdiag__engine.html">diag_engine</a> *engine, FILE *stream)</td></tr>
 <tr class="memdesc:aa2f15478d961f14d0e163fcdcaaee5c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print all accumulated diagnostics to a stream. Uses ANSI colors if stream is a terminal. <br /></td></tr>
@@ -168,8 +175,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>diag_error_count</b> (
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="acc41c2f0b3ec07426e5aa7c25f9ca824" name="acc41c2f0b3ec07426e5aa7c25f9ca824"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acc41c2f0b3ec07426e5aa7c25f9ca824">&#9670;&#160;</a></span>diag_emit()</h2>
+<a id="a4cfb48bb0694e49f926707b8d4aebdca" name="a4cfb48bb0694e49f926707b8d4aebdca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4cfb48bb0694e49f926707b8d4aebdca">&#9670;&#160;</a></span>diag_emit()</h2>
 
 <div class="memitem">
 <div class="memproto">
