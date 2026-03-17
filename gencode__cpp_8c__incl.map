@@ -1,0 +1,33 @@
+<map id="src/gencode/gencode_cpp.c" name="src/gencode/gencode_cpp.c">
+<area shape="rect" id="Node000001" title="Generate a C++ wrapper header (.gen.hpp) providing RAII classes around the generated C structs,..." alt="" coords="286,5,445,45"/>
+<area shape="rect" id="Node000002" href="$gencode_8h.html" title="generate json manipulate codes." alt="" coords="235,93,383,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="354,47,328,84,323,80,349,44"/>
+<area shape="rect" id="Node000003" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="29,167,163,192"/>
+<area shape="poly" id="edge16_Node000001_Node000003" title=" " alt="" coords="286,35,217,42,145,54,83,72,61,83,46,95,41,110,45,125,56,141,71,156,67,159,52,145,40,127,35,109,42,92,58,78,81,67,144,49,216,37,286,29"/>
+<area shape="rect" id="Node000005" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="171,240,261,265"/>
+<area shape="poly" id="edge17_Node000001_Node000005" title=" " alt="" coords="379,44,395,75,408,114,412,155,408,175,398,194,373,218,341,235,307,246,275,252,274,246,306,241,339,231,369,214,394,190,403,173,407,155,403,115,390,77,375,47"/>
+<area shape="rect" id="Node000009" href="$struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="56,93,211,119"/>
+<area shape="poly" id="edge10_Node000001_Node000009" title=" " alt="" coords="310,48,181,91,179,86,309,43"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="371,240,437,265"/>
+<area shape="poly" id="edge18_Node000001_Node000011" title=" " alt="" coords="399,44,423,65,442,92,452,119,454,142,442,193,424,230,419,228,437,191,448,142,446,120,437,95,419,68,395,48"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="510,93,581,119"/>
+<area shape="poly" id="edge19_Node000001_Node000012" title=" " alt="" coords="409,43,507,85,505,90,407,48"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="276,121,144,165,142,160,274,116"/>
+<area shape="poly" id="edge9_Node000002_Node000005" title=" " alt="" coords="304,121,233,230,228,227,299,118"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="11,313,85,339"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="94,193,59,301,54,299,89,192"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="116,190,186,230,183,235,114,194"/>
+<area shape="poly" id="edge6_Node000005_Node000004" title=" " alt="" coords="190,268,89,310,87,305,188,263"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="312,313,387,339"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="239,263,317,304,314,309,236,268"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="109,313,192,339"/>
+<area shape="poly" id="edge7_Node000005_Node000007" title=" " alt="" coords="207,267,172,305,168,301,203,264"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="217,313,287,339"/>
+<area shape="poly" id="edge8_Node000005_Node000008" title=" " alt="" coords="224,264,242,300,237,302,219,267"/>
+<area shape="poly" id="edge14_Node000009_Node000003" title=" " alt="" coords="129,120,111,156,106,153,125,118"/>
+<area shape="poly" id="edge11_Node000009_Node000004" title=" " alt="" coords="87,121,49,139,33,152,19,168,12,184,9,201,12,237,23,271,36,300,31,302,18,273,7,238,4,201,7,182,15,165,29,148,46,134,85,116"/>
+<area shape="poly" id="edge15_Node000009_Node000005" title=" " alt="" coords="144,117,177,165,208,226,203,228,172,168,140,120"/>
+<area shape="rect" id="Node000010" href="$diag_8h.html" title="Diagnostic engine for clang&#45;style error reporting." alt="" coords="289,167,383,192"/>
+<area shape="poly" id="edge12_Node000009_Node000010" title=" " alt="" coords="167,116,291,160,289,165,165,121"/>
+<area shape="poly" id="edge13_Node000010_Node000011" title=" " alt="" coords="349,190,385,228,381,232,345,194"/>
+</map>

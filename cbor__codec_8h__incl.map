@@ -1,0 +1,7 @@
+<map id="src/gencode/codes/cbor_codec.h" name="src/gencode/codes/cbor_codec.h">
+<area shape="rect" id="Node000001" title="CBOR (RFC 8949) wire format constants and reader/writer declarations." alt="" coords="5,5,180,45"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="9,93,80,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="83,47,61,83,57,80,79,44"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="105,93,179,119"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="107,44,130,80,125,83,102,47"/>
+</map>

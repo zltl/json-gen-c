@@ -1,5 +1,11 @@
 var annotated_dup =
 [
+    [ "cb_gen_oneof_param", "structcb__gen__oneof__param.html", null ],
+    [ "cb_gen_struct_param", "structcb__gen__struct__param.html", null ],
+    [ "cb_reader", "structcb__reader.html", null ],
+    [ "check_pair_args", "structcheck__pair__args.html", null ],
+    [ "compat_ctx", "structcompat__ctx.html", null ],
+    [ "cpp_gen_param", "structcpp__gen__param.html", null ],
     [ "diag_engine", "structdiag__engine.html", null ],
     [ "diag_entry", "structdiag__entry.html", null ],
     [ "do_each_oneof_gen_code_param", "structdo__each__oneof__gen__code__param.html", null ],
@@ -15,6 +21,9 @@ var annotated_dup =
     [ "json_parse_param", "structjson__parse__param.html", null ],
     [ "json_pos", "structjson__pos.html", null ],
     [ "marshal_numeric_info", "structmarshal__numeric__info.html", null ],
+    [ "mp_gen_oneof_param", "structmp__gen__oneof__param.html", null ],
+    [ "mp_gen_struct_param", "structmp__gen__struct__param.html", null ],
+    [ "mp_reader", "structmp__reader.html", null ],
     [ "oneof_container", "structoneof__container.html", null ],
     [ "oneof_variant", "structoneof__variant.html", null ],
     [ "options", "structoptions.html", "structoptions" ],

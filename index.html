@@ -122,7 +122,10 @@ Build and Install</h1>
 <div class="line">make test</div>
 <div class="line"># build ./build/benchmark/json_bench</div>
 <div class="line">make benchmark</div>
-</div><!-- fragment --><p>All build artifacts are organized under the <code>build/</code> directory:</p><ul>
+<div class="line"># Debian/Ubuntu one-command benchmark reproduction</div>
+<div class="line">make benchmark-repro</div>
+</div><!-- fragment --><p><code>make benchmark-repro</code> installs the distro benchmark dependencies when needed, clones <code>yyjson</code> into <code>benchmark/yyjson/</code>, installs it locally under <code>benchmark/.deps/prefix/</code>, then builds and runs the full benchmark suite with <code>-O2 -DNDEBUG</code>. Both local dependency directories are gitignored on purpose.</p>
+<p>All build artifacts are organized under the <code>build/</code> directory:</p><ul>
 <li><code>build/bin/</code> - Main executable</li>
 <li><code>build/lib/</code> - Static libraries <br  />
 </li>
@@ -205,9 +208,40 @@ Compiling Your Struct Definition File</h2>
 <li><code>json.gen.c</code>, which contains the implementation of your functions.</li>
 <li><code><a class="el" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters.">sstr.h</a></code>, <code><a class="el" href="sstr_8c.html" title="Implementation of the sstr.h header file.">sstr.c</a></code>, the string manipulation helper functions that generated code depends on.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md9"></a>
-Use Your Generated Codes</h2>
+<h3><a class="anchor" id="autotoc_md9"></a>
+MessagePack Format</h3>
+<p>To generate MessagePack (binary) serialization instead of JSON:</p>
+<div class="fragment"><div class="line">json-gen-c --format msgpack -in struct.json-gen-c -out .</div>
+</div><!-- fragment --><p>This generates <code>msgpack.gen.h</code> and <code>msgpack.gen.c</code> with <code>msgpack_pack_*</code> / <code>msgpack_unpack_*</code> functions. The struct definitions and <code>sstr</code> helper are identical regardless of format.</p>
 <h3><a class="anchor" id="autotoc_md10"></a>
+CBOR Format</h3>
+<p>To generate CBOR (RFC 8949) binary serialization:</p>
+<div class="fragment"><div class="line">json-gen-c --format cbor -in struct.json-gen-c -out .</div>
+</div><!-- fragment --><p>This generates <code>cbor.gen.h</code> and <code>cbor.gen.c</code> with <code>cbor_pack_*</code> / <code>cbor_unpack_*</code> functions. Same struct definitions and API patterns as JSON and MessagePack.</p>
+<h2><a class="anchor" id="autotoc_md11"></a>
+C++ Wrapper (Optional)</h2>
+<div class="fragment"><div class="line">json-gen-c --cpp-wrapper -in struct.json-gen-c -out .</div>
+</div><!-- fragment --><p>This generates <code>json_gen_c.gen.hpp</code> — a C++17 header with RAII wrapper classes inside <code>namespace jgc</code>. Each class wraps a generated C struct with:</p>
+<ul>
+<li>Default constructor (<code>_init</code>), destructor (<code>_clear</code>), move and copy semantics</li>
+<li>Typed get/set accessors (strings as <code>std::string</code>, enums as their C enum type)</li>
+<li><code>marshal()</code>, <code>unmarshal()</code>, and <code>unmarshal_into()</code> member functions</li>
+<li>Equality operators and <code>c_struct()</code> for C interop</li>
+</ul>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &quot;json_gen_c.gen.hpp&quot;</span></div>
+<div class="line"> </div>
+<div class="line">jgc::Person p;</div>
+<div class="line">p.set_name(<span class="stringliteral">&quot;Alice&quot;</span>);</div>
+<div class="line">p.set_age(30);</div>
+<div class="line"> </div>
+<div class="line">std::string json = p.marshal();                   <span class="comment">// serialize</span></div>
+<div class="line">jgc::Person p2 = jgc::Person::unmarshal(json);    <span class="comment">// deserialize</span></div>
+<div class="line">assert(p == p2);                                   <span class="comment">// compare</span></div>
+<div class="line">struct ::Person&amp; c = p.c_struct();                 <span class="comment">// C interop</span></div>
+</div><!-- fragment --><p>Can be combined with <code>--format</code> to also generate MessagePack or CBOR alongside.</p>
+<h2><a class="anchor" id="autotoc_md12"></a>
+Use Your Generated Codes</h2>
+<h3><a class="anchor" id="autotoc_md13"></a>
 To Serialize Structs to JSON</h3>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>A a;</div>
 <div class="line">A_init(&amp;a);</div>
@@ -223,7 +257,7 @@ To Serialize Structs to JSON</h3>
 <div class="ttc" id="asstr_8c_html_ae04c530ce9fbdb9b517ca74ab5f3edbc"><div class="ttname"><a href="sstr_8c.html#ae04c530ce9fbdb9b517ca74ab5f3edbc">sstr_new</a></div><div class="ttdeci">sstr_t sstr_new()</div><div class="ttdoc">Create an empty sstr_t.</div><div class="ttdef"><b>Definition</b> sstr.c:58</div></div>
 <div class="ttc" id="asstr_8c_html_ae99d652d5a9d25fc79343d2ac18cb0e5"><div class="ttname"><a href="sstr_8c.html#ae99d652d5a9d25fc79343d2ac18cb0e5">sstr_free</a></div><div class="ttdeci">void sstr_free(sstr_t s)</div><div class="ttdoc">delete a sstr_t.</div><div class="ttdef"><b>Definition</b> sstr.c:64</div></div>
 <div class="ttc" id="asstr_8c_html_af45cbd228a22432910527e63c4b26b3b"><div class="ttname"><a href="sstr_8c.html#af45cbd228a22432910527e63c4b26b3b">sstr_cstr</a></div><div class="ttdeci">char * sstr_cstr(sstr_t s)</div><div class="ttdoc">Return C-style string representation of s.</div><div class="ttdef"><b>Definition</b> sstr.c:102</div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md11"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md14"></a>
 To Serialize Array of Structs to JSON</h3>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>A a[3];</div>
 <div class="line"><span class="keywordflow">for</span> (i = 0; i &lt; 3; ++i) {</div>
@@ -239,7 +273,7 @@ To Serialize Array of Structs to JSON</h3>
 <div class="line"><span class="keywordflow">for</span> (i = 0; i &lt; 3; ++i) {</div>
 <div class="line">    A_clear(&amp;a[i]);</div>
 <div class="line">}</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md12"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md15"></a>
 To Deserialize JSON to Structs</h3>
 <div class="fragment"><div class="line"><span class="comment">// const char *p_str = &quot;{this is a json string}&quot;;</span></div>
 <div class="line"><span class="comment">// sstr_t json_str = sstr(pstr);</span></div>
@@ -249,7 +283,7 @@ To Deserialize JSON to Structs</h3>
 <div class="line">json_unmarshal_A(json_str, &amp;a); <span class="comment">// json_str is a type of sstr_t</span></div>
 <div class="line"><span class="comment">// ...</span></div>
 <div class="line">A_clear(&amp;a);</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md13"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md16"></a>
 To Deserialize JSON to Array of Structs</h3>
 <div class="fragment"><div class="line"><span class="comment">// const char *p_str = &quot;[this is a json string]&quot;;</span></div>
 <div class="line"><span class="comment">// sstr_t json_str = sstr(pstr);</span></div>
@@ -263,7 +297,7 @@ To Deserialize JSON to Array of Structs</h3>
 <div class="line">    A_clear(&amp;a[i]);</div>
 <div class="line">}</div>
 <div class="line">free(a);</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md14"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md17"></a>
 To Selectively Deserialize Top-Level Fields</h3>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>User user;</div>
 <div class="line">User_init(&amp;user);</div>
@@ -277,10 +311,10 @@ To Selectively Deserialize Top-Level Fields</h3>
 </div><!-- fragment --><p>Selective unmarshal only updates the chosen top-level fields that are present in the JSON input. Unselected top-level fields stay unchanged.</p>
 <p>Selected fields are treated as whole-field replacements: if a selected field is a string, array, map, nested struct, or oneof, its previous stored value is cleared before the new JSON value is parsed. This API does <b>not</b> provide nested field masks; selecting a nested struct field means replacing that nested field as a whole.</p>
 <p>Field-mask constants use the generated <b>C field names</b>, even when <code>@json</code> aliases change the JSON key names.</p>
-<h1><a class="anchor" id="autotoc_md15"></a>
+<h1><a class="anchor" id="autotoc_md18"></a>
 Build System</h1>
 <p>For detailed build system documentation, see BUILD_SYSTEM.md. If you are new to the project, the friendly walkthrough in <a class="el" href="md_docs_2GETTING__STARTED.html">docs/GETTING_STARTED.md</a> covers installation, schema authoring, and integration.</p>
-<h1><a class="anchor" id="autotoc_md16"></a>
+<h1><a class="anchor" id="autotoc_md19"></a>
 The Format of Structs Definition File</h1>
 <p>Define a struct like:</p>
 <div class="fragment"><div class="line">struct &lt;struct_name&gt; {</div>
@@ -302,14 +336,14 @@ The Format of Structs Definition File</h1>
 <li><code>map&lt;sstr_t, V&gt;</code> where V is any of the above types</li>
 </ul>
 <p>If a field is a dynamic array, just append <code>[]</code> after the field name. For fixed-size arrays, use <code>[N]</code> where N is a positive integer (e.g., <code>int data[10];</code>).</p>
-<h2><a class="anchor" id="autotoc_md17"></a>
+<h2><a class="anchor" id="autotoc_md20"></a>
 Map fields</h2>
 <p>Map fields marshal to/from JSON objects. The key type is always <code>sstr_t</code> (JSON keys are strings). Example:</p>
 <div class="fragment"><div class="line">map&lt;sstr_t, int&gt; scores;       // single map: {&quot;alice&quot;:95,&quot;bob&quot;:87}</div>
 <div class="line">map&lt;sstr_t, int&gt; tags[];       // array of maps: [{&quot;x&quot;:1},{&quot;y&quot;:2}]</div>
 </div><!-- fragment --><p>In generated C code, each map is represented as a dynamic array of key-value entries:</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>json_map_int { <span class="keyword">struct </span>json_map_entry_int* entries; <span class="keywordtype">int</span> len; };</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md18"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md21"></a>
 Tagged unions (oneof)</h2>
 <p>Tagged unions (discriminated unions) represent a value that can be one of several types, identified by a discriminator tag field in JSON:</p>
 <div class="fragment"><div class="line">struct Circle {</div>
@@ -331,13 +365,23 @@ Tagged unions (oneof)</h2>
 <li>Each variant references a previously defined struct.</li>
 <li>JSON uses a flattened representation: <code>{"type":"circle","radius":5.0}</code>.</li>
 </ul>
+<h2><a class="anchor" id="autotoc_md22"></a>
+&lt;tt&gt;@deprecated&lt;/tt&gt; Annotation</h2>
+<p>Mark fields, enum values, or oneof variants as deprecated:</p>
+<div class="fragment"><div class="line">struct Config {</div>
+<div class="line">    int timeout_ms;</div>
+<div class="line">    @deprecated int timeout_sec;  // use timeout_ms instead</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line">enum Status { ACTIVE, @deprecated INACTIVE, ARCHIVED };</div>
+</div><!-- fragment --><p>Deprecated items remain fully functional in marshal/unmarshal. The generated C code annotates them with compiler deprecation attributes so downstream code that accesses them gets a warning. See doc/schema-evolution.md for migration patterns and compatibility rules.</p>
 <p>Oneof types can be used as fields in structs:</p>
 <div class="fragment"><div class="line">struct Drawing {</div>
 <div class="line">    sstr_t name;</div>
 <div class="line">    Shape shape;       // scalar oneof</div>
 <div class="line">    Shape shapes[];    // dynamic array of oneof</div>
 <div class="line">}</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md19"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md23"></a>
 The JSON API</h1>
 <div class="fragment"><div class="line"><span class="comment">// initialize a struct</span></div>
 <div class="line"><span class="comment">// always return 0</span></div>
@@ -390,15 +434,16 @@ The JSON API</h1>
 <li>selected fields that appear in the JSON input replace the old stored field value</li>
 <li>field indices use C member names, not aliased JSON key names</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md20"></a>
+<h1><a class="anchor" id="autotoc_md24"></a>
 More Resources</h1>
 <ul>
 <li><a class="el" href="md_docs_2GETTING__STARTED.html">docs/GETTING_STARTED.md</a> – step-by-step tutorial with code snippets.</li>
 <li><a href="example/">example/</a> – real schemas plus sample host programs.</li>
 <li><a href="https://zltl.github.io/json-gen-c/">Online reference</a> – API documentation generated via Doxygen.</li>
 <li><a href="doc/json-gen-c.1">doc/json-gen-c.1</a> – manual page installed with the CLI.</li>
+<li>doc/schema-evolution.md – schema evolution guide (compatibility rules, migration patterns, <code>@deprecated</code>).</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md21"></a>
+<h1><a class="anchor" id="autotoc_md25"></a>
 Contributing &amp; Community</h1>
 <p>We welcome issues, ideas, documentation updates, and code contributions.</p>
 <ul>
@@ -407,7 +452,7 @@ Contributing &amp; Community</h1>
 <li>Share what you build! Open a discussion or PR if you want your project added to a future showcase section.</li>
 </ul>
 <p>Thanks for helping json-gen-c grow. Happy hacking!</p>
-<h1><a class="anchor" id="autotoc_md22"></a>
+<h1><a class="anchor" id="autotoc_md26"></a>
 License</h1>
 <p>Codes of <code>json-gen-c</code> are licensed under GPL-3.0, except for the codes it generated. The copy right of the codes generated by <code>json-gen-c</code> is owned by the user who wrote the struct definition file, same as the copy right of a PDF file generated by Latex is owned by the user who wrote the tex file. </p>
 </div></div><!-- PageDoc -->

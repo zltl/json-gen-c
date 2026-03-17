@@ -1,0 +1,9 @@
+<map id="src/gencode/gencode.h" name="src/gencode/gencode.h">
+<area shape="rect" id="Node000001" title="generate json manipulate codes." alt="" coords="182,5,353,31"/>
+<area shape="rect" id="Node000002" href="$gencode__cbor_8c.html" title="Generate CBOR pack/unpack C code from parsed schema." alt="" coords="5,79,164,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="229,39,130,81,128,76,227,34"/>
+<area shape="rect" id="Node000003" href="$gencode__cpp_8c.html" title="Generate a C++ wrapper header (.gen.hpp) providing RAII classes around the generated C structs,..." alt="" coords="188,79,347,119"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="270,44,270,79,265,79,265,44"/>
+<area shape="rect" id="Node000004" href="$gencode__msgpack_8c.html" title="Generate MessagePack pack/unpack C code from parsed schema." alt="" coords="371,79,529,119"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="308,34,407,76,405,81,305,39"/>
+</map>

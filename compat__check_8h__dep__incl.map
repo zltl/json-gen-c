@@ -1,0 +1,5 @@
+<map id="src/compat/compat_check.h" name="src/compat/compat_check.h">
+<area shape="rect" id="Node000001" title="Schema compatibility checker — compares two parsed schemas and reports safe vs. breaking changes." alt="" coords="5,5,209,31"/>
+<area shape="rect" id="Node000002" href="$compat__check_8c.html" title="Schema compatibility checker implementation." alt="" coords="6,79,209,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,44,110,79,105,79,105,44"/>
+</map>

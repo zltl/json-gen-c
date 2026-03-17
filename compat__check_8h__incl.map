@@ -1,0 +1,16 @@
+<map id="src/compat/compat_check.h" name="src/compat/compat_check.h">
+<area shape="rect" id="Node000001" title="Schema compatibility checker — compares two parsed schemas and reports safe vs. breaking changes." alt="" coords="5,5,209,31"/>
+<area shape="rect" id="Node000002" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="41,79,174,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,31,110,65,105,65,105,31"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="21,225,95,251"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="106,105,69,213,64,212,101,104"/>
+<area shape="rect" id="Node000004" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="112,152,201,177"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="118,103,143,139,139,142,113,106"/>
+<area shape="poly" id="edge5_Node000004_Node000003" title=" " alt="" coords="142,180,87,219,84,215,139,175"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="119,225,194,251"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="159,178,159,212,154,212,154,178"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="218,225,301,251"/>
+<area shape="poly" id="edge6_Node000004_Node000006" title=" " alt="" coords="175,175,233,215,230,219,172,180"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="325,225,396,251"/>
+<area shape="poly" id="edge7_Node000004_Node000007" title=" " alt="" coords="190,175,316,218,314,223,189,180"/>
+</map>

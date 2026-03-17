@@ -1,0 +1,31 @@
+<map id="src/compat/compat_check.c" name="src/compat/compat_check.c">
+<area shape="rect" id="Node000001" title="Schema compatibility checker implementation." alt="" coords="301,5,504,31"/>
+<area shape="rect" id="Node000002" href="$compat__check_8h.html" title="Schema compatibility checker — compares two parsed schemas and reports safe vs. breaking changes." alt="" coords="5,79,187,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="354,33,160,78,158,73,353,28"/>
+<area shape="rect" id="Node000005" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="326,225,415,251"/>
+<area shape="poly" id="edge17_Node000001_Node000005" title=" " alt="" coords="404,31,377,212,372,211,398,31"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="493,225,560,251"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="424,29,454,48,488,75,521,110,546,151,550,167,550,184,542,214,536,212,545,183,545,168,542,153,517,113,485,79,451,52,422,33"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="607,79,678,104"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="442,28,595,73,593,78,440,33"/>
+<area shape="rect" id="Node000011" href="$struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="211,79,365,104"/>
+<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="386,33,320,74,317,69,383,28"/>
+<area shape="rect" id="Node000003" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="117,152,251,177"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="112,102,161,141,157,145,108,106"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="188,299,263,324"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="190,177,221,285,216,286,185,179"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="215,175,328,218,327,223,213,180"/>
+<area shape="poly" id="edge6_Node000005_Node000004" title=" " alt="" coords="348,253,262,295,260,290,346,248"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="489,299,564,324"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="397,248,490,290,488,295,395,253"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="287,299,369,324"/>
+<area shape="poly" id="edge7_Node000005_Node000007" title=" " alt="" coords="366,252,344,288,340,286,361,250"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="394,299,465,324"/>
+<area shape="poly" id="edge8_Node000005_Node000008" title=" " alt="" coords="382,249,413,287,409,290,378,253"/>
+<area shape="poly" id="edge15_Node000011_Node000003" title=" " alt="" coords="273,106,214,146,211,142,270,102"/>
+<area shape="poly" id="edge12_Node000011_Node000004" title=" " alt="" coords="287,105,235,286,230,284,282,104"/>
+<area shape="poly" id="edge16_Node000011_Node000005" title=" " alt="" coords="297,103,360,212,355,215,292,106"/>
+<area shape="rect" id="Node000012" href="$diag_8h.html" title="Diagnostic engine for clang&#45;style error reporting." alt="" coords="437,152,531,177"/>
+<area shape="poly" id="edge13_Node000011_Node000012" title=" " alt="" coords="320,102,440,145,438,150,319,107"/>
+<area shape="poly" id="edge14_Node000012_Node000009" title=" " alt="" coords="493,176,515,212,511,215,489,179"/>
+</map>
