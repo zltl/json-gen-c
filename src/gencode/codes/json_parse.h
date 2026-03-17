@@ -70,6 +70,17 @@ enum json_token {
 
 #include <stdint.h>
 
+#ifndef JSON_NESTED_MASK_DEFINED
+#define JSON_NESTED_MASK_DEFINED
+struct json_nested_mask {
+    int field_index;
+    const uint64_t* mask;
+    int mask_word_count;
+    const struct json_nested_mask* sub_masks;
+    int sub_mask_count;
+};
+#endif
+
 struct json_parse_param {
     void* instance_ptr;
     int in_array;
@@ -79,6 +90,8 @@ struct json_parse_param {
     const char* field_name;
     const uint64_t* field_mask;
     int field_mask_word_count;
+    const struct json_nested_mask* nested_masks;
+    int nested_mask_count;
 };
 
 struct json_pos {

@@ -934,6 +934,17 @@ static int json_field_is_selected(const struct json_parse_param* param,
 
 static void json_clear_struct_value(void* instance_ptr, const char* struct_name);
 
+static const struct json_nested_mask* json_find_nested_mask(
+        const struct json_parse_param* param, int field_index) {
+    int i;
+    for (i = 0; i < param->nested_mask_count; i++) {
+        if (param->nested_masks[i].field_index == field_index) {
+            return &param->nested_masks[i];
+        }
+    }
+    return NULL;
+}
+
 static struct json_field_offset_item* json_array_length_field(
     const struct json_field_offset_item* fi) {
     struct json_field_offset_item* len_fi;
@@ -1291,6 +1302,8 @@ static int json_unmarshal_oneof_internal(sstr_t content, struct json_pos* pos,
     sub.field_name = "";
     sub.field_mask = NULL;
     sub.field_mask_word_count = 0;
+    sub.nested_masks = NULL;
+    sub.nested_mask_count = 0;
     r = json_unmarshal_struct_internal(content, pos, &sub, txt);
     if (r < 0) {
         return -1;
@@ -1706,6 +1719,8 @@ static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
         sub_param.field_name = param->field_name;
         sub_param.field_mask = NULL;
         sub_param.field_mask_word_count = 0;
+        sub_param.nested_masks = NULL;
+        sub_param.nested_mask_count = 0;
 
         int r = json_unmarshal_struct_internal(content, pos, &sub_param, txt);
         
@@ -1896,6 +1911,8 @@ static int json_unmarshal_map_object(sstr_t content, struct json_pos* pos,
                 sub.field_name = "";
                 sub.field_mask = NULL;
                 sub.field_mask_word_count = 0;
+                sub.nested_masks = NULL;
+                sub.nested_mask_count = 0;
                 r = json_unmarshal_struct_internal(content, pos, &sub, txt);
                 break;
             }
@@ -2259,6 +2276,8 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                         sub.field_name = fi->field_name;
                         sub.field_mask = NULL;
                         sub.field_mask_word_count = 0;
+                        sub.nested_masks = NULL;
+                        sub.nested_mask_count = 0;
                         r = json_unmarshal_struct_internal(content, pos,
                                                            &sub, txt);
                         break;
@@ -2330,6 +2349,8 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                     ar_param.field_name = fi->field_name;
                     ar_param.field_mask = NULL;
                     ar_param.field_mask_word_count = 0;
+                    ar_param.nested_masks = NULL;
+                    ar_param.nested_mask_count = 0;
                     int r = json_unmarshal_array_internal(content, pos,
                                                           &ar_param, &len, txt);
                     if (r < 0) {
@@ -2553,6 +2574,8 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
             }
 
             case FIELD_TYPE_STRUCT: {
+                const struct json_nested_mask* nm =
+                    json_find_nested_mask(param, fi->field_index);
                 struct json_parse_param sub_param;
                 sub_param.instance_ptr = param->instance_ptr + fi->offset;
                 sub_param.in_array = 0;
@@ -2560,8 +2583,17 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
                 sub_param.depth = param->depth + 1;
                 sub_param.struct_name = fi->field_type_name;
                 sub_param.field_name = fi->field_name;
-                sub_param.field_mask = NULL;
-                sub_param.field_mask_word_count = 0;
+                if (nm) {
+                    sub_param.field_mask = nm->mask;
+                    sub_param.field_mask_word_count = nm->mask_word_count;
+                    sub_param.nested_masks = nm->sub_masks;
+                    sub_param.nested_mask_count = nm->sub_mask_count;
+                } else {
+                    sub_param.field_mask = NULL;
+                    sub_param.field_mask_word_count = 0;
+                    sub_param.nested_masks = NULL;
+                    sub_param.nested_mask_count = 0;
+                }
                 tk = json_unmarshal_struct_internal(content, pos, &sub_param,
                                                     txt);
                 if (tk == -1) {

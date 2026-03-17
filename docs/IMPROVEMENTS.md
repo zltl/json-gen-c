@@ -304,9 +304,10 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
    - Expanded selective regression coverage to nullable clearing, dynamic/fixed array replacement, nested struct replacement, map replacement, and oneof replacement.
    - Added README/man-page documentation for the generated field-mask API and its current scope limits.
    - Added partial-field benchmarks for `string_heavy` and `nested` to compare targeted extraction against full unmarshal.
+   - **Nested selective parsing (deep):** added `struct json_nested_mask` and `json_unmarshal_selected_X_deep()` API that propagates sub-field masks into nested struct fields. Users can now select individual sub-fields within nested structs (e.g., parse only `embedded.int_val`). Backward-compatible — existing `_selected()` API is unchanged. Added 5 deep-parsing tests covering sub-field selection, null-mask fallback, multiple sub-fields, aliased nested fields, and backward compatibility.
    - SIMD-specific fast paths remain deferred until real benchmark data justifies architecture-specific work.
 
-**Exit criteria:** the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments. **Items 1–4 completed; item 5 now has a first selective-parsing implementation.**
+**Exit criteria:** the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments. **Items 1–4 completed; item 5 now has nested selective-parsing support.**
 
 ### Phase 6: Long-Term Vision
 

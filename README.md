@@ -332,8 +332,35 @@ the JSON input. Unselected top-level fields stay unchanged.
 
 Selected fields are treated as whole-field replacements: if a selected field is a
 string, array, map, nested struct, or oneof, its previous stored value is cleared
-before the new JSON value is parsed. This API does **not** provide nested field
-masks; selecting a nested struct field means replacing that nested field as a whole.
+before the new JSON value is parsed.
+
+#### To Selectively Deserialize Nested Sub-Fields
+
+Use the `_deep` variant to pass sub-field masks into nested structs:
+
+```C
+struct User user;
+User_init(&user);
+
+// Select top-level "profile" field
+uint64_t mask[User_FIELD_MASK_WORD_COUNT] = {0};
+JSON_GEN_C_FIELD_MASK_SET(mask, User_FIELD_profile);
+
+// Only parse Profile.name inside the nested struct
+uint64_t inner[Profile_FIELD_MASK_WORD_COUNT] = {0};
+JSON_GEN_C_FIELD_MASK_SET(inner, Profile_FIELD_name);
+
+struct json_nested_mask nested[] = {
+    { User_FIELD_profile, inner, Profile_FIELD_MASK_WORD_COUNT, NULL, 0 }
+};
+json_unmarshal_selected_User_deep(json_str, &user,
+                                  mask, User_FIELD_MASK_WORD_COUNT,
+                                  nested, 1);
+```
+
+When `nested_masks` is `NULL` or no entry matches a field, the nested struct is
+parsed in full (same as the non-deep API). Sub-masks can be chained recursively
+via the `sub_masks` / `sub_mask_count` members for deeper nesting levels.
 
 Field-mask constants use the generated **C field names**, even when `@json`
 aliases change the JSON key names.
@@ -482,6 +509,15 @@ int json_unmarshal_selected_<struct_name>(
     struct <struct_name> *obj,
     const uint64_t *field_mask,
     int field_mask_word_count);
+
+// selectively unmarshal with nested sub-field masks
+int json_unmarshal_selected_<struct_name>_deep(
+    sstr_t in,
+    struct <struct_name> *obj,
+    const uint64_t *field_mask,
+    int field_mask_word_count,
+    const struct json_nested_mask *nested_masks,
+    int nested_mask_count);
 ```
 
 Use the generated helper macros to manage mask bits:
@@ -492,12 +528,13 @@ JSON_GEN_C_FIELD_MASK_CLEAR(mask_words, field_index);
 JSON_GEN_C_FIELD_MASK_TEST(mask_words, field_index);
 ```
 
-For `json_unmarshal_selected_<struct_name>()`:
+For `json_unmarshal_selected_<struct_name>()` and `_deep()`:
 
 - passing `NULL` or too few mask words returns an error
 - unselected top-level fields are left unchanged
 - selected fields that appear in the JSON input replace the old stored field value
 - field indices use C member names, not aliased JSON key names
+- `_deep` additionally accepts `json_nested_mask` entries for sub-field selection within nested structs
 
 ## More Resources
 

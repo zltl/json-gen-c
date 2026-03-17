@@ -218,6 +218,172 @@ TEST(SelectiveParseTest, ReplacesMapField) {
     MapIntStruct_clear(&obj);
 }
 
+// ---- Deep (nested) selective parsing tests ----
+
+TEST(SelectiveParseTest, DeepNestedSubFieldSelection) {
+    // Select NestedStruct.embedded, but only parse TestStruct.int_val
+    struct NestedStruct obj;
+    NestedStruct_init(&obj);
+    obj.id = 42;
+    obj.name = sstr("keep-me");
+
+    uint64_t mask[NestedStruct_FIELD_MASK_WORD_COUNT] = {0};
+    JSON_GEN_C_FIELD_MASK_SET(mask, NestedStruct_FIELD_embedded);
+
+    uint64_t inner[TestStruct_FIELD_MASK_WORD_COUNT] = {0};
+    JSON_GEN_C_FIELD_MASK_SET(inner, TestStruct_FIELD_int_val);
+
+    struct json_nested_mask nested[] = {
+        { NestedStruct_FIELD_embedded, inner,
+          TestStruct_FIELD_MASK_WORD_COUNT, NULL, 0 }
+    };
+
+    sstr_t json = sstr(
+        "{\"id\":99,\"name\":\"new-name\","
+        "\"embedded\":{\"int_val\":7,\"long_val\":100,"
+        "\"float_val\":1.5,\"double_val\":2.5,"
+        "\"bool_val\":true,\"sstr_val\":\"hello\"}}");
+    ASSERT_EQ(json_unmarshal_selected_NestedStruct_deep(
+                  json, &obj, mask, NestedStruct_FIELD_MASK_WORD_COUNT,
+                  nested, 1),
+              0);
+
+    // Unselected top-level fields keep original values
+    EXPECT_EQ(obj.id, 42);
+    EXPECT_EQ(sstr_compare_c(obj.name, "keep-me"), 0);
+    // Selected sub-field parsed
+    EXPECT_EQ(obj.embedded.int_val, 7);
+    // Unselected sub-fields stay at init (0/NULL)
+    EXPECT_EQ(obj.embedded.long_val, 0);
+    EXPECT_FLOAT_EQ(obj.embedded.float_val, 0.0f);
+    EXPECT_DOUBLE_EQ(obj.embedded.double_val, 0.0);
+    EXPECT_EQ(obj.embedded.bool_val, 0);
+    EXPECT_EQ(obj.embedded.sstr_val, nullptr);
+
+    sstr_free(json);
+    NestedStruct_clear(&obj);
+}
+
+TEST(SelectiveParseTest, DeepWithNullNestedMasksFullyParsesNestedStruct) {
+    // When nested_masks is NULL, _deep behaves like _selected (full parse of nested struct)
+    struct NestedStruct obj;
+    NestedStruct_init(&obj);
+    obj.id = 42;
+
+    uint64_t mask[NestedStruct_FIELD_MASK_WORD_COUNT] = {0};
+    JSON_GEN_C_FIELD_MASK_SET(mask, NestedStruct_FIELD_embedded);
+
+    sstr_t json = sstr(
+        "{\"id\":99,"
+        "\"embedded\":{\"int_val\":7,\"sstr_val\":\"hello\"}}");
+    ASSERT_EQ(json_unmarshal_selected_NestedStruct_deep(
+                  json, &obj, mask, NestedStruct_FIELD_MASK_WORD_COUNT,
+                  NULL, 0),
+              0);
+
+    EXPECT_EQ(obj.id, 42);
+    EXPECT_EQ(obj.embedded.int_val, 7);
+    EXPECT_EQ(sstr_compare_c(obj.embedded.sstr_val, "hello"), 0);
+
+    sstr_free(json);
+    NestedStruct_clear(&obj);
+}
+
+TEST(SelectiveParseTest, DeepMultipleSubFields) {
+    // Select two sub-fields: int_val and sstr_val
+    struct NestedStruct obj;
+    NestedStruct_init(&obj);
+
+    uint64_t mask[NestedStruct_FIELD_MASK_WORD_COUNT] = {0};
+    JSON_GEN_C_FIELD_MASK_SET(mask, NestedStruct_FIELD_embedded);
+
+    uint64_t inner[TestStruct_FIELD_MASK_WORD_COUNT] = {0};
+    JSON_GEN_C_FIELD_MASK_SET(inner, TestStruct_FIELD_int_val);
+    JSON_GEN_C_FIELD_MASK_SET(inner, TestStruct_FIELD_sstr_val);
+
+    struct json_nested_mask nested[] = {
+        { NestedStruct_FIELD_embedded, inner,
+          TestStruct_FIELD_MASK_WORD_COUNT, NULL, 0 }
+    };
+
+    sstr_t json = sstr(
+        "{\"embedded\":{\"int_val\":42,\"long_val\":100,"
+        "\"float_val\":1.5,\"sstr_val\":\"picked\"}}");
+    ASSERT_EQ(json_unmarshal_selected_NestedStruct_deep(
+                  json, &obj, mask, NestedStruct_FIELD_MASK_WORD_COUNT,
+                  nested, 1),
+              0);
+
+    EXPECT_EQ(obj.embedded.int_val, 42);
+    EXPECT_EQ(sstr_compare_c(obj.embedded.sstr_val, "picked"), 0);
+    EXPECT_EQ(obj.embedded.long_val, 0);
+    EXPECT_FLOAT_EQ(obj.embedded.float_val, 0.0f);
+
+    sstr_free(json);
+    NestedStruct_clear(&obj);
+}
+
+TEST(SelectiveParseTest, DeepAliasedNestedSubFieldSelection) {
+    // Use _deep on AliasNested: select only addr.street
+    struct AliasNested obj;
+    AliasNested_init(&obj);
+    obj.info.name = sstr("keep-user");
+    obj.info.age = sstr("21");
+
+    uint64_t mask[AliasNested_FIELD_MASK_WORD_COUNT] = {0};
+    JSON_GEN_C_FIELD_MASK_SET(mask, AliasNested_FIELD_addr);
+
+    uint64_t inner[House_FIELD_MASK_WORD_COUNT] = {0};
+    JSON_GEN_C_FIELD_MASK_SET(inner, House_FIELD_street);
+
+    struct json_nested_mask nested[] = {
+        { AliasNested_FIELD_addr, inner,
+          House_FIELD_MASK_WORD_COUNT, NULL, 0 }
+    };
+
+    sstr_t json = sstr(
+        "{\"user_info\":{\"name\":\"new-user\",\"age\":\"44\"},"
+        "\"home_address\":{\"number\":\"42\",\"street\":\"Main St\"}}");
+    ASSERT_EQ(json_unmarshal_selected_AliasNested_deep(
+                  json, &obj, mask, AliasNested_FIELD_MASK_WORD_COUNT,
+                  nested, 1),
+              0);
+
+    // Unselected top-level field preserved
+    EXPECT_EQ(sstr_compare_c(obj.info.name, "keep-user"), 0);
+    EXPECT_EQ(sstr_compare_c(obj.info.age, "21"), 0);
+    // Selected sub-field parsed
+    EXPECT_EQ(sstr_compare_c(obj.addr.street, "Main St"), 0);
+    // Unselected sub-field stays at init
+    EXPECT_EQ(obj.addr.number, nullptr);
+
+    sstr_free(json);
+    AliasNested_clear(&obj);
+}
+
+TEST(SelectiveParseTest, DeepBackwardCompatWithExistingSelectedAPI) {
+    // Existing _selected() still works exactly as before
+    struct NestedStruct obj;
+    NestedStruct_init(&obj);
+    obj.id = 42;
+
+    uint64_t mask[NestedStruct_FIELD_MASK_WORD_COUNT] = {0};
+    JSON_GEN_C_FIELD_MASK_SET(mask, NestedStruct_FIELD_embedded);
+
+    sstr_t json = sstr(
+        "{\"id\":99,\"embedded\":{\"int_val\":7,\"sstr_val\":\"hello\"}}");
+    ASSERT_EQ(json_unmarshal_selected_NestedStruct(
+                  json, &obj, mask, NestedStruct_FIELD_MASK_WORD_COUNT),
+              0);
+
+    EXPECT_EQ(obj.id, 42);
+    EXPECT_EQ(obj.embedded.int_val, 7);
+    EXPECT_EQ(sstr_compare_c(obj.embedded.sstr_val, "hello"), 0);
+
+    sstr_free(json);
+    NestedStruct_clear(&obj);
+}
+
 TEST(SelectiveParseTest, ReplacesOneofField) {
     struct Drawing obj;
     Drawing_init(&obj);

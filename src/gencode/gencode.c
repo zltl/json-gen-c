@@ -326,7 +326,9 @@ static void gen_code_struct_unmarshal_struct(struct struct_container* st,
                       "    param.in_struct = 1;\n"
                       "    param.depth = 0;\n"
                       "    param.field_mask = NULL;\n"
-                      "    param.field_mask_word_count = 0;\n");
+                      "    param.field_mask_word_count = 0;\n"
+                      "    param.nested_masks = NULL;\n"
+                      "    param.nested_mask_count = 0;\n");
     sstr_printf_append(source, "    param.struct_name = \"%S\";\n", st->name);
     sstr_append_cstr(
         source,
@@ -360,7 +362,9 @@ static void gen_code_struct_unmarshal_array_struct(struct struct_container* st,
                       "    ar_param.in_struct = 0;\n"
                       "    ar_param.depth = 0;\n"
                       "    ar_param.field_mask = NULL;\n"
-                      "    ar_param.field_mask_word_count = 0;\n");
+                      "    ar_param.field_mask_word_count = 0;\n"
+                      "    ar_param.nested_masks = NULL;\n"
+                      "    ar_param.nested_mask_count = 0;\n");
     sstr_printf_append(source, "    ar_param.struct_name = \"%S\";\n",
                        st->name);
     sstr_append_cstr(source,
@@ -411,7 +415,74 @@ static void gen_code_struct_unmarshal_selected_struct(
                      "    param.in_struct = 1;\n"
                      "    param.depth = 0;\n"
                      "    param.field_mask = field_mask;\n"
-                     "    param.field_mask_word_count = field_mask_word_count;\n");
+                     "    param.field_mask_word_count = field_mask_word_count;\n"
+                     "    param.nested_masks = NULL;\n"
+                     "    param.nested_mask_count = 0;\n");
+    sstr_printf_append(source, "    param.struct_name = \"%S\";\n", st->name);
+    sstr_append_cstr(
+        source,
+        "    sstr_t txt = sstr_new();\n"
+        "    int r = json_unmarshal_struct_internal(in, &pos, &param, txt);\n"
+        "    if (r < 0) {\n"
+        "#ifdef JSON_DEBUG\n"
+        "        printf(\"ERROR: %s\", sstr_cstr(txt));\n"
+        "#endif\n");
+    sstr_printf_append(source, "        %S_clear(obj);\n", st->name);
+    sstr_append_cstr(source,
+                     "    }\n"
+                     "    sstr_free(txt);\n"
+                     "    return r;\n"
+                     "}\n\n");
+}
+
+static void gen_code_struct_unmarshal_selected_deep_header(
+    struct struct_container* st, sstr_t header) {
+    sstr_printf_append(
+        header,
+        "/**\n"
+        " * @brief Selectively unmarshal JSON with nested sub-field masks.\n"
+        " * Like json_unmarshal_selected_%S but allows passing sub-masks\n"
+        " * for nested struct fields via json_nested_mask.\n"
+        " */\n",
+        st->name);
+    sstr_printf_append(
+        header,
+        "int json_unmarshal_selected_%S_deep(sstr_t in, struct %S* obj, "
+        "const uint64_t* field_mask, int field_mask_word_count, "
+        "const struct json_nested_mask* nested_masks, "
+        "int nested_mask_count);\n\n",
+        st->name, st->name);
+}
+
+static void gen_code_struct_unmarshal_selected_deep_struct(
+    struct struct_container* st, sstr_t source) {
+    sstr_printf_append(
+        source,
+        "int json_unmarshal_selected_%S_deep(sstr_t in, struct %S* obj, "
+        "const uint64_t* field_mask, int field_mask_word_count, "
+        "const struct json_nested_mask* nested_masks, "
+        "int nested_mask_count) {\n",
+        st->name, st->name);
+    sstr_printf_append(
+        source,
+        "    if (field_mask == NULL || field_mask_word_count < "
+        "%S_FIELD_MASK_WORD_COUNT) {\n"
+        "        return -1;\n"
+        "    }\n",
+        st->name);
+    sstr_append_cstr(source,
+                     "    struct json_pos pos;\n"
+                     "    pos.col = 0; pos.line = 0; pos.offset = 0;\n"
+                     "    struct json_parse_param param;\n"
+                     "    param.instance_ptr = obj;\n"
+                     "    param.field_name = \"\";\n"
+                     "    param.in_array = 0;\n"
+                     "    param.in_struct = 1;\n"
+                     "    param.depth = 0;\n"
+                     "    param.field_mask = field_mask;\n"
+                     "    param.field_mask_word_count = field_mask_word_count;\n"
+                     "    param.nested_masks = nested_masks;\n"
+                     "    param.nested_mask_count = nested_mask_count;\n");
     sstr_printf_append(source, "    param.struct_name = \"%S\";\n", st->name);
     sstr_append_cstr(
         source,
@@ -1467,6 +1538,7 @@ static void gen_code_struct(struct struct_container* st, sstr_t source,
     // type definitions and function declares.
     gen_code_struct_header(st, header);
     gen_code_struct_selective_unmarshal_header(st, header);
+    gen_code_struct_unmarshal_selected_deep_header(st, header);
     // XXX_init()
     gen_code_struct_init(st, source);
     // XXX_clear()
@@ -1477,6 +1549,8 @@ static void gen_code_struct(struct struct_container* st, sstr_t source,
     gen_code_struct_unmarshal_struct(st, source);
     // json_unmarshal_selected_XXX()
     gen_code_struct_unmarshal_selected_struct(st, source);
+    // json_unmarshal_selected_XXX_deep()
+    gen_code_struct_unmarshal_selected_deep_struct(st, source);
     // json_unmarshal_array_XXX()
     gen_code_struct_unmarshal_array_struct(st, source);
     // json_marshal_array_XXX()
@@ -1993,7 +2067,17 @@ int gencode_head_guard_begin(sstr_t head) {
         "        ~(UINT64_C(1) << ((field_index) % 64u)))\n"
         "#define JSON_GEN_C_FIELD_MASK_TEST(mask_words, field_index) \\\n"
         "    (((mask_words)[(field_index) / 64u] & \\\n"
-        "        (UINT64_C(1) << ((field_index) % 64u))) != 0)\n\n");
+        "        (UINT64_C(1) << ((field_index) % 64u))) != 0)\n\n"
+        "#ifndef JSON_NESTED_MASK_DEFINED\n"
+        "#define JSON_NESTED_MASK_DEFINED\n"
+        "struct json_nested_mask {\n"
+        "    int field_index;\n"
+        "    const uint64_t* mask;\n"
+        "    int mask_word_count;\n"
+        "    const struct json_nested_mask* sub_masks;\n"
+        "    int sub_mask_count;\n"
+        "};\n"
+        "#endif\n\n");
     sstr_append_cstr(
         head,
         "/**\n"

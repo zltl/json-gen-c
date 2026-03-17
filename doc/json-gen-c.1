@@ -247,6 +247,14 @@ int json_unmarshal_selected_T(sstr_t in,
     struct T *obj,
     const uint64_t *field_mask,
     int field_mask_word_count);
+
+// Selectively unmarshal with nested sub\-field masks
+int json_unmarshal_selected_T_deep(sstr_t in,
+    struct T *obj,
+    const uint64_t *field_mask,
+    int field_mask_word_count,
+    const struct json_nested_mask *nested_masks,
+    int nested_mask_count);
 \f[R]
 .fi
 .PP
@@ -266,7 +274,7 @@ JSON_GEN_C_FIELD_MASK_TEST(mask_words, field_index);
 \f[R]
 .fi
 .PP
-For \f[C]json_unmarshal_selected_T()\f[R]:
+For \f[C]json_unmarshal_selected_T()\f[R] and \f[C]_deep()\f[R]:
 .IP \[bu] 2
 Passing \f[C]NULL\f[R] or too few mask words returns an error.
 .IP \[bu] 2
@@ -275,8 +283,9 @@ Unselected top\-level fields remain unchanged.
 Selected fields present in the JSON input replace the old stored field
 value as a whole field.
 .IP \[bu] 2
-Selecting a nested struct / oneof / array / map field replaces that
-top\-level field; there is no nested field mask in this first version.
+The \f[C]_deep\f[R] variant accepts \f[C]json_nested_mask\f[R] entries
+to select individual sub\-fields within nested struct fields.
+When no nested mask matches a field, the nested struct is parsed in full.
 .IP \[bu] 2
 Field indices use generated C member names even when \f[C]@json\f[R]
 aliases rename the JSON keys.
