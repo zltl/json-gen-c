@@ -19,6 +19,10 @@ GENERATED_OBJECTS := $(patsubst %.c,$(TEST_BUILD)/%.o,$(GENERATED_SOURCES))
 MSGPACK_GENERATED_SOURCES := msgpack.gen.c
 MSGPACK_GENERATED_OBJECTS := $(patsubst %.c,$(TEST_BUILD)/%.o,$(MSGPACK_GENERATED_SOURCES))
 
+# CBOR generated files
+CBOR_GENERATED_SOURCES := cbor.gen.c
+CBOR_GENERATED_OBJECTS := $(patsubst %.c,$(TEST_BUILD)/%.o,$(CBOR_GENERATED_SOURCES))
+
 # Test executables
 UNIT_TEST := $(TEST_BUILD)/unit_test
 ENHANCED_TEST := $(TEST_BUILD)/enhanced_test
@@ -41,9 +45,10 @@ EDGE_CASE_TEST := $(TEST_BUILD)/edge_case_test
 SELECTIVE_PARSE_TEST := $(TEST_BUILD)/selective_parse_test
 COMPAT_CHECK_TEST := $(TEST_BUILD)/compat_check_test
 MSGPACK_TEST := $(TEST_BUILD)/msgpack_test
+CBOR_TEST := $(TEST_BUILD)/cbor_test
 
 # All test targets
-ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST) $(DIAGNOSTIC_TEST) $(ALIAS_TEST) $(DEFAULT_VALUE_TEST) $(ALLOCATOR_TEST) $(ONEOF_TEST) $(EDGE_CASE_TEST) $(SELECTIVE_PARSE_TEST) $(COMPAT_CHECK_TEST) $(MSGPACK_TEST)
+ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST) $(DIAGNOSTIC_TEST) $(ALIAS_TEST) $(DEFAULT_VALUE_TEST) $(ALLOCATOR_TEST) $(ONEOF_TEST) $(EDGE_CASE_TEST) $(SELECTIVE_PARSE_TEST) $(COMPAT_CHECK_TEST) $(MSGPACK_TEST) $(CBOR_TEST)
 
 #==============================================================================
 # Build rules
@@ -61,9 +66,15 @@ msgpack.gen.c: msgpack_test_schema.json-gen-c $(JSON_GEN_C)
 	@echo "Generating msgpack test structures..."
 	$(JSON_GEN_C) --format msgpack -in msgpack_test_schema.json-gen-c -out .
 
+# Generate cbor test structures
+cbor.gen.c: cbor_test_schema.json-gen-c $(JSON_GEN_C)
+	@echo "Generating cbor test structures..."
+	$(JSON_GEN_C) --format cbor -in cbor_test_schema.json-gen-c -out .
+
 # Compile generated C files
 $(foreach src,$(GENERATED_SOURCES),$(eval $(call compile-c,$(src),$(patsubst %.c,$(TEST_BUILD)/%.o,$(src)),-I. -I$(ROOT_DIR)/src -I$(ROOT_DIR)/src/utils)))
 $(foreach src,$(MSGPACK_GENERATED_SOURCES),$(eval $(call compile-c,$(src),$(patsubst %.c,$(TEST_BUILD)/%.o,$(src)),-I. -I$(ROOT_DIR)/src -I$(ROOT_DIR)/src/utils)))
+$(foreach src,$(CBOR_GENERATED_SOURCES),$(eval $(call compile-c,$(src),$(patsubst %.c,$(TEST_BUILD)/%.o,$(src)),-I. -I$(ROOT_DIR)/src -I$(ROOT_DIR)/src/utils)))
 
 # Compile test C++ files (JSON tests)
 $(foreach src,$(TEST_SOURCES),$(eval $(call compile-cxx,$(src),$(patsubst %.cc,$(TEST_BUILD)/%.o,$(src)),-I.)))
@@ -71,9 +82,13 @@ $(foreach src,$(TEST_SOURCES),$(eval $(call compile-cxx,$(src),$(patsubst %.cc,$
 # Compile msgpack test C++ file (depends on msgpack.gen.h)
 $(eval $(call compile-cxx,msgpack_test.cc,$(TEST_BUILD)/msgpack_test.o,-I.))
 
+# Compile cbor test C++ file (depends on cbor.gen.h)
+$(eval $(call compile-cxx,cbor_test.cc,$(TEST_BUILD)/cbor_test.o,-I.))
+
 # Make test objects depend on generated files
 $(TEST_OBJECTS): json.gen.c
 $(TEST_BUILD)/msgpack_test.o: msgpack.gen.c
+$(TEST_BUILD)/cbor_test.o: cbor.gen.c
 
 # Link test executables
 $(UNIT_TEST): $(TEST_BUILD)/simple_test.o $(TEST_BUILD)/struct_test.o $(GENERATED_OBJECTS)
@@ -181,6 +196,11 @@ $(MSGPACK_TEST): $(TEST_BUILD)/msgpack_test.o $(MSGPACK_GENERATED_OBJECTS) $(TES
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
 
+$(CBOR_TEST): $(TEST_BUILD)/cbor_test.o $(CBOR_GENERATED_OBJECTS) $(TEST_BUILD)/sstr.o
+	@echo "Linking cbor tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
 #==============================================================================
 # Test execution
 #==============================================================================
@@ -229,6 +249,8 @@ run: $(ALL_TESTS)
 	$(COMPAT_CHECK_TEST)
 	@echo "=== MessagePack Tests ==="
 	$(MSGPACK_TEST)
+	@echo "=== CBOR Tests ==="
+	$(CBOR_TEST)
 	@echo "=== Bugfix Tests ==="
 	$(MAKE) run-bugfix
 	@echo "All tests completed successfully!"

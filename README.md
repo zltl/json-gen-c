@@ -201,6 +201,17 @@ json-gen-c --format msgpack -in struct.json-gen-c -out .
 This generates `msgpack.gen.h` and `msgpack.gen.c` with `msgpack_pack_*` / `msgpack_unpack_*` functions.
 The struct definitions and `sstr` helper are identical regardless of format.
 
+#### CBOR Format
+
+To generate CBOR (RFC 8949) binary serialization:
+
+```bash
+json-gen-c --format cbor -in struct.json-gen-c -out .
+```
+
+This generates `cbor.gen.h` and `cbor.gen.c` with `cbor_pack_*` / `cbor_unpack_*` functions.
+Same struct definitions and API patterns as JSON and MessagePack.
+
 ### Use Your Generated Codes
 
 #### To Serialize Structs to JSON

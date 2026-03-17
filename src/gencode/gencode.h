@@ -19,6 +19,8 @@ extern "C" {
 #define OUTPUT_H_FILENAME "json.gen.h"
 #define OUTPUT_MSGPACK_C_FILENAME "msgpack.gen.c"
 #define OUTPUT_MSGPACK_H_FILENAME "msgpack.gen.h"
+#define OUTPUT_CBOR_C_FILENAME "cbor.gen.c"
+#define OUTPUT_CBOR_H_FILENAME "cbor.gen.h"
 
 /**
  * @brief generate json manipulate codes by struct_map, enum_map and oneof_map into source and header.
@@ -47,6 +49,12 @@ extern int gencode_source(struct hash_map* struct_map, struct hash_map* enum_map
  */
 extern int gencode_msgpack_source(struct hash_map* struct_map, struct hash_map* enum_map,
                                   struct hash_map* oneof_map, sstr_t source, sstr_t header);
+
+/**
+ * @brief generate CBOR (RFC 8949) pack/unpack codes.
+ */
+extern int gencode_cbor_source(struct hash_map* struct_map, struct hash_map* enum_map,
+                               struct hash_map* oneof_map, sstr_t source, sstr_t header);
 
 #ifdef __cplusplus
 }

@@ -1,3 +1,4 @@
 json.gen*
 msgpack.gen*
+cbor.gen*
 sstr*

@@ -10,7 +10,7 @@ json\-gen\-c \- generate C code for JSON serialization and deserialization
 .RB [ \-out
 .IR output_dir ]
 .RB [ \-\-format
-.IR json | msgpack ]
+.IR json | msgpack | cbor ]
 .br
 .B json\-gen\-c
 .BR \-h | \-\-help
@@ -340,6 +340,8 @@ Select output serialization format.
 (default) generates JSON marshal/unmarshal code.
 .B msgpack
 generates MessagePack binary pack/unpack code.
+.B cbor
+generates CBOR (RFC 8949) binary pack/unpack code.
 .TP
 .BI \-\-check\-compat " old_schema new_schema"
 Compare two schema files and report compatibility.

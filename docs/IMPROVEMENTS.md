@@ -317,7 +317,8 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 2. ~~Consider additional generated serialization formats.~~
     - ~~MessagePack~~
     - **Completed:** `--format msgpack` generates `msgpack.gen.h` + `msgpack.gen.c` with `msgpack_pack_*`/`msgpack_unpack_*` functions. Embedded binary codec runtime (`msgpack_codec.c/h`). Full type support: scalars, strings, bools, enums (string-encoded), nested structs, fixed/dynamic arrays, maps, optional/nullable fields, precise-width integers, `@json` aliases, default values, and `oneof` tagged unions. 27 round-trip tests.
-    - CBOR (future — very similar wire format to MessagePack)
+    - ~~CBOR (future — very similar wire format to MessagePack)~~
+    - **Completed:** `--format cbor` generates `cbor.gen.h` + `cbor.gen.c` with `cbor_pack_*`/`cbor_unpack_*` functions. Embedded CBOR codec runtime (`cbor_codec.c/h`) implementing RFC 8949. Same full type support as MessagePack. 27 round-trip tests.
 3. Explore multi-language bindings or code generation targets.
     - C++
     - Rust

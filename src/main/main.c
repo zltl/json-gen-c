@@ -17,6 +17,7 @@
 enum output_format {
     FORMAT_JSON = 0,
     FORMAT_MSGPACK = 1,
+    FORMAT_CBOR = 2,
 };
 
 /**
@@ -25,13 +26,13 @@ enum output_format {
  */
 static void usage(FILE *stream) {
     fprintf(stream,
-        "Usage: json-gen-c -out <output_dir> -in <input_file> [--format json|msgpack]\n"
+        "Usage: json-gen-c -out <output_dir> -in <input_file> [--format json|msgpack|cbor]\n"
         "       json-gen-c --check-compat <old_schema> <new_schema>\n"
         "Generate serialization C code from struct definition.\n\n"
         "Options:\n"
         "    -in <input_file>     Specify the input struct definition file.\n"
         "    -out <output_dir>    Specify the output codes location, default to current directory\n"
-        "    --format <format>    Output format: json (default) or msgpack\n"
+        "    --format <format>    Output format: json (default), msgpack, or cbor\n"
         "    --check-compat       Compare two schemas and report compatibility.\n"
         "    -h, --help           Show this help message\n"
         "    -v, --version        Show version information\n\n"
@@ -104,8 +105,10 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
                     options->format = FORMAT_JSON;
                 } else if (strcmp(optarg, "msgpack") == 0) {
                     options->format = FORMAT_MSGPACK;
+                } else if (strcmp(optarg, "cbor") == 0) {
+                    options->format = FORMAT_CBOR;
                 } else {
-                    fprintf(stderr, "Error: unknown format '%s' (expected json or msgpack)\n", optarg);
+                    fprintf(stderr, "Error: unknown format '%s' (expected json, msgpack, or cbor)\n", optarg);
                     return JSON_GEN_ERROR_INVALID_PARAM;
                 }
                 break;
@@ -284,6 +287,11 @@ int main(int argc, char **argv) {
                                    parser->oneof_map, source, head);
         out_c_name = OUTPUT_MSGPACK_C_FILENAME;
         out_h_name = OUTPUT_MSGPACK_H_FILENAME;
+    } else if (options.format == FORMAT_CBOR) {
+        r = gencode_cbor_source(parser->struct_map, parser->enum_map,
+                                parser->oneof_map, source, head);
+        out_c_name = OUTPUT_CBOR_C_FILENAME;
+        out_h_name = OUTPUT_CBOR_H_FILENAME;
     } else {
         r = gencode_source(parser->struct_map, parser->enum_map,
                            parser->oneof_map, source, head);
