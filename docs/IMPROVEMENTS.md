@@ -314,9 +314,10 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
     - ~~Forward and backward compatibility rules~~
     - ~~Field lifecycle guidance~~
     - **Completed:** `@deprecated` annotation for struct fields, enum values, and oneof variants. Generated code emits compiler deprecation attributes (`JGENC_DEPRECATED`, `JGENC_DEPRECATED_ENUM`). New `--check-compat old new` CLI mode compares schemas and reports safe vs. breaking changes. Schema evolution guide at `doc/schema-evolution.md` with compatibility rules, migration patterns, and best practices.
-2. Consider additional generated serialization formats.
-    - MessagePack
-    - CBOR
+2. ~~Consider additional generated serialization formats.~~
+    - ~~MessagePack~~
+    - **Completed:** `--format msgpack` generates `msgpack.gen.h` + `msgpack.gen.c` with `msgpack_pack_*`/`msgpack_unpack_*` functions. Embedded binary codec runtime (`msgpack_codec.c/h`). Full type support: scalars, strings, bools, enums (string-encoded), nested structs, fixed/dynamic arrays, maps, optional/nullable fields, precise-width integers, `@json` aliases, default values, and `oneof` tagged unions. 27 round-trip tests.
+    - CBOR (future — very similar wire format to MessagePack)
 3. Explore multi-language bindings or code generation targets.
     - C++
     - Rust
@@ -329,8 +330,11 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 ## Key Files
 
 - `src/struct/struct_parse.c`: schema parser and top-level language handling
-- `src/gencode/gencode.c`: C code generation logic
+- `src/gencode/gencode.c`: C code generation logic (JSON format)
+- `src/gencode/gencode_msgpack.c`: C code generation logic (MessagePack format)
 - `src/gencode/codes/json_parse.c`: embedded JSON runtime template emitted into generated code
+- `src/gencode/codes/msgpack_codec.c`: embedded MessagePack runtime template emitted into generated code
+- `src/gencode/codes/msgpack_codec.h`: MessagePack wire format constants and reader/writer declarations
 - `src/compat/compat_check.c`: schema compatibility checker (`--check-compat`)
 - `src/utils/hash_map.c`: hash map implementation
 - `src/utils/hash.c`: shared hashing primitives

@@ -15,6 +15,10 @@ TEST_OBJECTS := $(patsubst %.cc,$(TEST_BUILD)/%.o,$(TEST_SOURCES))
 GENERATED_SOURCES := json.gen.c sstr.c
 GENERATED_OBJECTS := $(patsubst %.c,$(TEST_BUILD)/%.o,$(GENERATED_SOURCES))
 
+# MessagePack generated files
+MSGPACK_GENERATED_SOURCES := msgpack.gen.c
+MSGPACK_GENERATED_OBJECTS := $(patsubst %.c,$(TEST_BUILD)/%.o,$(MSGPACK_GENERATED_SOURCES))
+
 # Test executables
 UNIT_TEST := $(TEST_BUILD)/unit_test
 ENHANCED_TEST := $(TEST_BUILD)/enhanced_test
@@ -36,9 +40,10 @@ ONEOF_TEST := $(TEST_BUILD)/oneof_test
 EDGE_CASE_TEST := $(TEST_BUILD)/edge_case_test
 SELECTIVE_PARSE_TEST := $(TEST_BUILD)/selective_parse_test
 COMPAT_CHECK_TEST := $(TEST_BUILD)/compat_check_test
+MSGPACK_TEST := $(TEST_BUILD)/msgpack_test
 
 # All test targets
-ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST) $(DIAGNOSTIC_TEST) $(ALIAS_TEST) $(DEFAULT_VALUE_TEST) $(ALLOCATOR_TEST) $(ONEOF_TEST) $(EDGE_CASE_TEST) $(SELECTIVE_PARSE_TEST) $(COMPAT_CHECK_TEST)
+ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST) $(DIAGNOSTIC_TEST) $(ALIAS_TEST) $(DEFAULT_VALUE_TEST) $(ALLOCATOR_TEST) $(ONEOF_TEST) $(EDGE_CASE_TEST) $(SELECTIVE_PARSE_TEST) $(COMPAT_CHECK_TEST) $(MSGPACK_TEST)
 
 #==============================================================================
 # Build rules
@@ -51,14 +56,24 @@ json.gen.c sstr.c: test.json-gen-c $(JSON_GEN_C)
 	@echo "Generating test structures..."
 	$(JSON_GEN_C) -in test.json-gen-c -out .
 
+# Generate msgpack test structures
+msgpack.gen.c: msgpack_test_schema.json-gen-c $(JSON_GEN_C)
+	@echo "Generating msgpack test structures..."
+	$(JSON_GEN_C) --format msgpack -in msgpack_test_schema.json-gen-c -out .
+
 # Compile generated C files
 $(foreach src,$(GENERATED_SOURCES),$(eval $(call compile-c,$(src),$(patsubst %.c,$(TEST_BUILD)/%.o,$(src)),-I. -I$(ROOT_DIR)/src -I$(ROOT_DIR)/src/utils)))
+$(foreach src,$(MSGPACK_GENERATED_SOURCES),$(eval $(call compile-c,$(src),$(patsubst %.c,$(TEST_BUILD)/%.o,$(src)),-I. -I$(ROOT_DIR)/src -I$(ROOT_DIR)/src/utils)))
 
-# Compile test C++ files
+# Compile test C++ files (JSON tests)
 $(foreach src,$(TEST_SOURCES),$(eval $(call compile-cxx,$(src),$(patsubst %.cc,$(TEST_BUILD)/%.o,$(src)),-I.)))
+
+# Compile msgpack test C++ file (depends on msgpack.gen.h)
+$(eval $(call compile-cxx,msgpack_test.cc,$(TEST_BUILD)/msgpack_test.o,-I.))
 
 # Make test objects depend on generated files
 $(TEST_OBJECTS): json.gen.c
+$(TEST_BUILD)/msgpack_test.o: msgpack.gen.c
 
 # Link test executables
 $(UNIT_TEST): $(TEST_BUILD)/simple_test.o $(TEST_BUILD)/struct_test.o $(GENERATED_OBJECTS)
@@ -161,6 +176,11 @@ $(COMPAT_CHECK_TEST): $(TEST_BUILD)/compat_check_test.o
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread -L$(BUILD_DIR)/lib -lstruct -lutils
 
+$(MSGPACK_TEST): $(TEST_BUILD)/msgpack_test.o $(MSGPACK_GENERATED_OBJECTS) $(TEST_BUILD)/sstr.o
+	@echo "Linking msgpack tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
 #==============================================================================
 # Test execution
 #==============================================================================
@@ -207,6 +227,8 @@ run: $(ALL_TESTS)
 	$(SELECTIVE_PARSE_TEST)
 	@echo "=== Compat Check Tests ==="
 	$(COMPAT_CHECK_TEST)
+	@echo "=== MessagePack Tests ==="
+	$(MSGPACK_TEST)
 	@echo "=== Bugfix Tests ==="
 	$(MAKE) run-bugfix
 	@echo "All tests completed successfully!"

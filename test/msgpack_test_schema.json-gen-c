@@ -1,0 +1,95 @@
+enum Color {
+    RED,
+    GREEN,
+    BLUE
+}
+
+struct Scalar {
+    int i;
+    long l;
+    float f;
+    double d;
+    bool b;
+    sstr_t s;
+}
+
+struct Nested {
+    int id;
+    sstr_t name;
+    Scalar inner;
+}
+
+struct WithArrays {
+    int fixed_ints[3];
+    sstr_t dyn_strings[];
+    Scalar dyn_structs[];
+}
+
+struct WithEnum {
+    Color color;
+    Color colors[];
+}
+
+struct WithMap {
+    map<sstr_t, int> scores;
+    map<sstr_t, sstr_t> labels;
+    map<sstr_t, Scalar> structs;
+}
+
+struct WithOptional {
+    int id;
+    optional sstr_t name;
+    optional int score;
+}
+
+struct WithNullable {
+    int id;
+    nullable sstr_t name;
+    nullable int value;
+}
+
+struct WithPrecise {
+    int8_t i8;
+    int16_t i16;
+    int32_t i32;
+    int64_t i64;
+    uint8_t u8;
+    uint16_t u16;
+    uint32_t u32;
+    uint64_t u64;
+}
+
+struct WithAlias {
+    @json "user_name"
+    sstr_t username;
+    @json "created_at"
+    long created;
+    int id;
+}
+
+struct WithDefaults {
+    int count = 42;
+    sstr_t label = "hello";
+    bool active = true;
+    Color color = GREEN;
+}
+
+struct Circle {
+    float radius;
+}
+
+struct Rectangle {
+    float width;
+    float height;
+}
+
+oneof Shape {
+    @tag "type"
+    Circle circle;
+    Rectangle rectangle;
+}
+
+struct Drawing {
+    sstr_t name;
+    Shape shape;
+}

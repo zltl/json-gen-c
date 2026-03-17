@@ -31,6 +31,7 @@ MAIN_OBJECTS := $(patsubst src/main/%.c,$(BUILD_DIR)/obj/main/%.o,$(MAIN_SOURCES
 
 # Extra code generation for gencode
 GENCODE_EXTRA := $(BUILD_DIR)/obj/gencode/extra_codes.inc
+GENCODE_MSGPACK_EXTRA := $(BUILD_DIR)/obj/gencode/extra_codes_msgpack.inc
 MAIN_EXTRA := $(BUILD_DIR)/obj/main/extra_codes_sstr.inc
 
 #==============================================================================
@@ -59,6 +60,13 @@ $(GENCODE_EXTRA): src/gencode/codes/json_parse.c src/gencode/codes/json_parse.h
 	cd src/gencode/codes && xxd -i json_parse.c > $(abspath $@)
 	cd src/gencode/codes && xxd -i json_parse.h >> $(abspath $@)
 
+# Generate extra codes for msgpack codec
+$(GENCODE_MSGPACK_EXTRA): src/gencode/codes/msgpack_codec.c src/gencode/codes/msgpack_codec.h
+	@echo "Generating msgpack extra codes: $@"
+	@mkdir -p $(dir $@)
+	cd src/gencode/codes && xxd -i msgpack_codec.c > $(abspath $@)
+	cd src/gencode/codes && xxd -i msgpack_codec.h >> $(abspath $@)
+
 # Generate extra codes for main (sstr utilities)
 $(MAIN_EXTRA): src/utils/sstr.c src/utils/sstr.h
 	@echo "Generating sstr extra codes: $@"
@@ -72,7 +80,7 @@ $(eval $(call create-lib,$(STRUCT_LIB),$(STRUCT_OBJECTS)))
 $(eval $(call create-lib,$(GENCODE_LIB),$(GENCODE_OBJECTS)))
 
 # Gencode library depends on extra codes
-$(GENCODE_OBJECTS): $(GENCODE_EXTRA)
+$(GENCODE_OBJECTS): $(GENCODE_EXTRA) $(GENCODE_MSGPACK_EXTRA)
 
 # Main objects depend on extra codes
 $(MAIN_OBJECTS): $(MAIN_EXTRA)

@@ -9,6 +9,8 @@ json\-gen\-c \- generate C code for JSON serialization and deserialization
 .I input_file
 .RB [ \-out
 .IR output_dir ]
+.RB [ \-\-format
+.IR json | msgpack ]
 .br
 .B json\-gen\-c
 .BR \-h | \-\-help
@@ -331,6 +333,13 @@ Display a help message and exit.
 .TP
 .BR \-v ", " \-\-version
 Display the version number and exit.
+.TP
+.BI \-\-format " format"
+Select output serialization format.
+.B json
+(default) generates JSON marshal/unmarshal code.
+.B msgpack
+generates MessagePack binary pack/unpack code.
 .TP
 .BI \-\-check\-compat " old_schema new_schema"
 Compare two schema files and report compatibility.

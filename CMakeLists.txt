@@ -66,6 +66,41 @@ else()
     )
 endif()
 
+# extra_codes_msgpack.inc: embed msgpack_codec.c and msgpack_codec.h
+set(GENCODE_MSGPACK_INC "${GENCODE_EXTRA_DIR}/extra_codes_msgpack.inc")
+
+if(XXD_EXECUTABLE)
+    add_custom_command(
+        OUTPUT "${GENCODE_MSGPACK_INC}"
+        COMMAND ${XXD_EXECUTABLE} -i msgpack_codec.c > "${GENCODE_MSGPACK_INC}"
+        COMMAND ${XXD_EXECUTABLE} -i msgpack_codec.h >> "${GENCODE_MSGPACK_INC}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes"
+        DEPENDS
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/msgpack_codec.c"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/msgpack_codec.h"
+        COMMENT "Generating extra_codes_msgpack.inc (msgpack runtime via xxd)"
+    )
+else()
+    add_custom_command(
+        OUTPUT "${GENCODE_MSGPACK_INC}"
+        COMMAND ${CMAKE_COMMAND}
+            -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/msgpack_codec.c"
+            -DVAR_NAME=msgpack_codec_c -DMODE=write
+            -DOUTPUT_FILE="${GENCODE_MSGPACK_INC}"
+            -P "${XXD_SCRIPT}"
+        COMMAND ${CMAKE_COMMAND}
+            -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/msgpack_codec.h"
+            -DVAR_NAME=msgpack_codec_h -DMODE=append
+            -DOUTPUT_FILE="${GENCODE_MSGPACK_INC}"
+            -P "${XXD_SCRIPT}"
+        DEPENDS
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/msgpack_codec.c"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/gencode/codes/msgpack_codec.h"
+            "${XXD_SCRIPT}"
+        COMMENT "Generating extra_codes_msgpack.inc (msgpack runtime via cmake)"
+    )
+endif()
+
 # extra_codes_sstr.inc: embed sstr.c and sstr.h
 set(MAIN_EXTRA_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/main")
 set(MAIN_EXTRA_INC "${MAIN_EXTRA_DIR}/extra_codes_sstr.inc")
@@ -144,7 +179,9 @@ target_link_libraries(json_gen_c_struct PUBLIC json_gen_c_utils)
 #==============================================================================
 add_library(json_gen_c_gencode STATIC
     src/gencode/gencode.c
+    src/gencode/gencode_msgpack.c
     "${GENCODE_EXTRA_INC}"
+    "${GENCODE_MSGPACK_INC}"
 )
 target_include_directories(json_gen_c_gencode PRIVATE
     "${GENCODE_EXTRA_DIR}"

@@ -13,21 +13,28 @@
 #define JSON_GEN_C_VERSION "unknown"
 #endif
 
+/** Output format for code generation. */
+enum output_format {
+    FORMAT_JSON = 0,
+    FORMAT_MSGPACK = 1,
+};
+
 /**
  * @brief Display usage information
  * @param stream Output stream (stdout or stderr)
  */
 static void usage(FILE *stream) {
     fprintf(stream,
-        "Usage: json-gen-c -out <output_dir> -in <input_file>\n"
+        "Usage: json-gen-c -out <output_dir> -in <input_file> [--format json|msgpack]\n"
         "       json-gen-c --check-compat <old_schema> <new_schema>\n"
-        "Generate JSON operating C codes from struct definition.\n\n"
+        "Generate serialization C code from struct definition.\n\n"
         "Options:\n"
-        "    -in <input_file>  Specify the input struct definition file.\n"
-        "    -out <output_dir> Specify the output codes location, default to current directory\n"
-        "    --check-compat    Compare two schemas and report compatibility.\n"
-        "    -h, --help        Show this help message\n"
-        "    -v, --version     Show version information\n\n"
+        "    -in <input_file>     Specify the input struct definition file.\n"
+        "    -out <output_dir>    Specify the output codes location, default to current directory\n"
+        "    --format <format>    Output format: json (default) or msgpack\n"
+        "    --check-compat       Compare two schemas and report compatibility.\n"
+        "    -h, --help           Show this help message\n"
+        "    -v, --version        Show version information\n\n"
         "json-gen-c document: https://github.com/zltl/json-gen-c\n"
         "Report bugs to: https://github.com/zltl/json-gen-c/issues\n");
 }
@@ -40,6 +47,7 @@ struct options {
     char *output_path;     /**< Output directory path */
     char *compat_old;      /**< Old schema for --check-compat */
     char *compat_new;      /**< New schema for --check-compat */
+    enum output_format format; /**< Output serialization format */
 };
 
 /**
@@ -71,6 +79,7 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
     static struct option long_options[] = {
         {"in", required_argument, 0, 'i'},
         {"out", required_argument, 0, 'o'},
+        {"format", required_argument, 0, 'f'},
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'v'},
         {0, 0, 0, 0}
@@ -82,13 +91,23 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
     // Reset getopt index
     optind = 1;
 
-    while ((c = getopt_long_only(argc, argv, "i:o:hv", long_options, &option_index)) != -1) {
+    while ((c = getopt_long_only(argc, argv, "i:o:f:hv", long_options, &option_index)) != -1) {
         switch (c) {
             case 'i':
                 options->input_file = optarg;
                 break;
             case 'o':
                 options->output_path = optarg;
+                break;
+            case 'f':
+                if (strcmp(optarg, "json") == 0) {
+                    options->format = FORMAT_JSON;
+                } else if (strcmp(optarg, "msgpack") == 0) {
+                    options->format = FORMAT_MSGPACK;
+                } else {
+                    fprintf(stderr, "Error: unknown format '%s' (expected json or msgpack)\n", optarg);
+                    return JSON_GEN_ERROR_INVALID_PARAM;
+                }
                 break;
             case 'h':
                 usage(stdout);
@@ -189,7 +208,7 @@ static int run_compat_check(const char *old_path, const char *new_path) {
 
 int main(int argc, char **argv) {
     // Initialize options structure
-    struct options options = {NULL, NULL, NULL, NULL};
+    struct options options = {NULL, NULL, NULL, NULL, FORMAT_JSON};
     
     // Parse command line options
     json_gen_error_t result = options_parse(argc, argv, &options);
@@ -249,15 +268,28 @@ int main(int argc, char **argv) {
         cleanup_and_exit(content, parser, NULL, NULL, JSON_GEN_ERROR_PARSE);
     }
 
-    // Generate the output json.gen.c and json.gen.h files
+    // Generate output code based on selected format
     sstr_t source = sstr_new();
     sstr_t head = sstr_new();
     if (source == NULL || head == NULL) {
         fprintf(stderr, "Error: failed to allocate memory for output generation\n");
         cleanup_and_exit(content, parser, source, head, JSON_GEN_ERROR_MEMORY);
     }
-    
-    r = gencode_source(parser->struct_map, parser->enum_map, parser->oneof_map, source, head);
+
+    const char *out_c_name;
+    const char *out_h_name;
+
+    if (options.format == FORMAT_MSGPACK) {
+        r = gencode_msgpack_source(parser->struct_map, parser->enum_map,
+                                   parser->oneof_map, source, head);
+        out_c_name = OUTPUT_MSGPACK_C_FILENAME;
+        out_h_name = OUTPUT_MSGPACK_H_FILENAME;
+    } else {
+        r = gencode_source(parser->struct_map, parser->enum_map,
+                           parser->oneof_map, source, head);
+        out_c_name = OUTPUT_C_FILENAME;
+        out_h_name = OUTPUT_H_FILENAME;
+    }
     if (r < 0) {
         fprintf(stderr, "Error: code generation failed\n");
         cleanup_and_exit(content, parser, source, head, JSON_GEN_ERROR_GENERAL);
@@ -272,9 +304,9 @@ int main(int argc, char **argv) {
     }
     
     sstr_append_of(out_c_file, "/", 1);
-    sstr_append_of(out_c_file, OUTPUT_C_FILENAME, strlen(OUTPUT_C_FILENAME));
+    sstr_append_of(out_c_file, out_c_name, strlen(out_c_name));
     sstr_append_of(out_h_file, "/", 1);
-    sstr_append_of(out_h_file, OUTPUT_H_FILENAME, strlen(OUTPUT_H_FILENAME));
+    sstr_append_of(out_h_file, out_h_name, strlen(out_h_name));
     
     if (write_file(sstr_cstr(out_c_file), source) != 0) {
         fprintf(stderr, "Error: failed to write output C file '%s'\n", sstr_cstr(out_c_file));

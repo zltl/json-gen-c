@@ -190,6 +190,17 @@ This generates the following files in your specified destination directory:
 - `sstr.h`, `sstr.c`, the string manipulation helper functions that 
   generated code depends on.
 
+#### MessagePack Format
+
+To generate MessagePack (binary) serialization instead of JSON:
+
+```bash
+json-gen-c --format msgpack -in struct.json-gen-c -out .
+```
+
+This generates `msgpack.gen.h` and `msgpack.gen.c` with `msgpack_pack_*` / `msgpack_unpack_*` functions.
+The struct definitions and `sstr` helper are identical regardless of format.
+
 ### Use Your Generated Codes
 
 #### To Serialize Structs to JSON
