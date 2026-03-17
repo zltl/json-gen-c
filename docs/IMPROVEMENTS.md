@@ -295,7 +295,7 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
     - ~~Optional Valgrind runs where practical~~
     - **Completed:** `JSON_SANITIZE=1` enables ASan+UBSan (`-fsanitize=address,undefined`). Dedicated `sanitizer` CI job in GitHub Actions. Fixed UBSan issues: signed integer overflow in `sstr_append_int_str` / `sstr_append_long_str` and test random number generation.
 4. ~~Build comparative benchmarks against similar JSON libraries and code-generation approaches.~~
-    - **Completed:** Added nested struct and string-heavy benchmarks. Added cJSON comparison benchmarks (marshal + unmarshal for scalar and nested structs). Results show json-gen-c produces typed structs directly while cJSON builds an untyped tree.
+    - **Completed:** Comprehensive 6-library benchmark suite comparing json-gen-c against cJSON, yyjson, jansson, json-c, and rapidjson across 3 data shapes (scalar, nested, string-heavy) with marshal/unmarshal operations. Includes selective-unmarshal and array benchmarks for json-gen-c. See [`benchmark/RESULTS.md`](../benchmark/RESULTS.md) for detailed results and analysis.
 5. Investigate selective parsing or SIMD-assisted fast paths only after correctness and coverage are strong.
    - **Partially completed:** added a first-pass field-mask selective unmarshal API for generated structs.
    - Runtime selective unmarshal now skips unselected known fields using the existing value-skip path, preserving the full-unmarshal APIs unchanged.

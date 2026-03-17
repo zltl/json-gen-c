@@ -10,9 +10,15 @@ BENCH_BUILD := $(BUILD_DIR)/benchmark
 GENERATED_SOURCES := json.gen.c sstr.c
 GENERATED_OBJECTS := $(patsubst %.c,$(BENCH_BUILD)/%.o,$(GENERATED_SOURCES))
 
-# Benchmark source and object
+# Benchmark sources and objects
 BENCH_SOURCE := json_bench.cc
 BENCH_OBJECT := $(BENCH_BUILD)/json_bench.o
+
+# Separate TU sources (jansson/json-c conflict on json_object)
+BENCH_JANSSON_SRC := bench_jansson.cc
+BENCH_JANSSON_OBJ := $(BENCH_BUILD)/bench_jansson.o
+BENCH_JSONC_SRC   := bench_jsonc.cc
+BENCH_JSONC_OBJ   := $(BENCH_BUILD)/bench_jsonc.o
 
 # Benchmark executable
 BENCHMARK := $(BENCH_BUILD)/json_bench
@@ -34,14 +40,18 @@ $(foreach src,$(GENERATED_SOURCES),$(eval $(call compile-c,$(src),$(patsubst %.c
 # Compile benchmark main
 $(eval $(call compile-cxx,$(BENCH_SOURCE),$(BENCH_OBJECT),-I.))
 
+# Compile jansson and json-c benchmarks (separate TUs)
+$(eval $(call compile-cxx,$(BENCH_JANSSON_SRC),$(BENCH_JANSSON_OBJ),))
+$(eval $(call compile-cxx,$(BENCH_JSONC_SRC),$(BENCH_JSONC_OBJ),))
+
 # Make benchmark object depend on generated files
 $(BENCH_OBJECT): json.gen.c
 
 # Link benchmark executable
-$(BENCHMARK): $(BENCH_OBJECT) $(GENERATED_OBJECTS)
+$(BENCHMARK): $(BENCH_OBJECT) $(BENCH_JANSSON_OBJ) $(BENCH_JSONC_OBJ) $(GENERATED_OBJECTS)
 	@echo "Linking benchmark: $@"
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -lbenchmark -lcjson -lpthread
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lbenchmark -lcjson -lyyjson -ljansson -ljson-c -lpthread
 
 #==============================================================================
 # Run benchmark
