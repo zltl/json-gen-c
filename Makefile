@@ -2,12 +2,14 @@
 # Includes common build configuration
 include build.mk
 
-.PHONY: all libs clean example benchmark install uninstall test doxygen fuzz
+.PHONY: all libs clean example benchmark benchmark-deps benchmark-repro install uninstall test doxygen fuzz
 .DEFAULT_GOAL := all
 
 # Installation directories (standard DESTDIR + PREFIX pattern)
 PREFIX ?= /usr/local
 DESTDIR ?=
+BENCH_PREFIX ?= $(ROOT_DIR)/benchmark/.deps/prefix
+BENCH_OPT_FLAGS ?= -O2 -DNDEBUG
 
 #==============================================================================
 # Source file definitions
@@ -108,6 +110,16 @@ benchmark: $(JSON_GEN_C)
 	@echo "Building benchmark..."
 	$(MAKE) -C benchmark
 
+benchmark-deps:
+	@echo "Preparing benchmark dependencies..."
+	@./benchmark/bootstrap_deps.sh
+
+benchmark-repro: benchmark-deps
+	@echo "Building benchmark suite with release-style flags..."
+	$(MAKE) benchmark BENCH_PREFIX="$(BENCH_PREFIX)" CFLAGS="$(BENCH_OPT_FLAGS)" CXXFLAGS="$(BENCH_OPT_FLAGS)"
+	@echo "Running benchmark suite..."
+	$(MAKE) -C benchmark run BENCH_PREFIX="$(BENCH_PREFIX)" CFLAGS="$(BENCH_OPT_FLAGS)" CXXFLAGS="$(BENCH_OPT_FLAGS)"
+
 test: $(JSON_GEN_C)
 	@echo "Building and running tests..."
 	$(MAKE) -C test run
@@ -177,4 +189,3 @@ show-config:
 	@echo "  JSON_SANITIZE: $(JSON_SANITIZE)"
 
 .PHONY: debug sanitize show-config
-

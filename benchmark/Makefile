@@ -1,7 +1,20 @@
 # Benchmark Makefile for json-gen-c
 include ../build.mk
 
-.PHONY: all clean run
+.PHONY: all clean deps run
+
+BENCH_PREFIX ?= $(abspath .deps/prefix)
+
+BENCH_INCLUDE_FLAGS :=
+BENCH_LINK_FLAGS :=
+
+ifneq ($(wildcard $(BENCH_PREFIX)/include),)
+BENCH_INCLUDE_FLAGS += -I$(BENCH_PREFIX)/include
+endif
+
+ifneq ($(wildcard $(BENCH_PREFIX)/lib),)
+BENCH_LINK_FLAGS += -L$(BENCH_PREFIX)/lib -Wl,-rpath,$(BENCH_PREFIX)/lib
+endif
 
 # Benchmark build directory
 BENCH_BUILD := $(BUILD_DIR)/benchmark
@@ -29,6 +42,9 @@ BENCHMARK := $(BENCH_BUILD)/json_bench
 
 all: $(BENCHMARK)
 
+deps:
+	@./bootstrap_deps.sh
+
 # Generate benchmark structures
 json.gen.c sstr.c: structs.json-gen-c $(JSON_GEN_C)
 	@echo "Generating benchmark structures..."
@@ -38,11 +54,11 @@ json.gen.c sstr.c: structs.json-gen-c $(JSON_GEN_C)
 $(foreach src,$(GENERATED_SOURCES),$(eval $(call compile-c,$(src),$(patsubst %.c,$(BENCH_BUILD)/%.o,$(src)),-I.)))
 
 # Compile benchmark main
-$(eval $(call compile-cxx,$(BENCH_SOURCE),$(BENCH_OBJECT),-I.))
+$(eval $(call compile-cxx,$(BENCH_SOURCE),$(BENCH_OBJECT),-I. $(BENCH_INCLUDE_FLAGS)))
 
 # Compile jansson and json-c benchmarks (separate TUs)
-$(eval $(call compile-cxx,$(BENCH_JANSSON_SRC),$(BENCH_JANSSON_OBJ),))
-$(eval $(call compile-cxx,$(BENCH_JSONC_SRC),$(BENCH_JSONC_OBJ),))
+$(eval $(call compile-cxx,$(BENCH_JANSSON_SRC),$(BENCH_JANSSON_OBJ),$(BENCH_INCLUDE_FLAGS)))
+$(eval $(call compile-cxx,$(BENCH_JSONC_SRC),$(BENCH_JSONC_OBJ),$(BENCH_INCLUDE_FLAGS)))
 
 # Make benchmark object depend on generated files
 $(BENCH_OBJECT): json.gen.c
@@ -51,7 +67,7 @@ $(BENCH_OBJECT): json.gen.c
 $(BENCHMARK): $(BENCH_OBJECT) $(BENCH_JANSSON_OBJ) $(BENCH_JSONC_OBJ) $(GENERATED_OBJECTS)
 	@echo "Linking benchmark: $@"
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $^ -o $@ -lbenchmark -lcjson -lyyjson -ljansson -ljson-c -lpthread
+	$(CXX) $(CXXFLAGS) $(BENCH_LINK_FLAGS) $^ -o $@ -lbenchmark -lcjson -lyyjson -ljansson -ljson-c -lpthread
 
 #==============================================================================
 # Run benchmark

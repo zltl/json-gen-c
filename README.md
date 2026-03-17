@@ -65,7 +65,14 @@ make example
 make test
 # build ./build/benchmark/json_bench
 make benchmark
+# Debian/Ubuntu one-command benchmark reproduction
+make benchmark-repro
 ```
+
+`make benchmark-repro` installs the distro benchmark dependencies when needed,
+clones `yyjson` into `benchmark/yyjson/`, installs it locally under
+`benchmark/.deps/prefix/`, then builds and runs the full benchmark suite with
+`-O2 -DNDEBUG`. Both local dependency directories are gitignored on purpose.
 
 All build artifacts are organized under the `build/` directory:
 - `build/bin/` - Main executable
