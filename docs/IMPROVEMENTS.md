@@ -324,8 +324,9 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
     - **Completed:** `--cpp-wrapper` generates `json_gen_c.gen.hpp` — a zero-dependency C++17 header with RAII wrapper classes for all generated C structs. Features: typed get/set accessors, `std::string` string accessors, `marshal()`/`unmarshal()`/`unmarshal_into()` member functions, move and copy semantics, equality operators, enum accessors, nested struct/oneof references, dynamic/fixed array pointers, map references, and `c_struct()` interop. 24 Google Test cases.
     - Rust
     - Go
-4. Build better authoring tools.
-    - VS Code syntax highlighting and diagnostics
+4. ~~Build better authoring tools.~~
+    - ~~VS Code syntax highlighting and diagnostics~~
+    - **Completed:** VS Code extension at `editors/vscode/` providing TextMate grammar for `.json-gen-c` files. Highlights keywords (`struct`/`enum`/`oneof`), field modifiers (`optional`/`nullable`), builtin types, annotations (`@json`/`@tag`/`@deprecated`), `#include` directives, `map<>` generics, array syntax, default values, comments, strings, and numbers. Includes language configuration for bracket matching, comment toggling, auto-closing pairs, and code folding. Zero dependencies — purely declarative JSON files.
     - Schema language support
 5. Consider an online playground for schema editing and generated code preview.
 
@@ -342,6 +343,7 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 - `src/utils/hash_map.c`: hash map implementation
 - `src/utils/hash.c`: shared hashing primitives
 - `src/main/main.c`: CLI entry point
+- `editors/vscode/`: VS Code extension for `.json-gen-c` syntax highlighting
 - `doc/schema-evolution.md`: schema evolution guide
 - `docs/IMPROVEMENTS.md`: this roadmap and improvement tracker
 

@@ -1,0 +1,241 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "json-gen-c",
+  "scopeName": "source.json-gen-c",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#include-directive" },
+    { "include": "#annotations" },
+    { "include": "#enum-declaration" },
+    { "include": "#oneof-declaration" },
+    { "include": "#struct-declaration" },
+    { "include": "#keywords" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.json-gen-c",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.json-gen-c",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "include-directive": {
+      "patterns": [
+        {
+          "name": "meta.preprocessor.include.json-gen-c",
+          "match": "(#include)\\s+(\"[^\"]*\")",
+          "captures": {
+            "1": { "name": "keyword.control.include.json-gen-c" },
+            "2": { "name": "string.quoted.double.json-gen-c" }
+          }
+        }
+      ]
+    },
+    "annotations": {
+      "patterns": [
+        {
+          "name": "meta.annotation.json.json-gen-c",
+          "match": "(@json)\\s+(\"[^\"]*\")",
+          "captures": {
+            "1": { "name": "storage.type.annotation.json-gen-c" },
+            "2": { "name": "string.quoted.double.json-gen-c" }
+          }
+        },
+        {
+          "name": "meta.annotation.tag.json-gen-c",
+          "match": "(@tag)\\s+(\"[^\"]*\")",
+          "captures": {
+            "1": { "name": "storage.type.annotation.json-gen-c" },
+            "2": { "name": "string.quoted.double.json-gen-c" }
+          }
+        },
+        {
+          "name": "storage.type.annotation.json-gen-c",
+          "match": "@deprecated"
+        }
+      ]
+    },
+    "struct-declaration": {
+      "patterns": [
+        {
+          "name": "meta.struct.json-gen-c",
+          "begin": "\\b(struct)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*\\{",
+          "beginCaptures": {
+            "1": { "name": "keyword.declaration.struct.json-gen-c" },
+            "2": { "name": "entity.name.type.struct.json-gen-c" }
+          },
+          "end": "\\}",
+          "patterns": [
+            { "include": "#comments" },
+            { "include": "#annotations" },
+            { "include": "#field-declaration" }
+          ]
+        }
+      ]
+    },
+    "enum-declaration": {
+      "patterns": [
+        {
+          "name": "meta.enum.json-gen-c",
+          "begin": "\\b(enum)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*\\{",
+          "beginCaptures": {
+            "1": { "name": "keyword.declaration.enum.json-gen-c" },
+            "2": { "name": "entity.name.type.enum.json-gen-c" }
+          },
+          "end": "\\}",
+          "patterns": [
+            { "include": "#comments" },
+            { "include": "#annotations" },
+            {
+              "name": "variable.other.enummember.json-gen-c",
+              "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+            },
+            {
+              "name": "punctuation.separator.comma.json-gen-c",
+              "match": "[,;]"
+            }
+          ]
+        }
+      ]
+    },
+    "oneof-declaration": {
+      "patterns": [
+        {
+          "name": "meta.oneof.json-gen-c",
+          "begin": "\\b(oneof)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*\\{",
+          "beginCaptures": {
+            "1": { "name": "keyword.declaration.oneof.json-gen-c" },
+            "2": { "name": "entity.name.type.oneof.json-gen-c" }
+          },
+          "end": "\\}",
+          "patterns": [
+            { "include": "#comments" },
+            { "include": "#annotations" },
+            { "include": "#field-declaration" }
+          ]
+        }
+      ]
+    },
+    "field-declaration": {
+      "patterns": [
+        { "include": "#field-modifiers" },
+        { "include": "#map-type" },
+        { "include": "#builtin-types" },
+        { "include": "#default-value" },
+        { "include": "#array-size" },
+        { "include": "#strings" },
+        { "include": "#numbers" },
+        { "include": "#booleans" },
+        {
+          "name": "entity.name.type.user.json-gen-c",
+          "match": "\\b([A-Z][A-Za-z0-9_]*)\\b"
+        },
+        {
+          "name": "variable.other.field.json-gen-c",
+          "match": "\\b([a-z_][a-z0-9_]*)\\b(?=\\s*(?:\\[|;|=))"
+        },
+        {
+          "name": "punctuation.terminator.semicolon.json-gen-c",
+          "match": ";"
+        }
+      ]
+    },
+    "field-modifiers": {
+      "patterns": [
+        {
+          "name": "storage.modifier.json-gen-c",
+          "match": "\\b(optional|nullable)\\b"
+        }
+      ]
+    },
+    "map-type": {
+      "patterns": [
+        {
+          "name": "meta.type.map.json-gen-c",
+          "match": "\\b(map)\\s*<\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*,\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*>",
+          "captures": {
+            "1": { "name": "support.type.map.json-gen-c" },
+            "2": { "name": "support.type.builtin.json-gen-c" },
+            "3": { "name": "support.type.builtin.json-gen-c" }
+          }
+        }
+      ]
+    },
+    "builtin-types": {
+      "patterns": [
+        {
+          "name": "support.type.builtin.json-gen-c",
+          "match": "\\b(int|long|float|double|bool|sstr_t|int8_t|int16_t|int32_t|int64_t|uint8_t|uint16_t|uint32_t|uint64_t)\\b"
+        }
+      ]
+    },
+    "default-value": {
+      "patterns": [
+        {
+          "name": "keyword.operator.assignment.json-gen-c",
+          "match": "="
+        }
+      ]
+    },
+    "array-size": {
+      "patterns": [
+        {
+          "name": "meta.array.json-gen-c",
+          "match": "\\[\\s*(\\d+)?\\s*\\]",
+          "captures": {
+            "1": { "name": "constant.numeric.integer.json-gen-c" }
+          }
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.json-gen-c",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.json-gen-c",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.float.json-gen-c",
+          "match": "-?\\d+\\.\\d+"
+        },
+        {
+          "name": "constant.numeric.integer.json-gen-c",
+          "match": "-?\\d+"
+        }
+      ]
+    },
+    "booleans": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.json-gen-c",
+          "match": "\\b(true|false)\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.declaration.json-gen-c",
+          "match": "\\b(struct|enum|oneof)\\b"
+        }
+      ]
+    }
+  }
+}

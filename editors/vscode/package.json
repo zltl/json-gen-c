@@ -1,0 +1,40 @@
+{
+  "name": "json-gen-c",
+  "displayName": "json-gen-c Schema Language",
+  "description": "Syntax highlighting for json-gen-c schema definition files (.json-gen-c)",
+  "version": "0.9.0",
+  "publisher": "zltl",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zltl/json-gen-c"
+  },
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "json-gen-c",
+        "aliases": [
+          "json-gen-c",
+          "JSON Gen C Schema"
+        ],
+        "extensions": [
+          ".json-gen-c"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "json-gen-c",
+        "scopeName": "source.json-gen-c",
+        "path": "./syntaxes/json-gen-c.tmLanguage.json"
+      }
+    ]
+  }
+}
