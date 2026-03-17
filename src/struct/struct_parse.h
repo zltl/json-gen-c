@@ -67,6 +67,8 @@ extern "C" {
 struct enum_value {
     sstr_t name;
     int index;
+    // 1 if value is deprecated, 0 otherwise
+    int is_deprecated;
     struct enum_value* next;
 };
 
@@ -92,6 +94,8 @@ struct oneof_variant {
     sstr_t name;              // variant name (used as tag value string)
     sstr_t struct_type_name;  // the struct type this variant maps to
     int index;                // 0-based variant index
+    // 1 if variant is deprecated, 0 otherwise
+    int is_deprecated;
     struct oneof_variant* next;
 };
 
@@ -140,6 +144,8 @@ struct struct_field {
     sstr_t default_value;
     // 1 if field has a declared default value
     int has_default;
+    // 1 if field is deprecated, 0 otherwise
+    int is_deprecated;
     // source position where the field was defined
     int line;
     int col;

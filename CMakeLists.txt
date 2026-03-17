@@ -135,6 +135,7 @@ endif()
 #==============================================================================
 add_library(json_gen_c_struct STATIC
     src/struct/struct_parse.c
+    src/compat/compat_check.c
 )
 target_link_libraries(json_gen_c_struct PUBLIC json_gen_c_utils)
 

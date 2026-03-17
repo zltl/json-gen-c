@@ -353,6 +353,24 @@ oneof Shape {
 - Each variant references a previously defined struct.
 - JSON uses a flattened representation: `{"type":"circle","radius":5.0}`.
 
+### `@deprecated` Annotation
+
+Mark fields, enum values, or oneof variants as deprecated:
+
+```
+struct Config {
+    int timeout_ms;
+    @deprecated int timeout_sec;  // use timeout_ms instead
+};
+
+enum Status { ACTIVE, @deprecated INACTIVE, ARCHIVED };
+```
+
+Deprecated items remain fully functional in marshal/unmarshal. The generated C code
+annotates them with compiler deprecation attributes so downstream code that accesses
+them gets a warning. See [doc/schema-evolution.md](doc/schema-evolution.md) for
+migration patterns and compatibility rules.
+
 Oneof types can be used as fields in structs:
 
 ```
@@ -429,6 +447,7 @@ For `json_unmarshal_selected_<struct_name>()`:
 - [example/](example/) – real schemas plus sample host programs.
 - [Online reference](https://zltl.github.io/json-gen-c/) – API documentation generated via Doxygen.
 - [doc/json-gen-c.1](doc/json-gen-c.1) – manual page installed with the CLI.
+- [doc/schema-evolution.md](doc/schema-evolution.md) – schema evolution guide (compatibility rules, migration patterns, `@deprecated`).
 
 ## Contributing & Community
 

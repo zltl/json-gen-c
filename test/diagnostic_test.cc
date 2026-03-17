@@ -380,6 +380,44 @@ protected:
         sstr_free(key);
         return found == HASH_MAP_OK && value != nullptr;
     }
+
+    struct struct_field* get_field(const char* struct_name,
+                                   const char* field_name) const {
+        sstr_t key = sstr(struct_name);
+        void* value = nullptr;
+        if (hash_map_find(parser->struct_map, key, &value) != HASH_MAP_OK) {
+            sstr_free(key);
+            return nullptr;
+        }
+        sstr_free(key);
+        auto* sc = static_cast<struct struct_container*>(value);
+        for (struct struct_field* f = sc->fields; f; f = f->next) {
+            if (sstr_compare_c(f->name, field_name) == 0) return f;
+        }
+        return nullptr;
+    }
+
+    struct enum_container* get_enum(const char* name) const {
+        sstr_t key = sstr(name);
+        void* value = nullptr;
+        if (hash_map_find(parser->enum_map, key, &value) != HASH_MAP_OK) {
+            sstr_free(key);
+            return nullptr;
+        }
+        sstr_free(key);
+        return static_cast<struct enum_container*>(value);
+    }
+
+    struct oneof_container* get_oneof(const char* name) const {
+        sstr_t key = sstr(name);
+        void* value = nullptr;
+        if (hash_map_find(parser->oneof_map, key, &value) != HASH_MAP_OK) {
+            sstr_free(key);
+            return nullptr;
+        }
+        sstr_free(key);
+        return static_cast<struct oneof_container*>(value);
+    }
 };
 
 TEST_F(ParserDiagTest, ValidSchemaNoErrors) {
@@ -834,4 +872,102 @@ TEST_F(SchemaValidationTest, MultipleStructsAllValid) {
         "struct Inner { int x; }\n"
         "struct Outer { Inner item; int count; }");
     EXPECT_EQ(0, r);
+}
+
+// ===== @deprecated annotation tests =====
+
+TEST_F(ParserDiagTest, DeprecatedStructField) {
+    int r = parse("struct Foo { @deprecated int old_val; int new_val; }");
+    EXPECT_EQ(0, r);
+    ASSERT_TRUE(has_struct("Foo"));
+    auto* f_old = get_field("Foo", "old_val");
+    auto* f_new = get_field("Foo", "new_val");
+    ASSERT_NE(nullptr, f_old);
+    ASSERT_NE(nullptr, f_new);
+    EXPECT_EQ(1, f_old->is_deprecated);
+    EXPECT_EQ(0, f_new->is_deprecated);
+}
+
+TEST_F(ParserDiagTest, DeprecatedWithJsonAlias) {
+    int r = parse("struct Foo { @json \"old\" @deprecated sstr_t old_name; }");
+    EXPECT_EQ(0, r);
+    auto* f = get_field("Foo", "old_name");
+    ASSERT_NE(nullptr, f);
+    EXPECT_EQ(1, f->is_deprecated);
+    EXPECT_EQ(0, sstr_compare_c(f->json_name, "old"));
+}
+
+TEST_F(ParserDiagTest, DeprecatedBeforeJsonAlias) {
+    int r = parse("struct Foo { @deprecated @json \"old\" int x; }");
+    EXPECT_EQ(0, r);
+    auto* f = get_field("Foo", "x");
+    ASSERT_NE(nullptr, f);
+    EXPECT_EQ(1, f->is_deprecated);
+    EXPECT_EQ(0, sstr_compare_c(f->json_name, "old"));
+}
+
+TEST_F(ParserDiagTest, DeprecatedOptionalNullableField) {
+    int r = parse("struct Foo { @deprecated optional nullable int old; }");
+    EXPECT_EQ(0, r);
+    auto* f = get_field("Foo", "old");
+    ASSERT_NE(nullptr, f);
+    EXPECT_EQ(1, f->is_deprecated);
+    EXPECT_EQ(1, f->is_optional);
+    EXPECT_EQ(1, f->is_nullable);
+}
+
+TEST_F(ParserDiagTest, DeprecatedEnumValue) {
+    int r = parse("enum Color { RED, @deprecated GREEN, BLUE }");
+    EXPECT_EQ(0, r);
+    auto* ec = get_enum("Color");
+    ASSERT_NE(nullptr, ec);
+    EXPECT_EQ(3, ec->count);
+    struct enum_value* v = ec->values;
+    // values are in order: RED, GREEN, BLUE
+    ASSERT_NE(nullptr, v);
+    EXPECT_EQ(0, v->is_deprecated); // RED
+    v = v->next;
+    ASSERT_NE(nullptr, v);
+    EXPECT_EQ(1, v->is_deprecated); // GREEN
+    v = v->next;
+    ASSERT_NE(nullptr, v);
+    EXPECT_EQ(0, v->is_deprecated); // BLUE
+}
+
+TEST_F(ParserDiagTest, DeprecatedOneofVariant) {
+    int r = parse(
+        "struct Circle { int r; }\n"
+        "struct Square { int side; }\n"
+        "oneof Shape { Circle c; @deprecated Square sq; }");
+    EXPECT_EQ(0, r);
+    auto* oc = get_oneof("Shape");
+    ASSERT_NE(nullptr, oc);
+    EXPECT_EQ(2, oc->count);
+    // variants are in order: c, sq
+    struct oneof_variant* v = oc->variants;
+    ASSERT_NE(nullptr, v);
+    EXPECT_EQ(0, v->is_deprecated); // c
+    v = v->next;
+    ASSERT_NE(nullptr, v);
+    EXPECT_EQ(1, v->is_deprecated); // sq
+}
+
+TEST_F(ParserDiagTest, UnknownAnnotationError) {
+    int r = parse("struct Foo { @bogus int x; }");
+    EXPECT_LT(r, 0);
+    EXPECT_TRUE(diag_contains("unknown annotation"));
+}
+
+TEST_F(ParserDiagTest, UnknownAnnotationInEnumError) {
+    int r = parse("enum Color { @bogus RED }");
+    EXPECT_LT(r, 0);
+    EXPECT_TRUE(diag_contains("expected 'deprecated' after '@' in enum"));
+}
+
+TEST_F(ParserDiagTest, UnknownAnnotationInOneofError) {
+    int r = parse(
+        "struct A { int x; }\n"
+        "oneof Foo { @bogus A a; }");
+    EXPECT_LT(r, 0);
+    EXPECT_TRUE(diag_contains("unknown annotation"));
 }

@@ -331,6 +331,12 @@ Display a help message and exit.
 .TP
 .BR \-v ", " \-\-version
 Display the version number and exit.
+.TP
+.BI \-\-check\-compat " old_schema new_schema"
+Compare two schema files and report compatibility.
+Prints safe changes (additions, deprecations) and breaking changes
+(removals, type changes) to stdout.
+Exits 0 if only safe changes, 1 if any breaking changes, 2 on error.
 .SH EXIT STATUS
 .TP
 .B 0

@@ -310,9 +310,10 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 
 ### Phase 6: Long-Term Vision
 
-1. Add schema evolution support.
-    - Forward and backward compatibility rules
-    - Field lifecycle guidance
+1. ~~Add schema evolution support.~~
+    - ~~Forward and backward compatibility rules~~
+    - ~~Field lifecycle guidance~~
+    - **Completed:** `@deprecated` annotation for struct fields, enum values, and oneof variants. Generated code emits compiler deprecation attributes (`JGENC_DEPRECATED`, `JGENC_DEPRECATED_ENUM`). New `--check-compat old new` CLI mode compares schemas and reports safe vs. breaking changes. Schema evolution guide at `doc/schema-evolution.md` with compatibility rules, migration patterns, and best practices.
 2. Consider additional generated serialization formats.
     - MessagePack
     - CBOR
@@ -330,9 +331,11 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 - `src/struct/struct_parse.c`: schema parser and top-level language handling
 - `src/gencode/gencode.c`: C code generation logic
 - `src/gencode/codes/json_parse.c`: embedded JSON runtime template emitted into generated code
+- `src/compat/compat_check.c`: schema compatibility checker (`--check-compat`)
 - `src/utils/hash_map.c`: hash map implementation
 - `src/utils/hash.c`: shared hashing primitives
 - `src/main/main.c`: CLI entry point
+- `doc/schema-evolution.md`: schema evolution guide
 - `docs/IMPROVEMENTS.md`: this roadmap and improvement tracker
 
 ## Project Direction Notes

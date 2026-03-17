@@ -18,8 +18,8 @@ UTILS_SOURCES := $(wildcard src/utils/*.c)
 UTILS_OBJECTS := $(patsubst src/utils/%.c,$(BUILD_DIR)/obj/utils/%.o,$(UTILS_SOURCES))
 
 # Struct library sources  
-STRUCT_SOURCES := $(wildcard src/struct/*.c)
-STRUCT_OBJECTS := $(patsubst src/struct/%.c,$(BUILD_DIR)/obj/struct/%.o,$(STRUCT_SOURCES))
+STRUCT_SOURCES := $(wildcard src/struct/*.c) $(wildcard src/compat/*.c)
+STRUCT_OBJECTS := $(patsubst src/%.c,$(BUILD_DIR)/obj/%.o,$(STRUCT_SOURCES))
 
 # Gencode library sources
 GENCODE_SOURCES := $(wildcard src/gencode/*.c)
@@ -44,7 +44,7 @@ libs: $(ALL_LIBS)
 
 # Generate compilation rules for all source files
 $(foreach src,$(UTILS_SOURCES),$(eval $(call compile-c,$(src),$(patsubst src/utils/%.c,$(BUILD_DIR)/obj/utils/%.o,$(src)))))
-$(foreach src,$(STRUCT_SOURCES),$(eval $(call compile-c,$(src),$(patsubst src/struct/%.c,$(BUILD_DIR)/obj/struct/%.o,$(src)))))
+$(foreach src,$(STRUCT_SOURCES),$(eval $(call compile-c,$(src),$(patsubst src/%.c,$(BUILD_DIR)/obj/%.o,$(src)))))
 
 # Special rule for main (needs extra include)
 $(foreach src,$(MAIN_SOURCES),$(eval $(call compile-c,$(src),$(patsubst src/main/%.c,$(BUILD_DIR)/obj/main/%.o,$(src)),-I$(BUILD_DIR)/obj/main)))

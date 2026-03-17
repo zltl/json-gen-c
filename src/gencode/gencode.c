@@ -99,6 +99,10 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
     while (field) {
         // fields
         sstr_append_cstr(header, "    ");
+        if (field->is_deprecated) {
+            sstr_printf_append(header,
+                "JGENC_DEPRECATED(\"%S is deprecated\") ", field->name);
+        }
         if (field->type == FIELD_TYPE_MAP) {
             const char* sfx = map_suffix(field);
             if (field->is_array && field->array_size == 0) {
@@ -1112,7 +1116,14 @@ static void gen_oneof_header(struct oneof_container* oc, sstr_t header) {
     sstr_printf_append(header, "enum %S_tag {\n", oc->name);
     struct oneof_variant* v = oc->variants;
     while (v) {
-        sstr_printf_append(header, "    %S_%S = %d", oc->name, v->name, v->index);
+        if (v->is_deprecated) {
+            sstr_printf_append(header,
+                "    %S_%S JGENC_DEPRECATED_ENUM(\"%S_%S is deprecated\") = %d",
+                oc->name, v->name, oc->name, v->name, v->index);
+        } else {
+            sstr_printf_append(header, "    %S_%S = %d",
+                               oc->name, v->name, v->index);
+        }
         if (v->next) sstr_append_cstr(header, ",");
         sstr_append_cstr(header, "\n");
         v = v->next;
@@ -1125,7 +1136,14 @@ static void gen_oneof_header(struct oneof_container* oc, sstr_t header) {
     sstr_append_cstr(header, "    union {\n");
     v = oc->variants;
     while (v) {
-        sstr_printf_append(header, "        struct %S %S;\n", v->struct_type_name, v->name);
+        if (v->is_deprecated) {
+            sstr_printf_append(header,
+                "        JGENC_DEPRECATED(\"%S is deprecated\") struct %S %S;\n",
+                v->name, v->struct_type_name, v->name);
+        } else {
+            sstr_printf_append(header, "        struct %S %S;\n",
+                               v->struct_type_name, v->name);
+        }
         v = v->next;
     }
     sstr_append_cstr(header, "    } value;\n");
@@ -1739,7 +1757,14 @@ static void gen_enum_header_fn(void* key, void* value, void* ptr) {
     sstr_printf_append(header, "enum %S {\n", ec->name);
     struct enum_value* v = ec->values;
     while (v) {
-        sstr_printf_append(header, "    %S_%S = %d", ec->name, v->name, v->index);
+        if (v->is_deprecated) {
+            sstr_printf_append(header,
+                "    %S_%S JGENC_DEPRECATED_ENUM(\"%S_%S is deprecated\") = %d",
+                ec->name, v->name, ec->name, v->name, v->index);
+        } else {
+            sstr_printf_append(header, "    %S_%S = %d",
+                               ec->name, v->name, v->index);
+        }
         if (v->next) {
             sstr_append_cstr(header, ",");
         }
@@ -1924,6 +1949,25 @@ int gencode_head_guard_begin(sstr_t head) {
     sstr_append_cstr(head, "#ifdef __cplusplus\n");
     sstr_append_cstr(head, "extern \"C\" {\n");
     sstr_append_cstr(head, "#endif\n\n");
+    sstr_append_cstr(
+        head,
+        "#ifndef JGENC_DEPRECATED\n"
+        "  #if defined(__GNUC__) || defined(__clang__)\n"
+        "    #define JGENC_DEPRECATED(msg) __attribute__((deprecated(msg)))\n"
+        "  #elif defined(_MSC_VER)\n"
+        "    #define JGENC_DEPRECATED(msg) __declspec(deprecated(msg))\n"
+        "  #else\n"
+        "    #define JGENC_DEPRECATED(msg)\n"
+        "  #endif\n"
+        "#endif\n\n"
+        "/* Enum constant deprecation (GCC/Clang only; placed after identifier) */\n"
+        "#ifndef JGENC_DEPRECATED_ENUM\n"
+        "  #if defined(__GNUC__) || defined(__clang__)\n"
+        "    #define JGENC_DEPRECATED_ENUM(msg) __attribute__((deprecated(msg)))\n"
+        "  #else\n"
+        "    #define JGENC_DEPRECATED_ENUM(msg)\n"
+        "  #endif\n"
+        "#endif\n\n");
     sstr_append_cstr(
         head,
         "#ifndef JGENC_MALLOC\n"
@@ -2135,6 +2179,15 @@ int gencode_source_begin(sstr_t source) {
                        "#include \"%s\"\n\n#include <stdio.h>\n"
                        "#include <malloc.h>\n#include <string.h>\n\n",
                        OUTPUT_H_FILENAME);
+
+    /* Suppress deprecation warnings inside the generated implementation.
+       User code that accesses deprecated struct members will still warn. */
+    sstr_append_cstr(source,
+        "#if defined(__GNUC__) || defined(__clang__)\n"
+        "  #pragma GCC diagnostic ignored \"-Wdeprecated-declarations\"\n"
+        "#elif defined(_MSC_VER)\n"
+        "  #pragma warning(disable: 4996)\n"
+        "#endif\n\n");
 
     /* Emit allocator indirection macros early, so both gencode-emitted
        struct code and the json_parse.c template can use JGENC_*. */

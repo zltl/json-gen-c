@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "utils/getopt_compat.h"
 
+#include "compat/compat_check.h"
 #include "gencode/gencode.h"
 #include "struct/struct_parse.h"
 #include "utils/io.h"
@@ -19,10 +20,12 @@
 static void usage(FILE *stream) {
     fprintf(stream,
         "Usage: json-gen-c -out <output_dir> -in <input_file>\n"
+        "       json-gen-c --check-compat <old_schema> <new_schema>\n"
         "Generate JSON operating C codes from struct definition.\n\n"
         "Options:\n"
         "    -in <input_file>  Specify the input struct definition file.\n"
         "    -out <output_dir> Specify the output codes location, default to current directory\n"
+        "    --check-compat    Compare two schemas and report compatibility.\n"
         "    -h, --help        Show this help message\n"
         "    -v, --version     Show version information\n\n"
         "json-gen-c document: https://github.com/zltl/json-gen-c\n"
@@ -33,8 +36,10 @@ static void usage(FILE *stream) {
  * @brief Command line options structure
  */
 struct options {
-    char *input_file;   /**< Input struct definition file path */
-    char *output_path;  /**< Output directory path */
+    char *input_file;      /**< Input struct definition file path */
+    char *output_path;     /**< Output directory path */
+    char *compat_old;      /**< Old schema for --check-compat */
+    char *compat_new;      /**< New schema for --check-compat */
 };
 
 /**
@@ -47,6 +52,20 @@ struct options {
 static json_gen_error_t options_parse(int argc, char **argv, struct options *options) {
     if (options == NULL) {
         return JSON_GEN_ERROR_INVALID_PARAM;
+    }
+
+    /* Handle --check-compat before getopt (it takes two positional args). */
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--check-compat") == 0) {
+            if (i + 2 >= argc) {
+                fprintf(stderr, "Error: --check-compat requires two arguments: "
+                                "<old_schema> <new_schema>\n");
+                return JSON_GEN_ERROR_INVALID_PARAM;
+            }
+            options->compat_old = argv[i + 1];
+            options->compat_new = argv[i + 2];
+            return JSON_GEN_SUCCESS;
+        }
     }
 
     static struct option long_options[] = {
@@ -110,15 +129,78 @@ static void cleanup_and_exit(sstr_t content, struct struct_parser *parser,
     exit(exit_code);
 }
 
+/**
+ * @brief Parse a schema file into a parser context.
+ * @param path File path.
+ * @param parser Output parser (must be pre-created).
+ * @return 0 on success, non-zero on failure.
+ */
+static int parse_schema_file(const char *path, struct struct_parser *parser) {
+    sstr_t content = sstr_new();
+    if (content == NULL) return -1;
+    if (read_file(path, content) != 0) {
+        fprintf(stderr, "Error: failed to read '%s'\n", path);
+        sstr_free(content);
+        return -1;
+    }
+    parser->name = (char *)path;
+    struct include_node root_inc;
+    root_inc.path = path;
+    root_inc.parent = NULL;
+    parser->include_stack = &root_inc;
+    int r = struct_parser_parse(parser, content);
+    sstr_free(content);
+    if (r < 0) return -1;
+    return struct_parser_validate(parser);
+}
+
+/**
+ * @brief Run the --check-compat workflow.
+ * @return 0 if schemas are compatible, 1 if breaking changes, 2+ on error.
+ */
+static int run_compat_check(const char *old_path, const char *new_path) {
+    struct struct_parser *old_p = struct_parser_new();
+    struct struct_parser *new_p = struct_parser_new();
+    if (old_p == NULL || new_p == NULL) {
+        fprintf(stderr, "Error: failed to allocate parsers\n");
+        if (old_p) struct_parser_free(old_p);
+        if (new_p) struct_parser_free(new_p);
+        return 2;
+    }
+    if (parse_schema_file(old_path, old_p) < 0) {
+        fprintf(stderr, "Error: failed to parse old schema '%s'\n", old_path);
+        struct_parser_free(old_p);
+        struct_parser_free(new_p);
+        return 2;
+    }
+    if (parse_schema_file(new_path, new_p) < 0) {
+        fprintf(stderr, "Error: failed to parse new schema '%s'\n", new_path);
+        struct_parser_free(old_p);
+        struct_parser_free(new_p);
+        return 2;
+    }
+    int rc = compat_check(old_p->struct_map, old_p->enum_map,
+                          old_p->oneof_map, new_p->struct_map,
+                          new_p->enum_map, new_p->oneof_map);
+    struct_parser_free(old_p);
+    struct_parser_free(new_p);
+    return rc;
+}
+
 int main(int argc, char **argv) {
     // Initialize options structure
-    struct options options = {NULL, NULL};
+    struct options options = {NULL, NULL, NULL, NULL};
     
     // Parse command line options
     json_gen_error_t result = options_parse(argc, argv, &options);
     if (result != JSON_GEN_SUCCESS) {
         usage(stderr);
         return result;
+    }
+
+    /* --check-compat mode: compare two schemas and exit. */
+    if (options.compat_old != NULL) {
+        return run_compat_check(options.compat_old, options.compat_new);
     }
     
     // Validate required input file parameter

@@ -8,7 +8,7 @@ include ../build.mk
 TEST_BUILD := $(BUILD_DIR)/test
 
 # Test source files
-TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc enum_test.cc fixed_array_test.cc map_test.cc optional_test.cc precise_int_test.cc diagnostic_test.cc alias_test.cc default_value_test.cc allocator_test.cc oneof_test.cc edge_case_test.cc selective_parse_test.cc
+TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc enum_test.cc fixed_array_test.cc map_test.cc optional_test.cc precise_int_test.cc diagnostic_test.cc alias_test.cc default_value_test.cc allocator_test.cc oneof_test.cc edge_case_test.cc selective_parse_test.cc compat_check_test.cc
 TEST_OBJECTS := $(patsubst %.cc,$(TEST_BUILD)/%.o,$(TEST_SOURCES))
 
 # Generated files
@@ -35,9 +35,10 @@ ALLOCATOR_TEST := $(TEST_BUILD)/allocator_test
 ONEOF_TEST := $(TEST_BUILD)/oneof_test
 EDGE_CASE_TEST := $(TEST_BUILD)/edge_case_test
 SELECTIVE_PARSE_TEST := $(TEST_BUILD)/selective_parse_test
+COMPAT_CHECK_TEST := $(TEST_BUILD)/compat_check_test
 
 # All test targets
-ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST) $(DIAGNOSTIC_TEST) $(ALIAS_TEST) $(DEFAULT_VALUE_TEST) $(ALLOCATOR_TEST) $(ONEOF_TEST) $(EDGE_CASE_TEST) $(SELECTIVE_PARSE_TEST)
+ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST) $(DIAGNOSTIC_TEST) $(ALIAS_TEST) $(DEFAULT_VALUE_TEST) $(ALLOCATOR_TEST) $(ONEOF_TEST) $(EDGE_CASE_TEST) $(SELECTIVE_PARSE_TEST) $(COMPAT_CHECK_TEST)
 
 #==============================================================================
 # Build rules
@@ -155,6 +156,11 @@ $(SELECTIVE_PARSE_TEST): $(TEST_BUILD)/selective_parse_test.o $(GENERATED_OBJECT
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
 
+$(COMPAT_CHECK_TEST): $(TEST_BUILD)/compat_check_test.o
+	@echo "Linking compat check tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread -L$(BUILD_DIR)/lib -lstruct -lutils
+
 #==============================================================================
 # Test execution
 #==============================================================================
@@ -199,6 +205,8 @@ run: $(ALL_TESTS)
 	$(EDGE_CASE_TEST)
 	@echo "=== Selective Parse Tests ==="
 	$(SELECTIVE_PARSE_TEST)
+	@echo "=== Compat Check Tests ==="
+	$(COMPAT_CHECK_TEST)
 	@echo "=== Bugfix Tests ==="
 	$(MAKE) run-bugfix
 	@echo "All tests completed successfully!"

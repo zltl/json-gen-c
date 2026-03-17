@@ -46,6 +46,7 @@ static struct struct_field* struct_field_new(sstr_t name, int type,
     field->json_name = NULL;
     field->default_value = NULL;
     field->has_default = 0;
+    field->is_deprecated = 0;
     field->line = 0;
     field->col = 0;
     return field;
@@ -867,24 +868,34 @@ static int struct_parse_field(struct struct_parser* parser, sstr_t content,
         return 0;
     }
 
-    // parse @json "alias" annotation
-    if (tk == TOKEN_AT) {
+    // parse @json "alias" and @deprecated annotations (order-independent)
+    while (tk == TOKEN_AT) {
         tk = next_token(parser, content, token);
-        if (tk != TOKEN_IDENTIFY || sstr_compare_c(token->txt, "json") != 0) {
-            PERROR(parser, "expected 'json' after '@', found '%s'",
+        if (tk != TOKEN_IDENTIFY) {
+            PERROR(parser, "expected annotation name after '@', found '%s'",
                    token_type_str(token));
             return -1;
         }
-        sstr_free(token->txt);
-        token->txt = NULL;
-        tk = next_token(parser, content, token);
-        if (tk != TOKEN_STRING) {
-            PERROR(parser, "expected string after '@json', found '%s'",
-                   token_type_str(token));
+        if (sstr_compare_c(token->txt, "json") == 0) {
+            sstr_free(token->txt);
+            token->txt = NULL;
+            tk = next_token(parser, content, token);
+            if (tk != TOKEN_STRING) {
+                PERROR(parser, "expected string after '@json', found '%s'",
+                       token_type_str(token));
+                return -1;
+            }
+            field->json_name = token->txt;
+            token->txt = NULL;
+        } else if (sstr_compare_c(token->txt, "deprecated") == 0) {
+            field->is_deprecated = 1;
+            sstr_free(token->txt);
+            token->txt = NULL;
+        } else {
+            PERROR(parser, "unknown annotation '@%s'",
+                   sstr_cstr(token->txt));
             return -1;
         }
-        field->json_name = token->txt;
-        token->txt = NULL;
         tk = next_token(parser, content, token);
     }
 
@@ -1069,7 +1080,7 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
     ec->name_col = enum_name_col;
     ec->filename = parser->name;
 
-    // parse enum values: IDENT [, IDENT]* '}'
+    // parse enum values: [@deprecated] IDENT [, IDENT]* '}'
     int had_error = 0;
     while (1) {
         tk = next_meaningful_token(parser, content, token);
@@ -1082,6 +1093,32 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
             enum_container_free(ec);
             return -1;
         }
+
+        // parse optional @deprecated annotation on enum value
+        int value_deprecated = 0;
+        if (tk == TOKEN_AT) {
+            tk = next_token(parser, content, token);
+            if (tk != TOKEN_IDENTIFY ||
+                sstr_compare_c(token->txt, "deprecated") != 0) {
+                PERROR(parser,
+                       "expected 'deprecated' after '@' in enum, found '%s'",
+                       token_type_str(token));
+                had_error = 1;
+                while (token->type != TOKEN_COMMA &&
+                       token->type != TOKEN_SEMICOLON &&
+                       token->type != TOKEN_RIGHT_BRACE &&
+                       token->type != TOKEN_EOF) {
+                    next_token(parser, content, token);
+                }
+                if (token->type == TOKEN_RIGHT_BRACE) break;
+                continue;
+            }
+            value_deprecated = 1;
+            sstr_free(token->txt);
+            token->txt = NULL;
+            tk = next_token(parser, content, token);
+        }
+
         if (tk != TOKEN_IDENTIFY) {
             PERROR(parser, "expected enum value name, found '%s'",
                    token_type_str(token));
@@ -1105,6 +1142,7 @@ static int parse_enum_body(struct struct_parser* parser, sstr_t content,
         ev->name = token->txt;
         token->txt = NULL;
         ev->index = ec->count;
+        ev->is_deprecated = value_deprecated;
         ev->next = ec->values;
         ec->values = ev;
         ec->count++;
@@ -1205,26 +1243,41 @@ static int parse_oneof_body(struct struct_parser* parser, sstr_t content,
             return -1;
         }
 
-        // @tag "field_name" annotation
+        // @tag "field_name" or @deprecated annotation
+        int variant_deprecated = 0;
         if (tk == TOKEN_AT) {
             tk = next_token(parser, content, token);
-            if (tk != TOKEN_IDENTIFY || sstr_compare_c(token->txt, "tag") != 0) {
-                PERROR(parser, "expected 'tag' after '@' in oneof, found '%s'",
+            if (tk != TOKEN_IDENTIFY) {
+                PERROR(parser, "expected annotation name after '@' in oneof, found '%s'",
                        token_type_str(token));
                 had_error = 1;
                 continue;
             }
-            tk = next_token(parser, content, token);
-            if (tk != TOKEN_STRING) {
-                PERROR(parser, "expected string after '@tag' in oneof, found '%s'",
-                       token_type_str(token));
+            if (sstr_compare_c(token->txt, "tag") == 0) {
+                sstr_free(token->txt);
+                token->txt = NULL;
+                tk = next_token(parser, content, token);
+                if (tk != TOKEN_STRING) {
+                    PERROR(parser, "expected string after '@tag' in oneof, found '%s'",
+                           token_type_str(token));
+                    had_error = 1;
+                    continue;
+                }
+                sstr_free(oc->tag_field);
+                oc->tag_field = token->txt;
+                token->txt = NULL;
+                continue;
+            } else if (sstr_compare_c(token->txt, "deprecated") == 0) {
+                variant_deprecated = 1;
+                sstr_free(token->txt);
+                token->txt = NULL;
+                tk = next_token(parser, content, token);
+            } else {
+                PERROR(parser, "unknown annotation '@%s' in oneof",
+                       sstr_cstr(token->txt));
                 had_error = 1;
                 continue;
             }
-            sstr_free(oc->tag_field);
-            oc->tag_field = token->txt;
-            token->txt = NULL;
-            continue;
         }
 
         // expect: StructType variant_name ';'
@@ -1287,6 +1340,7 @@ static int parse_oneof_body(struct struct_parser* parser, sstr_t content,
         v->name = variant_name;
         v->struct_type_name = struct_type;
         v->index = oc->count;
+        v->is_deprecated = variant_deprecated;
         v->next = oc->variants;
         oc->variants = v;
         oc->count++;
