@@ -319,8 +319,9 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
     - **Completed:** `--format msgpack` generates `msgpack.gen.h` + `msgpack.gen.c` with `msgpack_pack_*`/`msgpack_unpack_*` functions. Embedded binary codec runtime (`msgpack_codec.c/h`). Full type support: scalars, strings, bools, enums (string-encoded), nested structs, fixed/dynamic arrays, maps, optional/nullable fields, precise-width integers, `@json` aliases, default values, and `oneof` tagged unions. 27 round-trip tests.
     - ~~CBOR (future — very similar wire format to MessagePack)~~
     - **Completed:** `--format cbor` generates `cbor.gen.h` + `cbor.gen.c` with `cbor_pack_*`/`cbor_unpack_*` functions. Embedded CBOR codec runtime (`cbor_codec.c/h`) implementing RFC 8949. Same full type support as MessagePack. 27 round-trip tests.
-3. Explore multi-language bindings or code generation targets.
-    - C++
+3. ~~Explore multi-language bindings or code generation targets.~~
+    - ~~C++~~
+    - **Completed:** `--cpp-wrapper` generates `json_gen_c.gen.hpp` — a zero-dependency C++17 header with RAII wrapper classes for all generated C structs. Features: typed get/set accessors, `std::string` string accessors, `marshal()`/`unmarshal()`/`unmarshal_into()` member functions, move and copy semantics, equality operators, enum accessors, nested struct/oneof references, dynamic/fixed array pointers, map references, and `c_struct()` interop. 24 Google Test cases.
     - Rust
     - Go
 4. Build better authoring tools.
@@ -333,6 +334,7 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 - `src/struct/struct_parse.c`: schema parser and top-level language handling
 - `src/gencode/gencode.c`: C code generation logic (JSON format)
 - `src/gencode/gencode_msgpack.c`: C code generation logic (MessagePack format)
+- `src/gencode/gencode_cpp.c`: C++ wrapper header code generation (`--cpp-wrapper`)
 - `src/gencode/codes/json_parse.c`: embedded JSON runtime template emitted into generated code
 - `src/gencode/codes/msgpack_codec.c`: embedded MessagePack runtime template emitted into generated code
 - `src/gencode/codes/msgpack_codec.h`: MessagePack wire format constants and reader/writer declarations

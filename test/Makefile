@@ -8,7 +8,7 @@ include ../build.mk
 TEST_BUILD := $(BUILD_DIR)/test
 
 # Test source files
-TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc enum_test.cc fixed_array_test.cc map_test.cc optional_test.cc precise_int_test.cc diagnostic_test.cc alias_test.cc default_value_test.cc allocator_test.cc oneof_test.cc edge_case_test.cc selective_parse_test.cc compat_check_test.cc
+TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc enum_test.cc fixed_array_test.cc map_test.cc optional_test.cc precise_int_test.cc diagnostic_test.cc alias_test.cc default_value_test.cc allocator_test.cc oneof_test.cc edge_case_test.cc selective_parse_test.cc compat_check_test.cc cpp_wrapper_test.cc
 TEST_OBJECTS := $(patsubst %.cc,$(TEST_BUILD)/%.o,$(TEST_SOURCES))
 
 # Generated files
@@ -46,9 +46,10 @@ SELECTIVE_PARSE_TEST := $(TEST_BUILD)/selective_parse_test
 COMPAT_CHECK_TEST := $(TEST_BUILD)/compat_check_test
 MSGPACK_TEST := $(TEST_BUILD)/msgpack_test
 CBOR_TEST := $(TEST_BUILD)/cbor_test
+CPP_WRAPPER_TEST := $(TEST_BUILD)/cpp_wrapper_test
 
 # All test targets
-ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST) $(DIAGNOSTIC_TEST) $(ALIAS_TEST) $(DEFAULT_VALUE_TEST) $(ALLOCATOR_TEST) $(ONEOF_TEST) $(EDGE_CASE_TEST) $(SELECTIVE_PARSE_TEST) $(COMPAT_CHECK_TEST) $(MSGPACK_TEST) $(CBOR_TEST)
+ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST) $(DIAGNOSTIC_TEST) $(ALIAS_TEST) $(DEFAULT_VALUE_TEST) $(ALLOCATOR_TEST) $(ONEOF_TEST) $(EDGE_CASE_TEST) $(SELECTIVE_PARSE_TEST) $(COMPAT_CHECK_TEST) $(MSGPACK_TEST) $(CBOR_TEST) $(CPP_WRAPPER_TEST)
 
 #==============================================================================
 # Build rules
@@ -60,6 +61,11 @@ all: $(ALL_TESTS)
 json.gen.c sstr.c: test.json-gen-c $(JSON_GEN_C)
 	@echo "Generating test structures..."
 	$(JSON_GEN_C) -in test.json-gen-c -out .
+
+# Generate C++ wrapper header
+json_gen_c.gen.hpp: test.json-gen-c $(JSON_GEN_C) json.gen.c
+	@echo "Generating C++ wrapper header..."
+	$(JSON_GEN_C) --cpp-wrapper -in test.json-gen-c -out .
 
 # Generate msgpack test structures
 msgpack.gen.c: msgpack_test_schema.json-gen-c $(JSON_GEN_C)
@@ -87,6 +93,7 @@ $(eval $(call compile-cxx,cbor_test.cc,$(TEST_BUILD)/cbor_test.o,-I.))
 
 # Make test objects depend on generated files
 $(TEST_OBJECTS): json.gen.c
+$(TEST_BUILD)/cpp_wrapper_test.o: json_gen_c.gen.hpp
 $(TEST_BUILD)/msgpack_test.o: msgpack.gen.c
 $(TEST_BUILD)/cbor_test.o: cbor.gen.c
 
@@ -201,6 +208,11 @@ $(CBOR_TEST): $(TEST_BUILD)/cbor_test.o $(CBOR_GENERATED_OBJECTS) $(TEST_BUILD)/
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
 
+$(CPP_WRAPPER_TEST): $(TEST_BUILD)/cpp_wrapper_test.o $(GENERATED_OBJECTS)
+	@echo "Linking C++ wrapper tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
 #==============================================================================
 # Test execution
 #==============================================================================
@@ -251,6 +263,8 @@ run: $(ALL_TESTS)
 	$(MSGPACK_TEST)
 	@echo "=== CBOR Tests ==="
 	$(CBOR_TEST)
+	@echo "=== C++ Wrapper Tests ==="
+	$(CPP_WRAPPER_TEST)
 	@echo "=== Bugfix Tests ==="
 	$(MAKE) run-bugfix
 	@echo "All tests completed successfully!"

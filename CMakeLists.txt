@@ -216,6 +216,7 @@ add_library(json_gen_c_gencode STATIC
     src/gencode/gencode.c
     src/gencode/gencode_msgpack.c
     src/gencode/gencode_cbor.c
+    src/gencode/gencode_cpp.c
     "${GENCODE_EXTRA_INC}"
     "${GENCODE_MSGPACK_INC}"
     "${GENCODE_CBOR_INC}"

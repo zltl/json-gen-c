@@ -219,6 +219,35 @@ json-gen-c --format cbor -in struct.json-gen-c -out .
 This generates `cbor.gen.h` and `cbor.gen.c` with `cbor_pack_*` / `cbor_unpack_*` functions.
 Same struct definitions and API patterns as JSON and MessagePack.
 
+### C++ Wrapper (Optional)
+
+```shell
+json-gen-c --cpp-wrapper -in struct.json-gen-c -out .
+```
+
+This generates `json_gen_c.gen.hpp` — a C++17 header with RAII wrapper classes
+inside `namespace jgc`. Each class wraps a generated C struct with:
+
+- Default constructor (`_init`), destructor (`_clear`), move and copy semantics
+- Typed get/set accessors (strings as `std::string`, enums as their C enum type)
+- `marshal()`, `unmarshal()`, and `unmarshal_into()` member functions
+- Equality operators and `c_struct()` for C interop
+
+```cpp
+#include "json_gen_c.gen.hpp"
+
+jgc::Person p;
+p.set_name("Alice");
+p.set_age(30);
+
+std::string json = p.marshal();                   // serialize
+jgc::Person p2 = jgc::Person::unmarshal(json);    // deserialize
+assert(p == p2);                                   // compare
+struct ::Person& c = p.c_struct();                 // C interop
+```
+
+Can be combined with `--format` to also generate MessagePack or CBOR alongside.
+
 ### Use Your Generated Codes
 
 #### To Serialize Structs to JSON

@@ -26,13 +26,14 @@ enum output_format {
  */
 static void usage(FILE *stream) {
     fprintf(stream,
-        "Usage: json-gen-c -out <output_dir> -in <input_file> [--format json|msgpack|cbor]\n"
+        "Usage: json-gen-c -out <output_dir> -in <input_file> [--format json|msgpack|cbor] [--cpp-wrapper]\n"
         "       json-gen-c --check-compat <old_schema> <new_schema>\n"
         "Generate serialization C code from struct definition.\n\n"
         "Options:\n"
         "    -in <input_file>     Specify the input struct definition file.\n"
         "    -out <output_dir>    Specify the output codes location, default to current directory\n"
         "    --format <format>    Output format: json (default), msgpack, or cbor\n"
+        "    --cpp-wrapper        Also generate a C++ wrapper header (.gen.hpp)\n"
         "    --check-compat       Compare two schemas and report compatibility.\n"
         "    -h, --help           Show this help message\n"
         "    -v, --version        Show version information\n\n"
@@ -49,6 +50,7 @@ struct options {
     char *compat_old;      /**< Old schema for --check-compat */
     char *compat_new;      /**< New schema for --check-compat */
     enum output_format format; /**< Output serialization format */
+    int cpp_wrapper;       /**< Generate C++ wrapper header (.gen.hpp) */
 };
 
 /**
@@ -81,6 +83,7 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
         {"in", required_argument, 0, 'i'},
         {"out", required_argument, 0, 'o'},
         {"format", required_argument, 0, 'f'},
+        {"cpp-wrapper", no_argument, 0, 'c'},
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'v'},
         {0, 0, 0, 0}
@@ -92,7 +95,7 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
     // Reset getopt index
     optind = 1;
 
-    while ((c = getopt_long_only(argc, argv, "i:o:f:hv", long_options, &option_index)) != -1) {
+    while ((c = getopt_long_only(argc, argv, "i:o:f:chv", long_options, &option_index)) != -1) {
         switch (c) {
             case 'i':
                 options->input_file = optarg;
@@ -111,6 +114,9 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
                     fprintf(stderr, "Error: unknown format '%s' (expected json, msgpack, or cbor)\n", optarg);
                     return JSON_GEN_ERROR_INVALID_PARAM;
                 }
+                break;
+            case 'c':
+                options->cpp_wrapper = 1;
                 break;
             case 'h':
                 usage(stdout);
@@ -211,7 +217,7 @@ static int run_compat_check(const char *old_path, const char *new_path) {
 
 int main(int argc, char **argv) {
     // Initialize options structure
-    struct options options = {NULL, NULL, NULL, NULL, FORMAT_JSON};
+    struct options options = {NULL, NULL, NULL, NULL, FORMAT_JSON, 0};
     
     // Parse command line options
     json_gen_error_t result = options_parse(argc, argv, &options);
@@ -378,6 +384,35 @@ int main(int argc, char **argv) {
     sstr_free(head_ext_h);
     sstr_free(source_ext);
     sstr_free(head_ext);
+
+    // Generate C++ wrapper header if requested
+    if (options.cpp_wrapper) {
+        sstr_t cpp_header = sstr_new();
+        if (cpp_header == NULL) {
+            fprintf(stderr, "Error: failed to allocate memory for C++ wrapper\n");
+            cleanup_and_exit(content, parser, source, head, JSON_GEN_ERROR_MEMORY);
+        }
+        r = gencode_cpp_wrapper(parser->struct_map, parser->enum_map,
+                                parser->oneof_map, out_h_name,
+                                options.format, cpp_header);
+        if (r < 0) {
+            fprintf(stderr, "Error: C++ wrapper generation failed\n");
+            sstr_free(cpp_header);
+            cleanup_and_exit(content, parser, source, head, JSON_GEN_ERROR_GENERAL);
+        }
+        sstr_t cpp_path = sstr(options.output_path);
+        sstr_append_of(cpp_path, "/", 1);
+        sstr_append_cstr(cpp_path, OUTPUT_CPP_FILENAME);
+        if (write_file(sstr_cstr(cpp_path), cpp_header) != 0) {
+            fprintf(stderr, "Error: failed to write C++ wrapper '%s'\n",
+                    sstr_cstr(cpp_path));
+            sstr_free(cpp_path);
+            sstr_free(cpp_header);
+            cleanup_and_exit(content, parser, source, head, JSON_GEN_ERROR_FILE_IO);
+        }
+        sstr_free(cpp_path);
+        sstr_free(cpp_header);
+    }
 
     // Clean up main resources
     sstr_free(source);
