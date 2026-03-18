@@ -149,10 +149,12 @@ Alternative Build Systems</h2>
 <div class="fragment"><div class="line">mkdir build &amp;&amp; cd build</div>
 <div class="line">cmake ..</div>
 <div class="line">cmake --build . --config Release</div>
+<div class="line">ctest -C Release --output-on-failure</div>
 </div><!-- fragment --><p><b>Windows (CMake + MinGW)</b>:</p>
 <div class="fragment"><div class="line">mkdir build &amp;&amp; cd build</div>
 <div class="line">cmake .. -G &quot;MinGW Makefiles&quot;</div>
 <div class="line">cmake --build .</div>
+<div class="line">ctest --output-on-failure</div>
 </div><!-- fragment --><blockquote class="doxtable">
 <p>&zwj;Note: On Windows, CMake automatically uses a built-in <code>xxd</code> replacement (<code>cmake/xxd.cmake</code>). No external tools beyond a C compiler and CMake are needed. </p>
 </blockquote>
