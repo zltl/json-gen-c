@@ -136,8 +136,25 @@ extern void hash_map_for_each(struct hash_map *map,
  */
 extern unsigned int hash(const char *data, size_t n);
 
+/**
+ * @brief Hash function for sstr_t keys, suitable for hash_map key_hash callback.
+ * @param key pointer to an sstr_t key.
+ * @return unsigned int the hash value.
+ */
 extern unsigned int sstr_key_hash(void *key);
+
+/**
+ * @brief Comparison function for sstr_t keys, suitable for hash_map key_cmp callback.
+ * @param a pointer to the first sstr_t key.
+ * @param b pointer to the second sstr_t key.
+ * @return 0 if keys are equal, non-zero otherwise.
+ */
 extern int sstr_key_cmp(void *a, void *b);
+
+/**
+ * @brief Free function for sstr_t keys, suitable for hash_map key_free callback.
+ * @param key pointer to the sstr_t key to free.
+ */
 extern void sstr_key_free(void *key);
 
 #ifdef __cplusplus

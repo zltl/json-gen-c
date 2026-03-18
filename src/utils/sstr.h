@@ -299,17 +299,79 @@ extern sstr_t sstr_printf(const char* fmt, ...);
  */
 extern sstr_t sstr_printf_append(sstr_t buf, const char* fmt, ...);
 
-/// convert sstr <-> int,long,float,double
+/// @name Numeric conversion helpers
+/// Convert between sstr_t and numeric types.
+/// @{
 
+/**
+ * @brief Append the decimal string representation of an int to a string.
+ * @param s the sstr_t to append to.
+ * @param i the integer value to convert and append.
+ */
 extern void sstr_append_int_str(sstr_t s, int i);
+
+/**
+ * @brief Parse a string as a long integer.
+ * @param s the sstr_t to parse.
+ * @param v pointer to receive the parsed value.
+ * @return 0 on success, non-zero on parse error or overflow.
+ */
 extern int sstr_parse_long(sstr_t s, long* v);
+
+/**
+ * @brief Parse a string as an int, consuming the parsed portion.
+ * @param s pointer to the sstr_t to parse (advanced past consumed input).
+ * @param v pointer to receive the parsed value.
+ * @return 0 on success, non-zero on parse error or overflow.
+ */
 extern int sstr_parse_int(sstr_t* s, int* v);
+
+/**
+ * @brief Append the decimal string representation of a long to a string.
+ * @param s the sstr_t to append to.
+ * @param l the long value to convert and append.
+ */
 extern void sstr_append_long_str(sstr_t s, long l);
+
+/**
+ * @brief Append the decimal string representation of a uint32_t to a string.
+ * @param s the sstr_t to append to.
+ * @param u the uint32_t value to convert and append.
+ */
 extern void sstr_append_uint32_str(sstr_t s, uint32_t u);
+
+/**
+ * @brief Append the decimal string representation of a uint64_t to a string.
+ * @param s the sstr_t to append to.
+ * @param u the uint64_t value to convert and append.
+ */
 extern void sstr_append_uint64_str(sstr_t s, uint64_t u);
+
+/**
+ * @brief Append the string representation of a float to a string.
+ * @param s the sstr_t to append to.
+ * @param f the float value to convert and append.
+ * @param precission number of decimal places to output.
+ */
 extern void sstr_append_float_str(sstr_t s, float f, int precission);
+
+/**
+ * @brief Append the string representation of a double to a string.
+ * @param s the sstr_t to append to.
+ * @param f the double value to convert and append.
+ * @param precision number of decimal places to output.
+ */
 extern void sstr_append_double_str(sstr_t s, double f, int precision);
+
+/**
+ * @brief Parse a string as a double.
+ * @param s the sstr_t to parse.
+ * @param v pointer to receive the parsed value.
+ * @return 0 on success, non-zero on parse error.
+ */
 extern int sstr_parse_double(sstr_t s, double* v);
+
+/// @}
 
 /**
  * @brief Append if cond is true, otherwise do nothing.
@@ -329,7 +391,16 @@ extern void sstr_append_of_if(sstr_t s, const void* data, size_t length, bool co
 #define sstr_append_cstr_if(dst, src, cond) \
     sstr_append_of_if(dst, src, strlen(src), cond)
 
-// escape string to json string format
+/**
+ * @brief Escape a string for JSON output and append it to a buffer.
+ *
+ * Converts special characters (\\, ", newlines, tabs, etc.) to their
+ * JSON escape sequences and appends the result to @p out.
+ *
+ * @param out the output sstr_t to append the escaped string to.
+ * @param in  the input sstr_t containing the raw string to escape.
+ * @return 0 on success, non-zero on error.
+ */
 extern int sstr_json_escape_string_append(sstr_t out, sstr_t in);
 
 /**
