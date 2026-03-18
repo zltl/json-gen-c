@@ -248,6 +248,30 @@ struct ::Person& c = p.c_struct();                 // C interop
 
 Can be combined with `--format` to also generate MessagePack or CBOR alongside.
 
+### Rust Module (Optional)
+
+```shell
+json-gen-c --rust -in struct.json-gen-c -out .
+```
+
+This generates `json_gen_c.gen.rs` — a self-contained Rust module with native
+`serde`-compatible structs and enums. Add `serde` and `serde_json` to your
+`Cargo.toml`, then:
+
+```rust
+mod json_gen_c_gen; // or rename as you like
+use json_gen_c_gen::*;
+
+let p = Person { name: "Alice".into(), age: "30".into() };
+let json = serde_json::to_string(&p).unwrap();         // serialize
+let p2: Person = serde_json::from_str(&json).unwrap();  // deserialize
+assert_eq!(p, p2);
+```
+
+Type mapping: `int`→`i32`, `long`→`i64`, `float`→`f32`, `double`→`f64`,
+`sstr_t`→`String`, enums→Rust enums, `oneof`→`#[serde(tag)]` enums,
+`optional`→`Option<T>`, arrays→`Vec<T>`/`[T; N]`, maps→`HashMap<String, V>`.
+
 ### Use Your Generated Codes
 
 #### To Serialize Structs to JSON

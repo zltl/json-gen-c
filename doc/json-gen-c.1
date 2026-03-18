@@ -352,6 +352,21 @@ generates MessagePack binary pack/unpack code.
 .B cbor
 generates CBOR (RFC 8949) binary pack/unpack code.
 .TP
+.B \-\-cpp\-wrapper
+Also generate a C++17 wrapper header
+.RB ( json_gen_c.gen.hpp )
+providing RAII classes around the generated C structs with typed
+accessors and marshal/unmarshal member functions.
+.TP
+.B \-\-rust
+Also generate a Rust module
+.RB ( json_gen_c.gen.rs )
+with native serde\-compatible structs and enums.  Requires
+.B serde
+and
+.B serde_json
+crates in the consuming project.
+.TP
 .BI \-\-check\-compat " old_schema new_schema"
 Compare two schema files and report compatibility.
 Prints safe changes (additions, deprecations) and breaking changes

@@ -22,6 +22,7 @@ extern "C" {
 #define OUTPUT_CBOR_C_FILENAME "cbor.gen.c"
 #define OUTPUT_CBOR_H_FILENAME "cbor.gen.h"
 #define OUTPUT_CPP_FILENAME "json_gen_c.gen.hpp"
+#define OUTPUT_RUST_FILENAME "json_gen_c.gen.rs"
 
 /**
  * @brief generate json manipulate codes by struct_map, enum_map and oneof_map into source and header.
@@ -72,6 +73,19 @@ extern int gencode_cbor_source(struct hash_map* struct_map, struct hash_map* enu
 extern int gencode_cpp_wrapper(struct hash_map* struct_map, struct hash_map* enum_map,
                                struct hash_map* oneof_map, const char* c_header_name,
                                int format, sstr_t output);
+
+/**
+ * @brief generate a Rust module (.rs) with native serde-compatible structs
+ * and enums.
+ *
+ * @param struct_map parsed struct definitions.
+ * @param enum_map parsed enum definitions.
+ * @param oneof_map parsed oneof (tagged union) definitions.
+ * @param output the output Rust source content.
+ * @return 0 on success, -1 on failure.
+ */
+extern int gencode_rust(struct hash_map* struct_map, struct hash_map* enum_map,
+                        struct hash_map* oneof_map, sstr_t output);
 
 #ifdef __cplusplus
 }

@@ -27,7 +27,7 @@ enum output_format {
  */
 static void usage(FILE *stream) {
     fprintf(stream,
-        "Usage: json-gen-c -out <output_dir> -in <input_file> [--format json|msgpack|cbor] [--cpp-wrapper]\n"
+        "Usage: json-gen-c -out <output_dir> -in <input_file> [--format json|msgpack|cbor] [--cpp-wrapper] [--rust]\n"
         "       json-gen-c --check-compat <old_schema> <new_schema>\n"
         "       json-gen-c --lsp\n"
         "Generate serialization C code from struct definition.\n\n"
@@ -36,6 +36,7 @@ static void usage(FILE *stream) {
         "    -out <output_dir>    Specify the output codes location, default to current directory\n"
         "    --format <format>    Output format: json (default), msgpack, or cbor\n"
         "    --cpp-wrapper        Also generate a C++ wrapper header (.gen.hpp)\n"
+        "    --rust               Also generate a Rust module (.gen.rs) with serde derives\n"
         "    --check-compat       Compare two schemas and report compatibility.\n"
         "    --lsp                Run as Language Server Protocol (LSP) server.\n"
         "    -h, --help           Show this help message\n"
@@ -54,6 +55,7 @@ struct options {
     char *compat_new;      /**< New schema for --check-compat */
     enum output_format format; /**< Output serialization format */
     int cpp_wrapper;       /**< Generate C++ wrapper header (.gen.hpp) */
+    int rust_gen;          /**< Generate Rust module (.gen.rs) */
     int lsp_mode;          /**< Run as LSP server */
 };
 
@@ -92,6 +94,7 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
         {"out", required_argument, 0, 'o'},
         {"format", required_argument, 0, 'f'},
         {"cpp-wrapper", no_argument, 0, 'c'},
+        {"rust", no_argument, 0, 'r'},
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'v'},
         {0, 0, 0, 0}
@@ -103,7 +106,7 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
     // Reset getopt index
     optind = 1;
 
-    while ((c = getopt_long_only(argc, argv, "i:o:f:chv", long_options, &option_index)) != -1) {
+    while ((c = getopt_long_only(argc, argv, "i:o:f:chvrR", long_options, &option_index)) != -1) {
         switch (c) {
             case 'i':
                 options->input_file = optarg;
@@ -125,6 +128,9 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
                 break;
             case 'c':
                 options->cpp_wrapper = 1;
+                break;
+            case 'r':
+                options->rust_gen = 1;
                 break;
             case 'h':
                 usage(stdout);
@@ -225,7 +231,7 @@ static int run_compat_check(const char *old_path, const char *new_path) {
 
 int main(int argc, char **argv) {
     // Initialize options structure
-    struct options options = {NULL, NULL, NULL, NULL, FORMAT_JSON, 0, 0};
+    struct options options = {NULL, NULL, NULL, NULL, FORMAT_JSON, 0, 0, 0};
     
     // Parse command line options
     json_gen_error_t result = options_parse(argc, argv, &options);
@@ -425,6 +431,34 @@ int main(int argc, char **argv) {
         }
         sstr_free(cpp_path);
         sstr_free(cpp_header);
+    }
+
+    // Generate Rust module if requested
+    if (options.rust_gen) {
+        sstr_t rust_src = sstr_new();
+        if (rust_src == NULL) {
+            fprintf(stderr, "Error: failed to allocate memory for Rust module\n");
+            cleanup_and_exit(content, parser, source, head, JSON_GEN_ERROR_MEMORY);
+        }
+        r = gencode_rust(parser->struct_map, parser->enum_map,
+                         parser->oneof_map, rust_src);
+        if (r < 0) {
+            fprintf(stderr, "Error: Rust code generation failed\n");
+            sstr_free(rust_src);
+            cleanup_and_exit(content, parser, source, head, JSON_GEN_ERROR_GENERAL);
+        }
+        sstr_t rust_path = sstr(options.output_path);
+        sstr_append_of(rust_path, "/", 1);
+        sstr_append_cstr(rust_path, OUTPUT_RUST_FILENAME);
+        if (write_file(sstr_cstr(rust_path), rust_src) != 0) {
+            fprintf(stderr, "Error: failed to write Rust module '%s'\n",
+                    sstr_cstr(rust_path));
+            sstr_free(rust_path);
+            sstr_free(rust_src);
+            cleanup_and_exit(content, parser, source, head, JSON_GEN_ERROR_FILE_IO);
+        }
+        sstr_free(rust_path);
+        sstr_free(rust_src);
     }
 
     // Clean up main resources

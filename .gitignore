@@ -14,3 +14,4 @@ __pycache__
 /compile_commands.json
 build/
 build-*/
+/test/rust_test/target/
