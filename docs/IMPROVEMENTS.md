@@ -325,7 +325,8 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
     - **Completed:** `--cpp-wrapper` generates `json_gen_c.gen.hpp` — a zero-dependency C++17 header with RAII wrapper classes for all generated C structs. Features: typed get/set accessors, `std::string` string accessors, `marshal()`/`unmarshal()`/`unmarshal_into()` member functions, move and copy semantics, equality operators, enum accessors, nested struct/oneof references, dynamic/fixed array pointers, map references, and `c_struct()` interop. 24 Google Test cases.
     - ~~Rust~~
     - **Completed:** `--rust` generates `json_gen_c.gen.rs` — a self-contained Rust module with native `serde`-compatible structs and enums. Type mapping: `int`→`i32`, `long`→`i64`, `float`→`f32`, `double`→`f64`, `sstr_t`→`String`, precise-width integers to native Rust types. Supports all schema features: enums (`#[derive(Serialize, Deserialize)]`), tagged unions (`#[serde(tag)]`), optional (`Option<T>` + `skip_serializing_if`), nullable (`Option<T>`), dynamic arrays (`Vec<T>`), fixed arrays (`[T; N]`), maps (`HashMap<String, V>`), JSON aliases (`#[serde(rename)]`), default values (`impl Default` + `#[serde(default)]`), and `@deprecated`. 20 Rust integration tests.
-    - Go
+    - ~~Go~~
+    - **Completed:** `--go` generates `json_gen_c.gen.go` — a self-contained Go source file using `encoding/json` struct tags. Type mapping: `int`→`int32`, `long`→`int64`, `float`→`float32`, `double`→`float64`, `sstr_t`→`string`, precise-width integers to native Go types. Supports all schema features: enums (`type E string` + `const` block), tagged unions (custom `MarshalJSON`/`UnmarshalJSON`), optional (`*T` + `omitempty`), nullable (`*T`), dynamic arrays (`[]T`), fixed arrays (`[N]T`), maps (`map[string]V`), JSON aliases (struct tags), default values (`NewT()` constructors + pointer helpers), and `@deprecated`. 20 Go integration tests.
 4. ~~Build better authoring tools.~~
     - ~~VS Code syntax highlighting and diagnostics~~
     - **Completed:** VS Code extension at `editors/vscode/` providing TextMate grammar for `.json-gen-c` files. Highlights keywords (`struct`/`enum`/`oneof`), field modifiers (`optional`/`nullable`), builtin types, annotations (`@json`/`@tag`/`@deprecated`), `#include` directives, `map<>` generics, array syntax, default values, comments, strings, and numbers. Includes language configuration for bracket matching, comment toggling, auto-closing pairs, and code folding. Zero dependencies — purely declarative JSON files.
@@ -341,6 +342,7 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 - `src/gencode/gencode_msgpack.c`: C code generation logic (MessagePack format)
 - `src/gencode/gencode_cpp.c`: C++ wrapper header code generation (`--cpp-wrapper`)
 - `src/gencode/gencode_rust.c`: Rust module code generation (`--rust`)
+- `src/gencode/gencode_go.c`: Go source code generation (`--go`)
 - `src/gencode/codes/json_parse.c`: embedded JSON runtime template emitted into generated code
 - `src/gencode/codes/msgpack_codec.c`: embedded MessagePack runtime template emitted into generated code
 - `src/gencode/codes/msgpack_codec.h`: MessagePack wire format constants and reader/writer declarations

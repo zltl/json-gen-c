@@ -367,6 +367,11 @@ and
 .B serde_json
 crates in the consuming project.
 .TP
+.B \-\-go
+Also generate a Go source file
+.RB ( json_gen_c.gen.go )
+using encoding/json struct tags.  No external dependencies required.
+.TP
 .BI \-\-check\-compat " old_schema new_schema"
 Compare two schema files and report compatibility.
 Prints safe changes (additions, deprecations) and breaking changes

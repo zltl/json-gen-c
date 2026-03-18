@@ -27,7 +27,7 @@ enum output_format {
  */
 static void usage(FILE *stream) {
     fprintf(stream,
-        "Usage: json-gen-c -out <output_dir> -in <input_file> [--format json|msgpack|cbor] [--cpp-wrapper] [--rust]\n"
+        "Usage: json-gen-c -out <output_dir> -in <input_file> [--format json|msgpack|cbor] [--cpp-wrapper] [--rust] [--go]\n"
         "       json-gen-c --check-compat <old_schema> <new_schema>\n"
         "       json-gen-c --lsp\n"
         "Generate serialization C code from struct definition.\n\n"
@@ -37,6 +37,7 @@ static void usage(FILE *stream) {
         "    --format <format>    Output format: json (default), msgpack, or cbor\n"
         "    --cpp-wrapper        Also generate a C++ wrapper header (.gen.hpp)\n"
         "    --rust               Also generate a Rust module (.gen.rs) with serde derives\n"
+        "    --go                 Also generate a Go source file (.gen.go)\n"
         "    --check-compat       Compare two schemas and report compatibility.\n"
         "    --lsp                Run as Language Server Protocol (LSP) server.\n"
         "    -h, --help           Show this help message\n"
@@ -56,6 +57,7 @@ struct options {
     enum output_format format; /**< Output serialization format */
     int cpp_wrapper;       /**< Generate C++ wrapper header (.gen.hpp) */
     int rust_gen;          /**< Generate Rust module (.gen.rs) */
+    int go_gen;            /**< Generate Go source file (.gen.go) */
     int lsp_mode;          /**< Run as LSP server */
 };
 
@@ -95,6 +97,7 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
         {"format", required_argument, 0, 'f'},
         {"cpp-wrapper", no_argument, 0, 'c'},
         {"rust", no_argument, 0, 'r'},
+        {"go", no_argument, 0, 'g'},
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'v'},
         {0, 0, 0, 0}
@@ -106,7 +109,7 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
     // Reset getopt index
     optind = 1;
 
-    while ((c = getopt_long_only(argc, argv, "i:o:f:chvrR", long_options, &option_index)) != -1) {
+    while ((c = getopt_long_only(argc, argv, "i:o:f:chvrg", long_options, &option_index)) != -1) {
         switch (c) {
             case 'i':
                 options->input_file = optarg;
@@ -131,6 +134,9 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
                 break;
             case 'r':
                 options->rust_gen = 1;
+                break;
+            case 'g':
+                options->go_gen = 1;
                 break;
             case 'h':
                 usage(stdout);
@@ -231,7 +237,7 @@ static int run_compat_check(const char *old_path, const char *new_path) {
 
 int main(int argc, char **argv) {
     // Initialize options structure
-    struct options options = {NULL, NULL, NULL, NULL, FORMAT_JSON, 0, 0, 0};
+    struct options options = {NULL, NULL, NULL, NULL, FORMAT_JSON, 0, 0, 0, 0};
     
     // Parse command line options
     json_gen_error_t result = options_parse(argc, argv, &options);
@@ -459,6 +465,33 @@ int main(int argc, char **argv) {
         }
         sstr_free(rust_path);
         sstr_free(rust_src);
+    }
+
+    if (options.go_gen) {
+        sstr_t go_src = sstr_new();
+        if (go_src == NULL) {
+            fprintf(stderr, "Error: failed to allocate memory for Go source\n");
+            cleanup_and_exit(content, parser, source, head, JSON_GEN_ERROR_MEMORY);
+        }
+        r = gencode_go(parser->struct_map, parser->enum_map,
+                       parser->oneof_map, "gen", go_src);
+        if (r < 0) {
+            fprintf(stderr, "Error: Go code generation failed\n");
+            sstr_free(go_src);
+            cleanup_and_exit(content, parser, source, head, JSON_GEN_ERROR_GENERAL);
+        }
+        sstr_t go_path = sstr(options.output_path);
+        sstr_append_of(go_path, "/", 1);
+        sstr_append_cstr(go_path, OUTPUT_GO_FILENAME);
+        if (write_file(sstr_cstr(go_path), go_src) != 0) {
+            fprintf(stderr, "Error: failed to write Go source '%s'\n",
+                    sstr_cstr(go_path));
+            sstr_free(go_path);
+            sstr_free(go_src);
+            cleanup_and_exit(content, parser, source, head, JSON_GEN_ERROR_FILE_IO);
+        }
+        sstr_free(go_path);
+        sstr_free(go_src);
     }
 
     // Clean up main resources

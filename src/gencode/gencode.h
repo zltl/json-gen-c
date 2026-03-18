@@ -23,6 +23,7 @@ extern "C" {
 #define OUTPUT_CBOR_H_FILENAME "cbor.gen.h"
 #define OUTPUT_CPP_FILENAME "json_gen_c.gen.hpp"
 #define OUTPUT_RUST_FILENAME "json_gen_c.gen.rs"
+#define OUTPUT_GO_FILENAME "json_gen_c.gen.go"
 
 /**
  * @brief generate json manipulate codes by struct_map, enum_map and oneof_map into source and header.
@@ -86,6 +87,21 @@ extern int gencode_cpp_wrapper(struct hash_map* struct_map, struct hash_map* enu
  */
 extern int gencode_rust(struct hash_map* struct_map, struct hash_map* enum_map,
                         struct hash_map* oneof_map, sstr_t output);
+
+/**
+ * @brief generate a Go source file (.go) with native encoding/json-compatible
+ * structs and enums.
+ *
+ * @param struct_map parsed struct definitions.
+ * @param enum_map parsed enum definitions.
+ * @param oneof_map parsed oneof (tagged union) definitions.
+ * @param package_name Go package name to use.
+ * @param output the output Go source content.
+ * @return 0 on success, -1 on failure.
+ */
+extern int gencode_go(struct hash_map* struct_map, struct hash_map* enum_map,
+                      struct hash_map* oneof_map, const char* package_name,
+                      sstr_t output);
 
 #ifdef __cplusplus
 }

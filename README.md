@@ -272,6 +272,37 @@ Type mapping: `int`→`i32`, `long`→`i64`, `float`→`f32`, `double`→`f64`,
 `sstr_t`→`String`, enums→Rust enums, `oneof`→`#[serde(tag)]` enums,
 `optional`→`Option<T>`, arrays→`Vec<T>`/`[T; N]`, maps→`HashMap<String, V>`.
 
+### Go Source (Optional)
+
+```shell
+json-gen-c --go -in struct.json-gen-c -out .
+```
+
+This generates `json_gen_c.gen.go` — a self-contained Go source file using
+`encoding/json` struct tags. No external dependencies required:
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "your_module/gen"
+)
+
+func main() {
+    p := gen.Person{Name: "Alice", Age: "30"}
+    data, _ := json.Marshal(p)              // serialize
+    var p2 gen.Person
+    json.Unmarshal(data, &p2)               // deserialize
+    fmt.Println(p2.Name)                    // "Alice"
+}
+```
+
+Type mapping: `int`→`int32`, `long`→`int64`, `float`→`float32`, `double`→`float64`,
+`sstr_t`→`string`, enums→`type E string`, `oneof`→custom marshal/unmarshal,
+`optional`→`*T` + `omitempty`, arrays→`[]T`/`[N]T`, maps→`map[string]V`.
+
 ### Use Your Generated Codes
 
 #### To Serialize Structs to JSON
