@@ -4,5 +4,7 @@ var dir_08427a230e203d1bf3e47f3f72aae93d =
     [ "gencode.h", "gencode_8h.html", "gencode_8h" ],
     [ "gencode_cbor.c", "gencode__cbor_8c.html", "gencode__cbor_8c" ],
     [ "gencode_cpp.c", "gencode__cpp_8c.html", "gencode__cpp_8c" ],
-    [ "gencode_msgpack.c", "gencode__msgpack_8c.html", "gencode__msgpack_8c" ]
+    [ "gencode_go.c", "gencode__go_8c.html", "gencode__go_8c" ],
+    [ "gencode_msgpack.c", "gencode__msgpack_8c.html", "gencode__msgpack_8c" ],
+    [ "gencode_rust.c", "gencode__rust_8c.html", "gencode__rust_8c" ]
 ];

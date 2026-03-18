@@ -1,9 +1,13 @@
 <map id="src/gencode/gencode.h" name="src/gencode/gencode.h">
-<area shape="rect" id="Node000001" title="generate json manipulate codes." alt="" coords="182,5,353,31"/>
+<area shape="rect" id="Node000001" title="generate json manipulate codes." alt="" coords="382,5,553,31"/>
 <area shape="rect" id="Node000002" href="$gencode__cbor_8c.html" title="Generate CBOR pack/unpack C code from parsed schema." alt="" coords="5,79,164,119"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="229,39,130,81,128,76,227,34"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="398,36,176,81,165,84,164,78,175,76,397,31"/>
 <area shape="rect" id="Node000003" href="$gencode__cpp_8c.html" title="Generate a C++ wrapper header (.gen.hpp) providing RAII classes around the generated C structs,..." alt="" coords="188,79,347,119"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="270,44,270,79,265,79,265,44"/>
-<area shape="rect" id="Node000004" href="$gencode__msgpack_8c.html" title="Generate MessagePack pack/unpack C code from parsed schema." alt="" coords="371,79,529,119"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="308,34,407,76,405,81,305,39"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="427,38,316,81,314,76,425,33"/>
+<area shape="rect" id="Node000004" href="$gencode__go_8c.html" title="Generate a Go source file (.go) with native encoding/json&#45;compatible structs and type&#45;safe enums from..." alt="" coords="371,86,564,111"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="470,44,470,86,465,86,465,44"/>
+<area shape="rect" id="Node000005" href="$gencode__msgpack_8c.html" title="Generate MessagePack pack/unpack C code from parsed schema." alt="" coords="588,79,747,119"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="510,33,620,76,618,81,508,38"/>
+<area shape="rect" id="Node000006" href="$gencode__rust_8c.html" title="Generate a Rust module (.rs) with native serde&#45;compatible structs and enums from the parsed schema...." alt="" coords="771,79,929,119"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="538,31,760,76,771,78,770,84,759,81,537,36"/>
 </map>

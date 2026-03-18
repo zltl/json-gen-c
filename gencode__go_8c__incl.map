@@ -1,0 +1,35 @@
+<map id="src/gencode/gencode_go.c" name="src/gencode/gencode_go.c">
+<area shape="rect" id="Node000001" title="Generate a Go source file (.go) with native encoding/json&#45;compatible structs and type&#45;safe enums from..." alt="" coords="325,5,518,31"/>
+<area shape="rect" id="Node000002" href="$gencode_8h.html" title="generate json manipulate codes." alt="" coords="235,79,383,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="405,33,341,73,338,69,402,28"/>
+<area shape="rect" id="Node000003" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="29,152,163,177"/>
+<area shape="poly" id="edge16_Node000001_Node000003" title=" " alt="" coords="324,23,244,28,160,38,89,55,63,67,46,80,40,95,45,111,56,127,71,141,68,145,52,130,40,113,35,95,42,77,61,62,88,50,159,33,243,23,324,18"/>
+<area shape="rect" id="Node000005" href="$sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="171,225,261,251"/>
+<area shape="poly" id="edge17_Node000001_Node000005" title=" " alt="" coords="426,31,428,60,427,99,419,141,410,161,398,179,371,202,340,219,307,229,275,235,274,230,305,224,338,214,368,198,394,176,405,159,414,139,422,98,423,60,420,31"/>
+<area shape="rect" id="Node000009" href="$struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="56,79,211,104"/>
+<area shape="poly" id="edge10_Node000001_Node000009" title=" " alt="" coords="376,33,194,78,192,73,374,28"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="371,225,437,251"/>
+<area shape="poly" id="edge19_Node000001_Node000011" title=" " alt="" coords="429,30,442,78,449,128,448,151,442,178,424,215,419,213,437,176,443,150,444,129,437,79,423,32"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="510,79,581,104"/>
+<area shape="poly" id="edge18_Node000001_Node000012" title=" " alt="" coords="442,28,514,69,512,74,440,33"/>
+<area shape="rect" id="Node000013" title=" " alt="" coords="605,79,675,104"/>
+<area shape="poly" id="edge20_Node000001_Node000013" title=" " alt="" coords="457,28,592,72,590,77,456,33"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="276,107,144,150,142,145,274,101"/>
+<area shape="poly" id="edge9_Node000002_Node000005" title=" " alt="" coords="304,106,233,215,228,212,299,103"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="11,299,85,324"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="94,179,59,286,54,285,89,177"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="116,175,186,216,183,220,114,180"/>
+<area shape="poly" id="edge6_Node000005_Node000004" title=" " alt="" coords="190,253,89,296,87,291,188,248"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="312,299,387,324"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="239,248,317,290,314,294,236,253"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="109,299,192,324"/>
+<area shape="poly" id="edge7_Node000005_Node000007" title=" " alt="" coords="207,253,172,290,168,287,203,249"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="217,299,287,324"/>
+<area shape="poly" id="edge8_Node000005_Node000008" title=" " alt="" coords="224,250,242,285,237,288,219,252"/>
+<area shape="poly" id="edge14_Node000009_Node000003" title=" " alt="" coords="129,106,111,141,106,139,125,103"/>
+<area shape="poly" id="edge11_Node000009_Node000004" title=" " alt="" coords="87,106,49,124,33,137,19,153,12,169,9,186,12,222,23,257,36,285,31,288,18,259,7,223,4,186,7,168,15,151,29,133,46,120,85,102"/>
+<area shape="poly" id="edge15_Node000009_Node000005" title=" " alt="" coords="144,103,177,151,208,211,203,214,172,153,140,106"/>
+<area shape="rect" id="Node000010" href="$diag_8h.html" title="Diagnostic engine for clang&#45;style error reporting." alt="" coords="289,152,383,177"/>
+<area shape="poly" id="edge12_Node000009_Node000010" title=" " alt="" coords="167,102,291,145,289,150,165,107"/>
+<area shape="poly" id="edge13_Node000010_Node000011" title=" " alt="" coords="349,176,385,213,381,217,345,180"/>
+</map>

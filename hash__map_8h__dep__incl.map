@@ -1,27 +1,35 @@
 <map id="src/utils/hash_map.h" name="src/utils/hash_map.h">
-<area shape="rect" id="Node000001" title="A simple hash_map implementation." alt="" coords="495,5,651,31"/>
-<area shape="rect" id="Node000002" href="$compat__check_8h.html" title="Schema compatibility checker — compares two parsed schemas and reports safe vs. breaking changes." alt="" coords="5,79,209,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="485,35,183,81,182,76,484,30"/>
-<area shape="rect" id="Node000004" href="$gencode_8h.html" title="generate json manipulate codes." alt="" coords="487,79,658,104"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="575,44,575,79,570,79,570,44"/>
-<area shape="rect" id="Node000005" href="$gencode__cbor_8c.html" title="Generate CBOR pack/unpack C code from parsed schema." alt="" coords="233,152,392,192"/>
-<area shape="poly" id="edge7_Node000001_Node000005" title=" " alt="" coords="482,28,420,34,358,45,306,60,287,70,275,80,268,97,272,115,282,134,296,150,291,153,278,137,267,117,263,96,270,77,284,65,304,55,357,40,419,29,481,22"/>
-<area shape="rect" id="Node000006" href="$gencode__cpp_8c.html" title="Generate a C++ wrapper header (.gen.hpp) providing RAII classes around the generated C structs,..." alt="" coords="599,152,757,192"/>
-<area shape="poly" id="edge8_Node000001_Node000006" title=" " alt="" coords="635,33,667,51,692,77,699,96,699,117,690,153,684,151,694,116,694,97,688,80,664,55,632,38"/>
-<area shape="rect" id="Node000007" href="$gencode__msgpack_8c.html" title="Generate MessagePack pack/unpack C code from parsed schema." alt="" coords="416,152,575,192"/>
-<area shape="poly" id="edge9_Node000001_Node000007" title=" " alt="" coords="619,34,644,47,666,64,677,83,677,94,672,106,656,119,631,132,569,154,567,149,629,128,653,115,668,102,672,93,672,84,662,67,641,52,616,38"/>
-<area shape="rect" id="Node000008" href="$struct__parse_8c.html" title="parse struct definition file." alt="" coords="781,159,959,185"/>
-<area shape="poly" id="edge10_Node000001_Node000008" title=" " alt="" coords="616,33,713,76,792,120,853,157,850,161,789,124,710,81,614,38"/>
-<area shape="rect" id="Node000009" href="$struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="285,79,463,104"/>
-<area shape="poly" id="edge11_Node000001_Node000009" title=" " alt="" coords="529,38,407,81,406,76,527,33"/>
-<area shape="rect" id="Node000003" href="$compat__check_8c.html" title="Schema compatibility checker implementation." alt="" coords="6,159,209,185"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="110,118,110,159,105,159,105,118"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="523,110,376,154,374,149,521,105"/>
-<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="601,110,654,150,651,154,598,114"/>
-<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="554,116,516,154,512,150,550,112"/>
-<area shape="poly" id="edge12_Node000009_Node000003" title=" " alt="" coords="323,110,147,162,145,157,321,105"/>
-<area shape="poly" id="edge13_Node000009_Node000005" title=" " alt="" coords="359,116,330,153,325,150,354,113"/>
-<area shape="poly" id="edge14_Node000009_Node000006" title=" " alt="" coords="432,105,606,149,604,154,431,110"/>
-<area shape="poly" id="edge15_Node000009_Node000007" title=" " alt="" coords="405,109,468,150,465,154,402,114"/>
-<area shape="poly" id="edge16_Node000009_Node000008" title=" " alt="" coords="470,103,770,149,811,157,810,162,770,155,469,109"/>
+<area shape="rect" id="Node000001" title="A simple hash_map implementation." alt="" coords="615,5,771,31"/>
+<area shape="rect" id="Node000002" href="$compat__check_8h.html" title="Schema compatibility checker — compares two parsed schemas and reports safe vs. breaking changes." alt="" coords="41,79,245,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="602,34,232,81,231,76,601,28"/>
+<area shape="rect" id="Node000004" href="$gencode_8h.html" title="generate json manipulate codes." alt="" coords="608,79,779,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="696,44,696,79,691,79,691,44"/>
+<area shape="rect" id="Node000005" href="$gencode__cbor_8c.html" title="Generate CBOR pack/unpack C code from parsed schema." alt="" coords="415,152,574,192"/>
+<area shape="poly" id="edge9_Node000001_Node000005" title=" " alt="" coords="602,28,540,34,479,45,427,60,408,70,395,80,390,90,390,99,400,118,422,135,449,150,447,154,419,139,396,121,384,100,385,88,391,77,405,65,425,55,477,40,540,29,602,22"/>
+<area shape="rect" id="Node000006" href="$gencode__cpp_8c.html" title="Generate a C++ wrapper header (.gen.hpp) providing RAII classes around the generated C structs,..." alt="" coords="598,152,757,192"/>
+<area shape="poly" id="edge10_Node000001_Node000006" title=" " alt="" coords="740,34,765,47,785,63,797,83,797,94,793,105,767,134,734,154,732,150,764,130,788,103,792,93,792,84,781,67,762,51,738,39"/>
+<area shape="rect" id="Node000007" href="$gencode__go_8c.html" title="Generate a Go source file (.go) with native encoding/json&#45;compatible structs and type&#45;safe enums from..." alt="" coords="963,159,1157,185"/>
+<area shape="poly" id="edge11_Node000001_Node000007" title=" " alt="" coords="736,33,842,76,1035,157,1032,162,840,81,734,38"/>
+<area shape="rect" id="Node000008" href="$gencode__msgpack_8c.html" title="Generate MessagePack pack/unpack C code from parsed schema." alt="" coords="233,152,391,192"/>
+<area shape="poly" id="edge12_Node000001_Node000008" title=" " alt="" coords="602,22,549,27,492,38,435,55,383,81,363,97,347,115,323,153,319,150,342,112,360,93,380,76,433,50,491,33,548,22,601,17"/>
+<area shape="rect" id="Node000009" href="$gencode__rust_8c.html" title="Generate a Rust module (.rs) with native serde&#45;compatible structs and enums from the parsed schema...." alt="" coords="781,152,939,192"/>
+<area shape="poly" id="edge13_Node000001_Node000009" title=" " alt="" coords="743,33,780,51,814,77,841,114,857,151,852,153,836,117,810,81,777,56,741,38"/>
+<area shape="rect" id="Node000010" href="$struct__parse_8c.html" title="parse struct definition file." alt="" coords="1181,159,1358,185"/>
+<area shape="poly" id="edge14_Node000001_Node000010" title=" " alt="" coords="750,32,1227,157,1225,162,749,37"/>
+<area shape="rect" id="Node000011" href="$struct__parse_8h.html" title="Parse struct definitions. Support scalar types(int, long, float, double, sstr_t), arrays,..." alt="" coords="405,79,584,104"/>
+<area shape="poly" id="edge15_Node000001_Node000011" title=" " alt="" coords="649,38,528,81,526,76,648,33"/>
+<area shape="rect" id="Node000003" href="$compat__check_8c.html" title="Schema compatibility checker implementation." alt="" coords="5,159,208,185"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="134,118,114,160,110,158,129,115"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="653,111,543,154,541,149,651,106"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="691,118,684,152,679,151,686,117"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="760,104,1007,157,1006,162,759,109"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="625,109,403,155,392,157,391,152,402,149,624,104"/>
+<area shape="poly" id="edge8_Node000004_Node000009" title=" " alt="" coords="731,107,821,149,818,154,729,112"/>
+<area shape="poly" id="edge16_Node000011_Node000003" title=" " alt="" coords="425,109,164,162,163,157,424,104"/>
+<area shape="poly" id="edge17_Node000011_Node000005" title=" " alt="" coords="497,118,497,152,492,152,492,118"/>
+<area shape="poly" id="edge18_Node000011_Node000006" title=" " alt="" coords="535,107,634,149,632,154,533,112"/>
+<area shape="poly" id="edge19_Node000011_Node000007" title=" " alt="" coords="598,102,951,149,996,157,995,162,950,155,597,108"/>
+<area shape="poly" id="edge20_Node000011_Node000008" title=" " alt="" coords="457,112,357,154,355,149,454,107"/>
+<area shape="poly" id="edge21_Node000011_Node000009" title=" " alt="" coords="561,104,781,151,780,156,560,109"/>
+<area shape="poly" id="edge22_Node000011_Node000010" title=" " alt="" coords="598,101,760,115,886,122,1011,131,1170,149,1214,157,1214,162,1169,155,1011,136,886,127,759,120,597,107"/>
 </map>
