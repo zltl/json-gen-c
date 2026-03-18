@@ -325,6 +325,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a65ea1dd56ddc5af8d44c6b036e7ec9eb" id="r_a65ea1dd56ddc5af8d44c6b036e7ec9eb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct__parse_8h.html#a65ea1dd56ddc5af8d44c6b036e7ec9eb">struct_parser_validate</a> (struct <a class="el" href="structstruct__parser.html">struct_parser</a> *parser)</td></tr>
 <tr class="memdesc:a65ea1dd56ddc5af8d44c6b036e7ec9eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate parsed schema for semantic errors.  <br /></td></tr>
 <tr class="separator:a65ea1dd56ddc5af8d44c6b036e7ec9eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad53792c8ba9a81b4884fc2e948df4c49" id="r_ad53792c8ba9a81b4884fc2e948df4c49"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct__parse_8h.html#ad53792c8ba9a81b4884fc2e948df4c49">struct_parser_validate_to</a> (struct <a class="el" href="structstruct__parser.html">struct_parser</a> *parser, FILE *out)</td></tr>
+<tr class="memdesc:ad53792c8ba9a81b4884fc2e948df4c49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate parsed schema and optionally print diagnostics.  <br /></td></tr>
+<tr class="separator:ad53792c8ba9a81b4884fc2e948df4c49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Parse struct definitions. Support scalar types(int, long, float,
@@ -435,6 +438,44 @@ double, sstr_t), arrays, structs. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">parser</td><td>Parser with populated struct_map and enum_map. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if no errors, -1 if validation errors found. </dd></dl>
+
+</div>
+</div>
+<a id="ad53792c8ba9a81b4884fc2e948df4c49" name="ad53792c8ba9a81b4884fc2e948df4c49"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad53792c8ba9a81b4884fc2e948df4c49">&#9670;&#160;</a></span>struct_parser_validate_to()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int struct_parser_validate_to </td>
+          <td>(</td>
+          <td class="paramtype">struct <a class="el" href="structstruct__parser.html">struct_parser</a> *&#160;</td>
+          <td class="paramname"><em>parser</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>out</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Validate parsed schema and optionally print diagnostics. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">parser</td><td>Parser with populated struct_map, enum_map, and oneof_map. </td></tr>
+    <tr><td class="paramname">out</td><td>Destination stream for diagnostics, or NULL to suppress printing. </td></tr>
   </table>
   </dd>
 </dl>
