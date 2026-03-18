@@ -309,12 +309,34 @@ To Selectively Deserialize Top-Level Fields</h3>
 <div class="line">json_unmarshal_selected_User(json_str, &amp;user,</div>
 <div class="line">                             mask, User_FIELD_MASK_WORD_COUNT);</div>
 </div><!-- fragment --><p>Selective unmarshal only updates the chosen top-level fields that are present in the JSON input. Unselected top-level fields stay unchanged.</p>
-<p>Selected fields are treated as whole-field replacements: if a selected field is a string, array, map, nested struct, or oneof, its previous stored value is cleared before the new JSON value is parsed. This API does <b>not</b> provide nested field masks; selecting a nested struct field means replacing that nested field as a whole.</p>
+<p>Selected fields are treated as whole-field replacements: if a selected field is a string, array, map, nested struct, or oneof, its previous stored value is cleared before the new JSON value is parsed.</p>
+<h3><a class="anchor" id="autotoc_md18"></a>
+To Selectively Deserialize Nested Sub-Fields</h3>
+<p>Use the <code>_deep</code> variant to pass sub-field masks into nested structs:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>User user;</div>
+<div class="line">User_init(&amp;user);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Select top-level &quot;profile&quot; field</span></div>
+<div class="line">uint64_t mask[User_FIELD_MASK_WORD_COUNT] = {0};</div>
+<div class="line">JSON_GEN_C_FIELD_MASK_SET(mask, User_FIELD_profile);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Only parse Profile.name inside the nested struct</span></div>
+<div class="line">uint64_t inner[Profile_FIELD_MASK_WORD_COUNT] = {0};</div>
+<div class="line">JSON_GEN_C_FIELD_MASK_SET(inner, Profile_FIELD_name);</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span><a class="code hl_struct" href="structjson__nested__mask.html">json_nested_mask</a> nested[] = {</div>
+<div class="line">    { User_FIELD_profile, inner, Profile_FIELD_MASK_WORD_COUNT, NULL, 0 }</div>
+<div class="line">};</div>
+<div class="line">json_unmarshal_selected_User_deep(json_str, &amp;user,</div>
+<div class="line">                                  mask, User_FIELD_MASK_WORD_COUNT,</div>
+<div class="line">                                  nested, 1);</div>
+<div class="ttc" id="astructjson__nested__mask_html"><div class="ttname"><a href="structjson__nested__mask.html">json_nested_mask</a></div><div class="ttdef"><b>Definition</b> json_parse.h:75</div></div>
+</div><!-- fragment --><p>When <code>nested_masks</code> is <code>NULL</code> or no entry matches a field, the nested struct is parsed in full (same as the non-deep API). Sub-masks can be chained recursively via the <code>sub_masks</code> / <code>sub_mask_count</code> members for deeper nesting levels.</p>
 <p>Field-mask constants use the generated <b>C field names</b>, even when <code>@json</code> aliases change the JSON key names.</p>
-<h1><a class="anchor" id="autotoc_md18"></a>
+<h1><a class="anchor" id="autotoc_md19"></a>
 Build System</h1>
 <p>For detailed build system documentation, see BUILD_SYSTEM.md. If you are new to the project, the friendly walkthrough in <a class="el" href="md_docs_2GETTING__STARTED.html">docs/GETTING_STARTED.md</a> covers installation, schema authoring, and integration.</p>
-<h1><a class="anchor" id="autotoc_md19"></a>
+<h1><a class="anchor" id="autotoc_md20"></a>
 The Format of Structs Definition File</h1>
 <p>Define a struct like:</p>
 <div class="fragment"><div class="line">struct &lt;struct_name&gt; {</div>
@@ -336,14 +358,14 @@ The Format of Structs Definition File</h1>
 <li><code>map&lt;sstr_t, V&gt;</code> where V is any of the above types</li>
 </ul>
 <p>If a field is a dynamic array, just append <code>[]</code> after the field name. For fixed-size arrays, use <code>[N]</code> where N is a positive integer (e.g., <code>int data[10];</code>).</p>
-<h2><a class="anchor" id="autotoc_md20"></a>
+<h2><a class="anchor" id="autotoc_md21"></a>
 Map fields</h2>
 <p>Map fields marshal to/from JSON objects. The key type is always <code>sstr_t</code> (JSON keys are strings). Example:</p>
 <div class="fragment"><div class="line">map&lt;sstr_t, int&gt; scores;       // single map: {&quot;alice&quot;:95,&quot;bob&quot;:87}</div>
 <div class="line">map&lt;sstr_t, int&gt; tags[];       // array of maps: [{&quot;x&quot;:1},{&quot;y&quot;:2}]</div>
 </div><!-- fragment --><p>In generated C code, each map is represented as a dynamic array of key-value entries:</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>json_map_int { <span class="keyword">struct </span>json_map_entry_int* entries; <span class="keywordtype">int</span> len; };</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md21"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md22"></a>
 Tagged unions (oneof)</h2>
 <p>Tagged unions (discriminated unions) represent a value that can be one of several types, identified by a discriminator tag field in JSON:</p>
 <div class="fragment"><div class="line">struct Circle {</div>
@@ -365,7 +387,7 @@ Tagged unions (oneof)</h2>
 <li>Each variant references a previously defined struct.</li>
 <li>JSON uses a flattened representation: <code>{"type":"circle","radius":5.0}</code>.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md22"></a>
+<h2><a class="anchor" id="autotoc_md23"></a>
 &lt;tt&gt;@deprecated&lt;/tt&gt; Annotation</h2>
 <p>Mark fields, enum values, or oneof variants as deprecated:</p>
 <div class="fragment"><div class="line">struct Config {</div>
@@ -381,7 +403,7 @@ Tagged unions (oneof)</h2>
 <div class="line">    Shape shape;       // scalar oneof</div>
 <div class="line">    Shape shapes[];    // dynamic array of oneof</div>
 <div class="line">}</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md23"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md24"></a>
 The JSON API</h1>
 <div class="fragment"><div class="line"><span class="comment">// initialize a struct</span></div>
 <div class="line"><span class="comment">// always return 0</span></div>
@@ -423,18 +445,28 @@ The JSON API</h1>
 <div class="line">    struct &lt;struct_name&gt; *obj,</div>
 <div class="line">    <span class="keyword">const</span> uint64_t *field_mask,</div>
 <div class="line">    <span class="keywordtype">int</span> field_mask_word_count);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// selectively unmarshal with nested sub-field masks</span></div>
+<div class="line"><span class="keywordtype">int</span> json_unmarshal_selected_&lt;struct_name&gt;_deep(</div>
+<div class="line">    <a class="code hl_typedef" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> in,</div>
+<div class="line">    struct &lt;struct_name&gt; *obj,</div>
+<div class="line">    <span class="keyword">const</span> uint64_t *field_mask,</div>
+<div class="line">    <span class="keywordtype">int</span> field_mask_word_count,</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">struct</span> <a class="code hl_struct" href="structjson__nested__mask.html">json_nested_mask</a> *nested_masks,</div>
+<div class="line">    <span class="keywordtype">int</span> nested_mask_count);</div>
 </div><!-- fragment --><p>Use the generated helper macros to manage mask bits:</p>
 <div class="fragment"><div class="line">JSON_GEN_C_FIELD_MASK_SET(mask_words, field_index);</div>
 <div class="line">JSON_GEN_C_FIELD_MASK_CLEAR(mask_words, field_index);</div>
 <div class="line">JSON_GEN_C_FIELD_MASK_TEST(mask_words, field_index);</div>
-</div><!-- fragment --><p>For <code>json_unmarshal_selected_&lt;struct_name&gt;()</code>:</p>
+</div><!-- fragment --><p>For <code>json_unmarshal_selected_&lt;struct_name&gt;()</code> and <code>_deep()</code>:</p>
 <ul>
 <li>passing <code>NULL</code> or too few mask words returns an error</li>
 <li>unselected top-level fields are left unchanged</li>
 <li>selected fields that appear in the JSON input replace the old stored field value</li>
 <li>field indices use C member names, not aliased JSON key names</li>
+<li><code>_deep</code> additionally accepts <code><a class="el" href="structjson__nested__mask.html">json_nested_mask</a></code> entries for sub-field selection within nested structs</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md24"></a>
+<h1><a class="anchor" id="autotoc_md25"></a>
 More Resources</h1>
 <ul>
 <li><a class="el" href="md_docs_2GETTING__STARTED.html">docs/GETTING_STARTED.md</a> – step-by-step tutorial with code snippets.</li>
@@ -443,7 +475,7 @@ More Resources</h1>
 <li><a href="doc/json-gen-c.1">doc/json-gen-c.1</a> – manual page installed with the CLI.</li>
 <li>doc/schema-evolution.md – schema evolution guide (compatibility rules, migration patterns, <code>@deprecated</code>).</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md25"></a>
+<h1><a class="anchor" id="autotoc_md26"></a>
 Contributing &amp; Community</h1>
 <p>We welcome issues, ideas, documentation updates, and code contributions.</p>
 <ul>
@@ -452,7 +484,7 @@ Contributing &amp; Community</h1>
 <li>Share what you build! Open a discussion or PR if you want your project added to a future showcase section.</li>
 </ul>
 <p>Thanks for helping json-gen-c grow. Happy hacking!</p>
-<h1><a class="anchor" id="autotoc_md26"></a>
+<h1><a class="anchor" id="autotoc_md27"></a>
 License</h1>
 <p>Codes of <code>json-gen-c</code> are licensed under GPL-3.0, except for the codes it generated. The copy right of the codes generated by <code>json-gen-c</code> is owned by the user who wrote the struct definition file, same as the copy right of a PDF file generated by Latex is owned by the user who wrote the tex file. </p>
 </div></div><!-- PageDoc -->
