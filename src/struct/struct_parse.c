@@ -576,12 +576,12 @@ static int parse_include_directive(struct struct_parser* parser, sstr_t content,
         return JSON_GEN_ERROR_MEMORY;
     }
     
-    int fname_len = strlen(parser->name);
+    ptrdiff_t fname_len = (ptrdiff_t)strlen(parser->name);
     while (fname_len >= 0 && !compat_is_path_sep(parser->name[fname_len])) {
         fname_len--;
     }
     if (fname_len >= 0) {  // Fixed: was '!0' which is always true
-        sstr_append_of(file, parser->name, fname_len + 1);  // include the '/'
+        sstr_append_of(file, parser->name, (size_t)(fname_len + 1));  // include the '/'
     }
     sstr_append_cstr(file, filename);
     
@@ -1709,7 +1709,7 @@ static void validate_oneof_variants(void* key, void* value, void* ptr) {
     }
 }
 
-int struct_parser_validate(struct struct_parser* parser) {
+int struct_parser_validate_to(struct struct_parser* parser, FILE *out) {
     if (parser == NULL) return 0;
 
     struct diag_engine* diag = diag_engine_new("<schema>", NULL, 0);
@@ -1729,10 +1729,14 @@ int struct_parser_validate(struct struct_parser* parser) {
     hash_map_for_each(parser->oneof_map, validate_oneof_variants, &ctx);
 
     int has_errors = diag_has_errors(diag);
-    if (diag->count > 0) {
-        diag_print_all(diag, stderr);
+    if (diag->count > 0 && out != NULL) {
+        diag_print_all(diag, out);
     }
     diag_engine_free(diag);
 
     return has_errors ? -1 : 0;
+}
+
+int struct_parser_validate(struct struct_parser* parser) {
+    return struct_parser_validate_to(parser, stderr);
 }

@@ -56,15 +56,6 @@ static char *uri_to_path(const char *uri)
     return compat_strdup(uri);
 }
 
-static const char *compat_null_device(void)
-{
-#ifdef _WIN32
-    return "NUL";
-#else
-    return "/dev/null";
-#endif
-}
-
 /* ---- Diagnostic publishing ---- */
 
 static int lsp_severity_from_diag(enum diag_severity sev)
@@ -151,13 +142,7 @@ static void validate_document(FILE *out, struct lsp_state *state)
     struct_parser_parse(parser, state->doc.content);
 
     /* Run semantic validation (suppress its stderr printing). */
-    FILE *saved_stderr = stderr;
-    stderr = fopen(compat_null_device(), "w");
-    if (stderr) {
-        struct_parser_validate(parser);
-        fclose(stderr);
-    }
-    stderr = saved_stderr;
+    struct_parser_validate_to(parser, NULL);
 
     /* Publish collected diagnostics. */
     publish_diagnostics(out, state->doc.uri, parser->diag);

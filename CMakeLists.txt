@@ -273,9 +273,10 @@ if(JSON_GEN_C_SANITIZE)
 endif()
 
 # Compiler warnings
-foreach(tgt json_gen_c_utils json_gen_c_struct json_gen_c_gencode json-gen-c)
+foreach(tgt json_gen_c_utils json_gen_c_struct json_gen_c_gencode json_gen_c_lsp json-gen-c)
     if(MSVC)
-        target_compile_options(${tgt} PRIVATE /W4 /WX)
+        target_compile_options(${tgt} PRIVATE /W4 /WX /utf-8)
+        target_compile_definitions(${tgt} PRIVATE _CRT_SECURE_NO_WARNINGS)
     else()
         target_compile_options(${tgt} PRIVATE -Wall -Wextra -Werror -Wno-unused-result)
     endif()

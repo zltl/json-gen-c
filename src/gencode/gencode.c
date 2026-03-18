@@ -2014,20 +2014,20 @@ static void do_each_struct_gen_code(void* key, void* value, void* ptr) {
     struct struct_field* iter = v->fields;
     while (iter) {
         if (iter->type == FIELD_TYPE_STRUCT) {
-            int r = hash_map_find(dep_map, iter->type_name, &dv);
-            if (r != HASH_MAP_OK) {
+            int dep_status = hash_map_find(dep_map, iter->type_name, &dv);
+            if (dep_status != HASH_MAP_OK) {
                 return;
             }
         }
         if (iter->type == FIELD_TYPE_MAP && iter->map_value_type == FIELD_TYPE_STRUCT) {
-            int r = hash_map_find(dep_map, iter->map_value_type_name, &dv);
-            if (r != HASH_MAP_OK) {
+            int dep_status = hash_map_find(dep_map, iter->map_value_type_name, &dv);
+            if (dep_status != HASH_MAP_OK) {
                 return;
             }
         }
         if (iter->type == FIELD_TYPE_ONEOF) {
-            int r = hash_map_find(dep_map, iter->type_name, &dv);
-            if (r != HASH_MAP_OK) {
+            int dep_status = hash_map_find(dep_map, iter->type_name, &dv);
+            if (dep_status != HASH_MAP_OK) {
                 return;
             }
         }

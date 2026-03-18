@@ -267,6 +267,15 @@ int struct_parser_parse(struct struct_parser* parser, sstr_t content);
  */
 int struct_parser_validate(struct struct_parser* parser);
 
+/**
+ * @brief Validate parsed schema and optionally print diagnostics.
+ *
+ * @param parser Parser with populated struct_map, enum_map, and oneof_map.
+ * @param out Destination stream for diagnostics, or NULL to suppress printing.
+ * @return 0 if no errors, -1 if validation errors found.
+ */
+int struct_parser_validate_to(struct struct_parser* parser, FILE *out);
+
 #ifdef __cplusplus
 }
 #endif
