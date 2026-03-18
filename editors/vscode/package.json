@@ -1,7 +1,7 @@
 {
   "name": "json-gen-c",
   "displayName": "json-gen-c Schema Language",
-  "description": "Syntax highlighting for json-gen-c schema definition files (.json-gen-c)",
+  "description": "Syntax highlighting and language server for json-gen-c schema definition files (.json-gen-c)",
   "version": "0.9.0",
   "publisher": "zltl",
   "license": "GPL-3.0",
@@ -10,11 +10,15 @@
     "url": "https://github.com/zltl/json-gen-c"
   },
   "engines": {
-    "vscode": "^1.60.0"
+    "vscode": "^1.75.0"
   },
   "categories": [
     "Programming Languages"
   ],
+  "activationEvents": [
+    "onLanguage:json-gen-c"
+  ],
+  "main": "./extension.js",
   "contributes": {
     "languages": [
       {
@@ -35,6 +39,19 @@
         "scopeName": "source.json-gen-c",
         "path": "./syntaxes/json-gen-c.tmLanguage.json"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "json-gen-c",
+      "properties": {
+        "json-gen-c.serverPath": {
+          "type": "string",
+          "default": "json-gen-c",
+          "description": "Path to the json-gen-c executable (must support --lsp flag)."
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.0"
   }
 }

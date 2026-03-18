@@ -328,7 +328,9 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 4. ~~Build better authoring tools.~~
     - ~~VS Code syntax highlighting and diagnostics~~
     - **Completed:** VS Code extension at `editors/vscode/` providing TextMate grammar for `.json-gen-c` files. Highlights keywords (`struct`/`enum`/`oneof`), field modifiers (`optional`/`nullable`), builtin types, annotations (`@json`/`@tag`/`@deprecated`), `#include` directives, `map<>` generics, array syntax, default values, comments, strings, and numbers. Includes language configuration for bracket matching, comment toggling, auto-closing pairs, and code folding. Zero dependencies — purely declarative JSON files.
-    - Schema language support
+    - ~~Schema language support~~
+    - **Completed:** Built-in Language Server Protocol (LSP) server via `json-gen-c --lsp`. Provides real-time parse error diagnostics, schema validation warnings, code completion (keywords, types, annotations), and hover support. Communicates over stdin/stdout JSON-RPC 2.0. Works with any LSP-capable editor. VS Code extension updated with `vscode-languageclient` integration (`extension.js`). 36 integration tests.
+
 5. Consider an online playground for schema editing and generated code preview.
 
 ## Key Files
@@ -344,7 +346,9 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
 - `src/utils/hash_map.c`: hash map implementation
 - `src/utils/hash.c`: shared hashing primitives
 - `src/main/main.c`: CLI entry point
-- `editors/vscode/`: VS Code extension for `.json-gen-c` syntax highlighting
+- `src/lsp/lsp_server.c`: LSP server (diagnostics, completion, hover via JSON-RPC 2.0)
+- `src/lsp/lsp_jsonrpc.c`: JSON-RPC 2.0 message framing and lightweight JSON parser
+- `editors/vscode/`: VS Code extension for `.json-gen-c` syntax highlighting and LSP client
 - `doc/schema-evolution.md`: schema evolution guide
 - `docs/IMPROVEMENTS.md`: this roadmap and improvement tracker
 

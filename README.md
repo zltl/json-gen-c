@@ -536,6 +536,27 @@ For `json_unmarshal_selected_<struct_name>()` and `_deep()`:
 - field indices use C member names, not aliased JSON key names
 - `_deep` additionally accepts `json_nested_mask` entries for sub-field selection within nested structs
 
+## Editor Support
+
+### VS Code Extension
+
+The `editors/vscode/` directory contains a VS Code extension providing:
+
+- **Syntax highlighting** — TextMate grammar for `.json-gen-c` files (keywords, types, annotations, etc.)
+- **Language Server** — Real-time diagnostics, code completion, and hover information
+
+To enable the language server, ensure `json-gen-c` is on your PATH (or set `jsonGenC.serverPath` in VS Code settings), then install the extension. It launches `json-gen-c --lsp` automatically.
+
+### LSP for Other Editors
+
+Any LSP-capable editor can use the built-in language server:
+
+```sh
+json-gen-c --lsp
+```
+
+This runs an LSP server over stdin/stdout (JSON-RPC 2.0). Configure your editor to launch it as a language server for `.json-gen-c` files.
+
 ## More Resources
 
 - [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) – step-by-step tutorial with code snippets.

@@ -31,6 +31,10 @@ GENCODE_OBJECTS := $(patsubst src/gencode/%.c,$(BUILD_DIR)/obj/gencode/%.o,$(GEN
 MAIN_SOURCES := src/main/main.c
 MAIN_OBJECTS := $(patsubst src/main/%.c,$(BUILD_DIR)/obj/main/%.o,$(MAIN_SOURCES))
 
+# LSP library sources
+LSP_SOURCES := $(wildcard src/lsp/*.c)
+LSP_OBJECTS := $(patsubst src/lsp/%.c,$(BUILD_DIR)/obj/lsp/%.o,$(LSP_SOURCES))
+
 # Extra code generation for gencode
 GENCODE_EXTRA := $(BUILD_DIR)/obj/gencode/extra_codes.inc
 GENCODE_MSGPACK_EXTRA := $(BUILD_DIR)/obj/gencode/extra_codes_msgpack.inc
@@ -55,6 +59,9 @@ $(foreach src,$(MAIN_SOURCES),$(eval $(call compile-c,$(src),$(patsubst src/main
 
 # Special rule for gencode (needs extra include)
 $(foreach src,$(GENCODE_SOURCES),$(eval $(call compile-c,$(src),$(patsubst src/gencode/%.c,$(BUILD_DIR)/obj/gencode/%.o,$(src)),-I$(BUILD_DIR)/obj/gencode)))
+
+# LSP sources
+$(foreach src,$(LSP_SOURCES),$(eval $(call compile-c,$(src),$(patsubst src/lsp/%.c,$(BUILD_DIR)/obj/lsp/%.o,$(src)))))
 
 # Generate extra codes for gencode
 $(GENCODE_EXTRA): src/gencode/codes/json_parse.c src/gencode/codes/json_parse.h
@@ -88,6 +95,7 @@ $(MAIN_EXTRA): src/utils/sstr.c src/utils/sstr.h
 $(eval $(call create-lib,$(UTILS_LIB),$(UTILS_OBJECTS)))
 $(eval $(call create-lib,$(STRUCT_LIB),$(STRUCT_OBJECTS)))
 $(eval $(call create-lib,$(GENCODE_LIB),$(GENCODE_OBJECTS)))
+$(eval $(call create-lib,$(LSP_LIB),$(LSP_OBJECTS)))
 
 # Gencode library depends on extra codes
 $(GENCODE_OBJECTS): $(GENCODE_EXTRA) $(GENCODE_MSGPACK_EXTRA) $(GENCODE_CBOR_EXTRA)
@@ -96,7 +104,7 @@ $(GENCODE_OBJECTS): $(GENCODE_EXTRA) $(GENCODE_MSGPACK_EXTRA) $(GENCODE_CBOR_EXT
 $(MAIN_OBJECTS): $(MAIN_EXTRA)
 
 # Main executable
-$(eval $(call link-exe,$(JSON_GEN_C),$(MAIN_OBJECTS),$(GENCODE_LIB) $(STRUCT_LIB) $(UTILS_LIB)))
+$(eval $(call link-exe,$(JSON_GEN_C),$(MAIN_OBJECTS),$(GENCODE_LIB) $(STRUCT_LIB) $(LSP_LIB) $(UTILS_LIB)))
 
 #==============================================================================
 # Subdirectory targets

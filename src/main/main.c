@@ -5,6 +5,7 @@
 
 #include "compat/compat_check.h"
 #include "gencode/gencode.h"
+#include "lsp/lsp_server.h"
 #include "struct/struct_parse.h"
 #include "utils/io.h"
 #include "utils/error_codes.h"
@@ -28,6 +29,7 @@ static void usage(FILE *stream) {
     fprintf(stream,
         "Usage: json-gen-c -out <output_dir> -in <input_file> [--format json|msgpack|cbor] [--cpp-wrapper]\n"
         "       json-gen-c --check-compat <old_schema> <new_schema>\n"
+        "       json-gen-c --lsp\n"
         "Generate serialization C code from struct definition.\n\n"
         "Options:\n"
         "    -in <input_file>     Specify the input struct definition file.\n"
@@ -35,6 +37,7 @@ static void usage(FILE *stream) {
         "    --format <format>    Output format: json (default), msgpack, or cbor\n"
         "    --cpp-wrapper        Also generate a C++ wrapper header (.gen.hpp)\n"
         "    --check-compat       Compare two schemas and report compatibility.\n"
+        "    --lsp                Run as Language Server Protocol (LSP) server.\n"
         "    -h, --help           Show this help message\n"
         "    -v, --version        Show version information\n\n"
         "json-gen-c document: https://github.com/zltl/json-gen-c\n"
@@ -51,6 +54,7 @@ struct options {
     char *compat_new;      /**< New schema for --check-compat */
     enum output_format format; /**< Output serialization format */
     int cpp_wrapper;       /**< Generate C++ wrapper header (.gen.hpp) */
+    int lsp_mode;          /**< Run as LSP server */
 };
 
 /**
@@ -75,6 +79,10 @@ static json_gen_error_t options_parse(int argc, char **argv, struct options *opt
             }
             options->compat_old = argv[i + 1];
             options->compat_new = argv[i + 2];
+            return JSON_GEN_SUCCESS;
+        }
+        if (strcmp(argv[i], "--lsp") == 0) {
+            options->lsp_mode = 1;
             return JSON_GEN_SUCCESS;
         }
     }
@@ -217,7 +225,7 @@ static int run_compat_check(const char *old_path, const char *new_path) {
 
 int main(int argc, char **argv) {
     // Initialize options structure
-    struct options options = {NULL, NULL, NULL, NULL, FORMAT_JSON, 0};
+    struct options options = {NULL, NULL, NULL, NULL, FORMAT_JSON, 0, 0};
     
     // Parse command line options
     json_gen_error_t result = options_parse(argc, argv, &options);
@@ -229,6 +237,11 @@ int main(int argc, char **argv) {
     /* --check-compat mode: compare two schemas and exit. */
     if (options.compat_old != NULL) {
         return run_compat_check(options.compat_old, options.compat_new);
+    }
+
+    /* --lsp mode: run language server and exit. */
+    if (options.lsp_mode) {
+        return lsp_server_run();
     }
     
     // Validate required input file parameter

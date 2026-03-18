@@ -1,6 +1,6 @@
 # json-gen-c VS Code Extension
 
-Syntax highlighting and language support for `.json-gen-c` schema definition files.
+Syntax highlighting, real-time diagnostics, and language support for `.json-gen-c` schema definition files.
 
 ## Features
 
@@ -17,6 +17,12 @@ Syntax highlighting and language support for `.json-gen-c` schema definition fil
   - String and numeric literals
   - User-defined type references
 
+- **Language Server (LSP)**:
+  - Real-time parse error diagnostics as you type
+  - Schema validation (undefined types, duplicate fields, etc.)
+  - Code completion for keywords, types, and annotations
+  - Hover info for type references
+
 - **Language configuration**:
   - Bracket matching and auto-closing (`{}`, `[]`, `<>`, `""`)
   - Comment toggling (`Ctrl+/` for line, `Shift+Alt+A` for block)
@@ -25,10 +31,22 @@ Syntax highlighting and language support for `.json-gen-c` schema definition fil
 
 ## Install
 
+### Prerequisites
+
+The language server requires the `json-gen-c` binary (v0.9.0+) to be installed and available in your PATH, or configured via the `json-gen-c.serverPath` setting.
+
+After installing `json-gen-c`, also install the extension's npm dependencies:
+
+```sh
+cd editors/vscode
+npm install
+```
+
 ### Method 1: Symlink (development)
 
 ```sh
 # From the repository root
+cd editors/vscode && npm install && cd ../..
 ln -s "$(pwd)/editors/vscode" ~/.vscode/extensions/json-gen-c
 ```
 
@@ -37,6 +55,7 @@ Restart VS Code. The extension activates automatically for `.json-gen-c` files.
 ### Method 2: Copy
 
 ```sh
+cd editors/vscode && npm install
 cp -r editors/vscode ~/.vscode/extensions/json-gen-c
 ```
 
@@ -47,9 +66,16 @@ Restart VS Code.
 ```sh
 # Package and install (requires vsce)
 cd editors/vscode
+npm install
 npx @vscode/vsce package
 code --install-extension json-gen-c-0.9.0.vsix
 ```
+
+## Configuration
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `json-gen-c.serverPath` | `"json-gen-c"` | Path to the `json-gen-c` executable (must support `--lsp` flag) |
 
 ## Example
 

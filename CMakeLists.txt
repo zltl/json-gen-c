@@ -227,6 +227,15 @@ target_include_directories(json_gen_c_gencode PRIVATE
 target_link_libraries(json_gen_c_gencode PUBLIC json_gen_c_utils)
 
 #==============================================================================
+# LSP library
+#==============================================================================
+add_library(json_gen_c_lsp STATIC
+    src/lsp/lsp_jsonrpc.c
+    src/lsp/lsp_server.c
+)
+target_link_libraries(json_gen_c_lsp PUBLIC json_gen_c_struct json_gen_c_utils)
+
+#==============================================================================
 # Main executable
 #==============================================================================
 add_executable(json-gen-c
@@ -239,6 +248,7 @@ target_include_directories(json-gen-c PRIVATE
 target_link_libraries(json-gen-c PRIVATE
     json_gen_c_gencode
     json_gen_c_struct
+    json_gen_c_lsp
     json_gen_c_utils
 )
 target_compile_definitions(json-gen-c PRIVATE

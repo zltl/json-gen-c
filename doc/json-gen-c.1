@@ -357,6 +357,13 @@ Compare two schema files and report compatibility.
 Prints safe changes (additions, deprecations) and breaking changes
 (removals, type changes) to stdout.
 Exits 0 if only safe changes, 1 if any breaking changes, 2 on error.
+.TP
+.B \-\-lsp
+Run as a Language Server Protocol (LSP) server over stdin/stdout.
+Provides real\-time diagnostics, code completion, and hover information
+for .json\-gen\-c schema files.  Communicates via JSON\-RPC 2.0 with
+Content\-Length framing.  Intended to be launched by an LSP\-capable editor
+(e.g.\& VS Code with the bundled extension).
 .SH EXIT STATUS
 .TP
 .B 0

@@ -55,9 +55,10 @@ CXXFLAGS := -std=c++17 $(COMMON_FLAGS) $(CXXFLAGS)
 UTILS_LIB := $(BUILD_DIR)/lib/libutils.a
 STRUCT_LIB := $(BUILD_DIR)/lib/libstruct.a
 GENCODE_LIB := $(BUILD_DIR)/lib/libgencode.a
+LSP_LIB := $(BUILD_DIR)/lib/liblsp.a
 
 # All libraries
-ALL_LIBS := $(UTILS_LIB) $(STRUCT_LIB) $(GENCODE_LIB)
+ALL_LIBS := $(UTILS_LIB) $(STRUCT_LIB) $(GENCODE_LIB) $(LSP_LIB)
 
 # Main executable
 JSON_GEN_C := $(BUILD_DIR)/bin/json-gen-c
