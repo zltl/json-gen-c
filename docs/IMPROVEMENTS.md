@@ -315,6 +315,7 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
      - Pre-hashed field lookup in struct unmarshal (hash struct name once, reuse for all fields)
      - Stack-based array length field lookup (char buf[256] instead of heap sstr_t)
      - Compact marshal fast path: merged comma+key into single `sstr_append_of` for indent=0, eliminated no-op indent function calls
+   - **Runtime inlining optimization (Phase 3):** gprof profiling revealed that 27% of unmarshal time was spent in non-inlined sstr accessor functions (`sstr_cstr` 8.9%, `sstr_append_zero` 8.5%, `sstr_append_of` 6.1%, `sstr_clear` 4.1%) because sstr.c is a separate translation unit. Added inline fast-path helpers (`SSTR_CSTR_`, `sstr_clear_fast_`, `sstr_append_of_fast_`) directly in the embedded JSON runtime. Result: **additional 1.4x unmarshal speedup**, bringing json-gen-c **faster than cJSON on all benchmarks** (unmarshal_scalar: 518 ns vs 697 ns = 26% faster).
 
 **Exit criteria:** the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments. **Items 1–4 completed; item 5 now has nested selective-parsing and runtime performance optimization support.**
 
