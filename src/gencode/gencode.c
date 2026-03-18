@@ -615,7 +615,7 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                      "sstr_cstr(out)[sstr_length(out)-1] != ':') {\n"
                      "        sstr_append_indent(out, curindent);\n"
                      "    }\n"
-                     "    sstr_append_cstr(out, \"{\");\n");
+                     "    sstr_append_of(out, \"{\", 1);\n");
     if (!has_optional) {
         sstr_append_cstr(source,
                          "    sstr_append_of_if(out, \"\\n\", 1, indent);\n");
@@ -623,6 +623,7 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
     sstr_append_cstr(source, "    curindent += indent;\n");
 
     struct struct_field* field = st->fields;
+    int is_first_field = 1;
     for (; field; field = field->next) {
         // When struct has optional fields, use comma-before pattern
         if (has_optional) {
@@ -631,18 +632,43 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                     "    if (obj->has_%S) {\n", field->name);
             }
             sstr_append_cstr(source,
-                "    if (!_first) { sstr_append_cstr(out, \",\"); }\n"
+                "    if (!_first) { sstr_append_of(out, \",\", 1); }\n"
                 "    sstr_append_of_if(out, \"\\n\", 1, indent);\n");
+            sstr_append_cstr(source,
+                "    sstr_append_indent(out, curindent);\n");
+            sstr_printf_append(source,
+                "    sstr_append_of(out, \"\\\"%S\\\":\", %d);\n",
+                JSON_KEY(field),
+                (int)(sstr_length(JSON_KEY(field)) + 3));
+        } else if (is_first_field) {
+            /* First field of non-optional struct: indent + key. */
+            sstr_append_cstr(source,
+                "    if (indent) { sstr_append_indent(out, curindent); }\n");
+            sstr_printf_append(source,
+                "    sstr_append_of(out, \"\\\"%S\\\":\", %d);\n",
+                JSON_KEY(field),
+                (int)(sstr_length(JSON_KEY(field)) + 3));
+        } else {
+            /* Subsequent field: compact path merges comma + key into one
+               append; pretty path emits comma, newline, indent, key. */
+            int key_len = (int)sstr_length(JSON_KEY(field)) + 3;
+            sstr_printf_append(source,
+                "    if (indent) {\n"
+                "        sstr_append_of(out, \",\\n\", 2);\n"
+                "        sstr_append_indent(out, curindent);\n"
+                "        sstr_append_of(out, \"\\\"%S\\\":\", %d);\n"
+                "    } else {\n"
+                "        sstr_append_of(out, \",\\\"%S\\\":\", %d);\n"
+                "    }\n",
+                JSON_KEY(field), key_len,
+                JSON_KEY(field), key_len + 1);
         }
-        sstr_append_cstr(source, "    sstr_append_indent(out, curindent);\n");
-        sstr_printf_append(source,
-                           "    sstr_append_cstr(out, \"\\\"%S\\\":\");\n",
-                           JSON_KEY(field));
+        is_first_field = 0;
         // Nullable-only: wrap value in null check
         if (has_optional && field->is_nullable && !field->is_optional) {
             sstr_printf_append(source,
                 "    if (!obj->has_%S) {\n"
-                "        sstr_append_cstr(out, \"null\");\n"
+                "        sstr_append_of(out, \"null\", 4);\n"
                 "    } else {\n", field->name);
         }
 
@@ -670,14 +696,14 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                     field->name);
                 sstr_printf_append(source,
                     "            sstr_json_escape_string_append(out, obj->%S[_aj].entries[_mk].key);\n"
-                    "            sstr_append_cstr(out, \"\\\":\");\n",
+                    "            sstr_append_of(out, \"\\\":\", 2);\n",
                     field->name);
                 // emit value marshal
                 gen_marshal_map_value(field,
                     sstr_cstr(field->name), "[_aj].entries[_mk].value",
                     source);
                 sstr_printf_append(source,
-                    "            if (_mk < obj->%S[_aj].len - 1) sstr_append_cstr(out, \",\");\n"
+                    "            if (_mk < obj->%S[_aj].len - 1) sstr_append_of(out, \",\", 1);\n"
                     "            sstr_append_of_if(out, \"\\n\", 1, indent);\n"
                     "        } }\n"
                     "        curindent -= indent;\n"
@@ -685,7 +711,7 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                     "        sstr_append_of(out, \"}\", 1);\n",
                     field->name);
                 sstr_printf_append(source,
-                    "        if (_aj < obj->%S_len - 1) sstr_append_cstr(out, \",\");\n"
+                    "        if (_aj < obj->%S_len - 1) sstr_append_of(out, \",\", 1);\n"
                     "        sstr_append_of_if(out, \"\\n\", 1, indent);\n"
                     "    } }\n"
                     "    curindent -= indent;\n"
@@ -706,14 +732,14 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                     field->name);
                 sstr_printf_append(source,
                     "        sstr_json_escape_string_append(out, obj->%S.entries[_mk].key);\n"
-                    "        sstr_append_cstr(out, \"\\\":\");\n",
+                    "        sstr_append_of(out, \"\\\":\", 2);\n",
                     field->name);
                 // emit value marshal
                 gen_marshal_map_value(field,
                     sstr_cstr(field->name), ".entries[_mk].value",
                     source);
                 sstr_printf_append(source,
-                    "        if (_mk < obj->%S.len - 1) sstr_append_cstr(out, \",\");\n"
+                    "        if (_mk < obj->%S.len - 1) sstr_append_of(out, \",\", 1);\n"
                     "        sstr_append_of_if(out, \"\\n\", 1, indent);\n"
                     "    } }\n"
                     "    curindent -= indent;\n"
@@ -731,7 +757,7 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                 }
             } else {
                 if (field->next != NULL) {
-                    sstr_append_cstr(source, "    sstr_append_cstr(out, \",\");\n");
+                    sstr_append_cstr(source, "    sstr_append_of(out, \",\", 1);\n");
                 }
                 sstr_append_cstr(source,
                     "    sstr_append_of_if(out, \"\\n\", 1, indent);\n");
@@ -779,7 +805,7 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                         field->name);
                 }
                 sstr_append_cstr(source,
-                    "                sstr_append_cstr(out, \",\");\n"
+                    "                sstr_append_of(out, \",\", 1);\n"
                     "            }\n"
                     "            sstr_append_of_if(out, \"\\n\", 1, indent);\n"
                     "        }\n");
@@ -809,20 +835,19 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                     sstr_append_cstr(source, "    }\n");
                 }
             } else {
-                if (field->next != NULL) {
-                    sstr_append_cstr(source, "    sstr_append_cstr(out, \",\");\n");
+                if (field->next == NULL) {
+                    sstr_append_cstr(
+                        source, "    sstr_append_of_if(out, \"\\n\", 1, indent);\n");
                 }
-                sstr_append_cstr(
-                    source, "    sstr_append_of_if(out, \"\\n\", 1, indent);\n");
             }
             continue;
         }
         if (field->type == FIELD_TYPE_BOOL) {
             sstr_printf_append(source, "    if (obj->%S) {\n", field->name);
             sstr_append_cstr(source,
-                             "        sstr_append_cstr(out, \"true\");\n"
+                             "        sstr_append_of(out, \"true\", 4);\n"
                              "    } else {\n"
-                             "        sstr_append_cstr(out, \"false\");\n"
+                             "        sstr_append_of(out, \"false\", 5);\n"
                              "    }\n");
         } else {
             char expr[256];
@@ -871,12 +896,13 @@ static void gen_code_struct_marshal_struct(struct struct_container* st,
                 sstr_append_cstr(source, "    }\n");
             }
         } else {
+            /* For non-optional structs the comma is merged into the
+               start-of-next-field emit above; only the trailing newline
+               after the last field is needed here. */
             if (field->next == NULL) {
-            } else {
-                sstr_append_cstr(source, "    sstr_append_cstr(out, \",\");\n");
+                sstr_append_cstr(source,
+                    "    sstr_append_of_if(out, \"\\n\", 1, indent);\n");
             }
-            sstr_append_cstr(source,
-                             "    sstr_append_of_if(out, \"\\n\", 1, indent);\n");
         }
     }
     if (has_optional) {
@@ -910,7 +936,7 @@ static void gen_code_struct_marshal_array(struct struct_container* st,
         st->name);
     sstr_append_cstr(source,
                      "        if (i < len - 1) {\n"
-                     "            sstr_append_cstr(out, \",\");\n"
+                     "            sstr_append_of(out, \",\", 1);\n"
                      "        }\n"
                      "        sstr_append_of_if(out, \"\\n\", 1, indent);\n"
                      "    }\n"
@@ -1317,7 +1343,8 @@ static void gen_oneof_marshal(struct oneof_container* oc, sstr_t source) {
     // Marshal tag field
     sstr_append_cstr(source, "    sstr_append_indent(out, curindent);\n");
     sstr_printf_append(source,
-        "    sstr_append_cstr(out, \"\\\"%S\\\":\");\n", oc->tag_field);
+        "    sstr_append_of(out, \"\\\"%S\\\":\", %d);\n",
+        oc->tag_field, (int)(sstr_length(oc->tag_field) + 3));
     sstr_append_cstr(source,
         "    sstr_append_of(out, \"\\\"\", 1);\n");
     sstr_printf_append(source,
@@ -1344,7 +1371,7 @@ static void gen_oneof_marshal(struct oneof_container* oc, sstr_t source) {
             "                while (_end > _start && _s[_end] != '}') _end--;\n"
             "                _start++;\n"
             "                if (_start < _end) {\n"
-            "                    sstr_append_cstr(out, \",\");\n"
+            "                    sstr_append_of(out, \",\", 1);\n"
             "                    sstr_append_of(out, _s + _start, _end - _start);\n"
             "                }\n"
             "            }\n"
@@ -1512,7 +1539,7 @@ static void gen_oneof_marshal_array(struct oneof_container* oc, sstr_t source) {
         "        json_marshal_indent_%S(&obj[i], indent, curindent, out);\n",
         oc->name);
     sstr_append_cstr(source,
-        "        if (i < len - 1) sstr_append_cstr(out, \",\");\n"
+        "        if (i < len - 1) sstr_append_of(out, \",\", 1);\n"
         "        sstr_append_of_if(out, \"\\n\", 1, indent);\n"
         "    }\n"
         "    curindent -= indent;\n"

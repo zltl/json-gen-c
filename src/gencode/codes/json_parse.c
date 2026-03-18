@@ -10,6 +10,24 @@
 #include "sstr.h"
 #include "utils/error_codes.h"
 
+/* Fast character classification lookup table (replaces locale-aware
+   isspace/isdigit in hot loops). Bit 0 = whitespace, Bit 1 = digit. */
+static const unsigned char json_char_class_[256] = {
+    /* 0x00-0x08 */ 0,0,0,0,0,0,0,0,0,
+    /* 0x09 \t  */ 1,
+    /* 0x0A \n  */ 1,
+    /* 0x0B \v  */ 1,
+    /* 0x0C \f  */ 1,
+    /* 0x0D \r  */ 1,
+    /* 0x0E-0x1F */ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    /* 0x20 ' ' */ 1,
+    /* 0x21-0x2F */ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    /* 0x30 '0' - 0x39 '9' */ 2,2,2,2,2,2,2,2,2,2,
+    /* 0x3A-0xFF: all zero (remaining 198 entries) */
+};
+#define JSON_IS_SPACE(c) (json_char_class_[(unsigned char)(c)] & 1)
+#define JSON_IS_DIGIT(c) (json_char_class_[(unsigned char)(c)] & 2)
+
 /* Allocator indirection — users may override before including generated code.
  *
  * Compile-time: define JGENC_MALLOC/JGENC_REALLOC/JGENC_FREE before including
@@ -130,6 +148,16 @@ static unsigned int hash_2s_c(const char* key1, const char* key2) {
     return h;
 }
 
+/* Pre-hashed variant: caller supplies the partial hash that already includes
+   the struct_name portion, so we only hash the "#" separator + field name. */
+static unsigned int hash_2s_prehash(unsigned int st_hash, const char* key2,
+                                     size_t key2_len) {
+    unsigned int h = st_hash;
+    h = hash_s("#", 1, h);
+    h = hash_s(key2, key2_len, h);
+    return h;
+}
+
 // find the index of json_field_offset_item by structname and field name
 static struct json_field_offset_item* json_field_offset_item_find(
     const char* st, const char* field) {
@@ -150,12 +178,37 @@ static struct json_field_offset_item* json_field_offset_item_find(
             h = 0;
         }
         id = json_entry_hash[h];
-        // -1 means empty slot.
-        // The size of hash array is twize of items number, so the array
-        // should have many empty slots.
-        // We step to next slot if conflict when construct the array, so
-        // if we find empty slot, it means the key is not in the hash table
-        // array.
+        if (id < 0) {
+            return NULL;
+        }
+    } while (1);
+
+    return NULL;
+}
+
+/* Lookup using pre-hashed struct name, avoids recomputing struct_name hash on
+   every field.  field_len must equal strlen(field). */
+static struct json_field_offset_item* json_field_offset_item_find_ph(
+    unsigned int st_hash, const char* st, const char* field,
+    size_t field_len) {
+    unsigned int h =
+        hash_2s_prehash(st_hash, field, field_len) % json_entry_hash_size;
+    int id = json_entry_hash[h];
+    if (id < 0) {
+        return NULL;
+    }
+
+    do {
+        struct json_field_offset_item* item = &json_field_offset_item[id];
+        if (strcmp(st, item->struct_name) == 0 &&
+            strcmp(field, item->field_name) == 0) {
+            return item;
+        }
+        h++;
+        if ((int)h >= json_entry_hash_size) {
+            h = 0;
+        }
+        id = json_entry_hash[h];
         if (id < 0) {
             return NULL;
         }
@@ -501,7 +554,7 @@ static inline int json_skip_space_comments(sstr_t content, struct json_pos* pos)
     do {
         skiped = 0;
         // trim spaces
-        while (i < len && isspace(data[i])) {
+        while (i < len && JSON_IS_SPACE(data[i])) {
             i++;
             pos->col++;
             if (data[i] == '\n') {  // new line
@@ -597,11 +650,11 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
     int tk = JSON_TOKEN_INT;
     sstr_clear(txt);
     int start_pos = i;
-    if (isdigit(ch) || ch == '-' || ch == '.') {
+    if (JSON_IS_DIGIT(ch) || ch == '-' || ch == '.') {
         if (ch != '.') {
             i++;
             pos->col++;
-            while (i < len && isdigit(data[i])) {
+            while (i < len && JSON_IS_DIGIT(data[i])) {
                 i++;
                 pos->col++;
             }
@@ -610,7 +663,7 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
             tk = JSON_TOKEN_FLOAT;
             i++;
             pos->col++;
-            while (i < len && isdigit(data[i])) {
+            while (i < len && JSON_IS_DIGIT(data[i])) {
                 i++;
                 pos->col++;
             }
@@ -624,7 +677,7 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
                 i++;
                 pos->col++;
             }
-            while (i < len && isdigit(data[i])) {
+            while (i < len && JSON_IS_DIGIT(data[i])) {
                 i++;
                 pos->col++;
             }
@@ -947,12 +1000,22 @@ static const struct json_nested_mask* json_find_nested_mask(
 
 static struct json_field_offset_item* json_array_length_field(
     const struct json_field_offset_item* fi) {
-    struct json_field_offset_item* len_fi;
-    sstr_t field_len_name = sstr(fi->field_name);
-    sstr_append_cstr(field_len_name, "_len");
-    len_fi = json_field_offset_item_find(fi->struct_name, sstr_cstr(field_len_name));
-    sstr_free(field_len_name);
-    return len_fi;
+    /* Build "field_name_len" on the stack to avoid sstr_t allocation. */
+    size_t name_len = strlen(fi->field_name);
+    size_t buf_len = name_len + 4; /* "_len" */
+    char buf[256];
+    if (buf_len >= sizeof(buf)) {
+        /* Fallback for very long names — should never happen in practice. */
+        sstr_t s = sstr(fi->field_name);
+        sstr_append_cstr(s, "_len");
+        struct json_field_offset_item* r =
+            json_field_offset_item_find(fi->struct_name, sstr_cstr(s));
+        sstr_free(s);
+        return r;
+    }
+    memcpy(buf, fi->field_name, name_len);
+    memcpy(buf + name_len, "_len", 5); /* includes '\0' */
+    return json_field_offset_item_find(fi->struct_name, buf);
 }
 
 static void json_clear_map_value(void* value_ptr,
@@ -1433,6 +1496,7 @@ static int json_unmarshal_array_internal_##TYPE(sstr_t content,                \
         sstr_free(e);                                                          \
         return -1;                                                             \
     }                                                                          \
+    int cap_ = 0;                                                              \
     while (1) {                                                                \
         TYPE res = 0;                                                          \
         int r = json_unmarshal_scalar_##TYPE(content, pos, &res, txt);         \
@@ -1442,7 +1506,12 @@ static int json_unmarshal_array_internal_##TYPE(sstr_t content,                \
         if (r < 0) {                                                           \
             return r;                                                          \
         }                                                                      \
-        *ptr = (TYPE*)JGENC_REALLOC(*ptr, (*ptrlen + 1) * sizeof(TYPE));       \
+        if (*ptrlen >= cap_) {                                                 \
+            cap_ = cap_ == 0 ? 4 : cap_ * 2;                                  \
+            TYPE* np_ = (TYPE*)JGENC_REALLOC(*ptr, cap_ * sizeof(TYPE));       \
+            if (!np_) return -1;                                               \
+            *ptr = np_;                                                        \
+        }                                                                      \
         (*ptr)[*ptrlen] = res;                                                 \
         *ptrlen = *ptrlen + 1;                                                 \
         int tk2 = json_next_token(content, pos, txt);                          \
@@ -1482,6 +1551,7 @@ static int json_unmarshal_array_internal_sstr_t(sstr_t content,
         return -1;
     }
 
+    int cap_ = 0;
     while (1) {
         sstr_t res = NULL;
         int r = json_unmarshal_scalar_sstr_t(content, pos, &res, txt);
@@ -1491,7 +1561,12 @@ static int json_unmarshal_array_internal_sstr_t(sstr_t content,
         if (r < 0) {
             return r;
         }
-        *ptr = (sstr_t*)JGENC_REALLOC(*ptr, (*ptrlen + 1) * sizeof(sstr_t));
+        if (*ptrlen >= cap_) {
+            cap_ = cap_ == 0 ? 4 : cap_ * 2;
+            sstr_t* np_ = (sstr_t*)JGENC_REALLOC(*ptr, cap_ * sizeof(sstr_t));
+            if (!np_) return -1;
+            *ptr = np_;
+        }
         (*ptr)[*ptrlen] = res;
         *ptrlen = *ptrlen + 1;
         int tk = json_next_token(content, pos, txt);
@@ -1700,6 +1775,7 @@ static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
     }
     // If not empty, continue with normal parsing using original position
 
+    int cap_ = 0;
     while (1) {
         void* ptr = JGENC_MALLOC(field->type_size);
         if (ptr == NULL) {
@@ -1730,21 +1806,25 @@ static int json_unmarshal_array_internal(sstr_t content, struct json_pos* pos,
             return r;
         }
         
-        // Reallocate array buffer with error checking
-        void* pptr = JGENC_REALLOC(*(void**)param->instance_ptr,
-                             (*len + 1) * field->type_size);
-        if (pptr == NULL) {
-            JGENC_FREE(ptr);
-            sstr_t e = PERROR(pos, "memory reallocation failed for array");
-            sstr_append(txt, e);
-            sstr_free(e);
-            return JSON_GEN_ERROR_MEMORY;
+        // Grow array buffer with capacity doubling
+        if (*len >= cap_) {
+            cap_ = cap_ == 0 ? 4 : cap_ * 2;
+            void* pptr = JGENC_REALLOC(*(void**)param->instance_ptr,
+                                 cap_ * field->type_size);
+            if (pptr == NULL) {
+                JGENC_FREE(ptr);
+                sstr_t e = PERROR(pos, "memory reallocation failed for array");
+                sstr_append(txt, e);
+                sstr_free(e);
+                return JSON_GEN_ERROR_MEMORY;
+            }
+            *(void**)param->instance_ptr = pptr;
         }
         
         // Copy element to array and update pointer
-        memcpy(pptr + (*len * field->type_size), ptr, field->type_size);
+        void* arr_base = *(void**)param->instance_ptr;
+        memcpy(arr_base + (*len * field->type_size), ptr, field->type_size);
         JGENC_FREE(ptr);
-        *(void**)param->instance_ptr = pptr;
         *len = *len + 1;
 
         if (r == 1) {
@@ -1972,6 +2052,10 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
         return -1;
     }
 
+    // Pre-compute hash prefix for struct_name (avoids re-hashing per field)
+    unsigned int st_hash_ = hash_s(param->struct_name, strlen(param->struct_name),
+                                   0xbc9f1d34);
+
     // fields
     while (1) {
         tk = json_next_token(content, pos, txt);
@@ -1988,23 +2072,17 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
             break;
         }
         if (tk == JSON_TOKEN_COMMA) {
-            // Look ahead to see if there's a trailing comma
-            struct json_pos saved_pos = *pos;
-            sstr_t temp_txt = sstr_new();
-            int next_tk = json_next_token(content, pos, temp_txt);
-            
-            if (next_tk == JSON_TOKEN_RIGHT_BRACE) {
-                // This is a trailing comma - not allowed in strict JSON
+            // Peek ahead for trailing comma — skip whitespace/comments,
+            // check raw char instead of allocating sstr_t + full token parse.
+            struct json_pos peek = *pos;
+            json_skip_space_comments(content, &peek);
+            if (peek.offset < (long)sstr_length(content) &&
+                sstr_cstr(content)[peek.offset] == '}') {
                 sstr_t e = PERROR(pos, "trailing comma not allowed before '}'");
                 sstr_append(txt, e);
                 sstr_free(e);
-                sstr_free(temp_txt);
                 return -1;
             }
-            
-            // Restore position and continue parsing
-            *pos = saved_pos;
-            sstr_free(temp_txt);
             continue;
         }
 
@@ -2018,7 +2096,8 @@ static int json_unmarshal_struct_internal(sstr_t content, struct json_pos* pos,
         }
 
         struct json_field_offset_item* fi =
-            json_field_offset_item_find(param->struct_name, sstr_cstr(txt));
+            json_field_offset_item_find_ph(st_hash_, param->struct_name,
+                                           sstr_cstr(txt), sstr_length(txt));
         if (fi == NULL) {
 #if JSON_DEBUG
             printf("json_field_offset_item_find NULL, ignoring...\n");

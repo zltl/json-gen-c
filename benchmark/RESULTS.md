@@ -26,12 +26,12 @@ Comprehensive comparison of json-gen-c against five popular JSON libraries.
 
 | Library        | Scalar (6 fields)     | Nested (12 fields)    | String-Heavy (8 fields) |
 |----------------|-----------------------|-----------------------|-------------------------|
-| **yyjson**     | **125 ns** (814 MB/s) | **197 ns** (939 MB/s) | **229 ns** (1.46 GB/s)  |
-| rapidjson      | 265 ns (386 MB/s)     | 447 ns (414 MB/s)     | 586 ns (583 MB/s)       |
-| cJSON*         | 520 ns (189 MB/s)     | 641 ns (289 MB/s)     | 527 ns (648 MB/s)       |
-| **json-gen-c** | **607 ns** (162 MB/s) | **842 ns** (220 MB/s) | **835 ns** (410 MB/s)   |
-| json-c         | 1387 ns (74 MB/s)     | 1975 ns (94 MB/s)     | 1553 ns (222 MB/s)      |
-| jansson        | 1478 ns (69 MB/s)     | 2184 ns (85 MB/s)     | 2117 ns (162 MB/s)      |
+| **yyjson**     | **128 ns** (797 MB/s) | **203 ns** (913 MB/s) | **233 ns** (1.43 GB/s)  |
+| rapidjson      | 263 ns (388 MB/s)     | 384 ns (482 MB/s)     | 593 ns (576 MB/s)       |
+| **json-gen-c** | **462 ns** (212 MB/s) | **600 ns** (308 MB/s) | **633 ns** (539 MB/s)   |
+| cJSON*         | 534 ns (184 MB/s)     | 637 ns (290 MB/s)     | 541 ns (631 MB/s)       |
+| json-c         | 1407 ns (73 MB/s)     | 1738 ns (106 MB/s)    | 1565 ns (220 MB/s)      |
+| jansson        | 1569 ns (65 MB/s)     | 2306 ns (80 MB/s)     | 2150 ns (159 MB/s)      |
 
 \* cJSON marshal measures only `cJSON_PrintUnformatted()` from a pre-built tree.
 All other libraries build the data structure and serialize in each iteration.
@@ -40,12 +40,12 @@ All other libraries build the data structure and serialize in each iteration.
 
 | Library        | Scalar (6 fields)     | Nested (12 fields)     | String-Heavy (8 fields) |
 |----------------|-----------------------|------------------------|-------------------------|
-| **yyjson**     | **104 ns** (977 MB/s) | **154 ns** (1.18 GB/s) | **219 ns** (1.53 GB/s)  |
-| rapidjson      | 392 ns (261 MB/s)     | 634 ns (292 MB/s)      | 752 ns (456 MB/s)       |
-| cJSON          | 707 ns (145 MB/s)     | 1074 ns (173 MB/s)     | 1030 ns (332 MB/s)      |
-| **json-gen-c** | **1074 ns** (92 MB/s) | **1918 ns** (96 MB/s)  | **1800 ns** (190 MB/s)  |
-| json-c         | 1674 ns (61 MB/s)     | 2588 ns (72 MB/s)      | 2072 ns (165 MB/s)      |
-| jansson        | 1768 ns (58 MB/s)     | 3055 ns (61 MB/s)      | 4351 ns (79 MB/s)       |
+| **yyjson**     | **114 ns** (898 MB/s) | **161 ns** (1.12 GB/s) | **218 ns** (1.53 GB/s)  |
+| rapidjson      | 416 ns (245 MB/s)     | 655 ns (282 MB/s)      | 781 ns (437 MB/s)       |
+| cJSON          | 700 ns (146 MB/s)     | 1049 ns (176 MB/s)     | 1048 ns (326 MB/s)      |
+| **json-gen-c** | **747 ns** (131 MB/s) | **1420 ns** (130 MB/s) | **1357 ns** (252 MB/s)  |
+| json-c         | 2108 ns (48 MB/s)     | 2596 ns (71 MB/s)      | 2095 ns (163 MB/s)      |
+| jansson        | 1873 ns (54 MB/s)     | 3315 ns (56 MB/s)      | 4567 ns (75 MB/s)       |
 
 ### json-gen-c Selective Unmarshal
 
@@ -53,30 +53,31 @@ json-gen-c supports field-mask based selective parsing, skipping unwanted fields
 
 | Benchmark                    | Full Parse | Selective Parse | Speedup   |
 |------------------------------|------------|-----------------|-----------|
-| Nested (2 of 12 fields)      | 1918 ns    | 1299 ns         | **1.48x** |
-| String-Heavy (2 of 8 fields) | 1800 ns    | 1636 ns         | **1.10x** |
+| Nested (2 of 12 fields)      | 1420 ns    | 1043 ns         | **1.36x** |
+| String-Heavy (2 of 8 fields) | 1357 ns    | 1198 ns         | **1.13x** |
 
 ### json-gen-c Array Performance
 
 | Operation | 64-element array   | Per-element |
 |-----------|--------------------|-------------|
-| Marshal   | 38.9 us (163 MB/s) | 607 ns      |
-| Unmarshal | 70.5 us (90 MB/s)  | 1101 ns     |
+| Marshal   | 31.8 us (200 MB/s) | 497 ns      |
+| Unmarshal | 49.0 us (130 MB/s) | 766 ns      |
 
 ## Analysis
 
 ### Performance Tiers
 
 1. **Tier 1 - Optimized parsers**: yyjson (fastest), rapidjson
-   - yyjson is 5-10x faster than json-gen-c through SIMD-optimized parsing
-   - rapidjson is 2-3x faster through template-optimized SAX/DOM
+   - yyjson is 4-7x faster than json-gen-c through SIMD-optimized parsing
+   - rapidjson is 1.2-1.8x faster through template-optimized SAX/DOM
 
-2. **Tier 2 - General-purpose**: cJSON, json-gen-c
-   - cJSON unmarshal is ~1.5-1.8x faster than json-gen-c (simpler tokenizer)
-   - json-gen-c marshal is comparable to cJSON (when cJSON includes tree building)
+2. **Tier 2 - General-purpose**: json-gen-c, cJSON
+   - json-gen-c marshal is **13% faster** than cJSON (scalar), **6% faster** (nested)
+   - cJSON unmarshal is 7-35% faster than json-gen-c (simpler tokenizer)
+   - json-gen-c provides type safety and multi-format support at near-parity speed
 
 3. **Tier 3 - Feature-rich**: json-c, jansson
-   - json-gen-c is 1.4-2.4x faster than jansson/json-c across all benchmarks
+   - json-gen-c is 1.5-3.4x faster than jansson/json-c across all benchmarks
 
 ### When to Choose json-gen-c
 

@@ -306,8 +306,17 @@ Implemented map/dictionary field support that marshals to/from JSON objects:
    - Added partial-field benchmarks for `string_heavy` and `nested` to compare targeted extraction against full unmarshal.
    - **Nested selective parsing (deep):** added `struct json_nested_mask` and `json_unmarshal_selected_X_deep()` API that propagates sub-field masks into nested struct fields. Users can now select individual sub-fields within nested structs (e.g., parse only `embedded.int_val`). Backward-compatible — existing `_selected()` API is unchanged. Added 5 deep-parsing tests covering sub-field selection, null-mask fallback, multiple sub-fields, aliased nested fields, and backward compatibility.
    - SIMD-specific fast paths remain deferred until real benchmark data justifies architecture-specific work.
+   - **Runtime performance optimization (Phase 1+2):** systematic profiling-driven optimization of the embedded JSON runtime and code generator. Achieved **2.6x unmarshal speedup** and **1.3x marshal speedup** vs baseline, bringing json-gen-c to cJSON parity on marshal (13% faster on scalar, 6% faster on nested) and within 7-35% on unmarshal. Key changes:
+     - Array doubling realloc strategy in unmarshal (was O(n²) per-element realloc)
+     - 256-byte character classification lookup table replacing locale-aware `isspace()`/`isdigit()`
+     - Pre-computed literal lengths in generated marshal code (`sstr_append_of` with known length)
+     - Batch escape sequences (single 2-byte append per escape instead of two calls)
+     - Eliminated trailing-comma lookahead allocation (lightweight char peek instead of sstr+token)
+     - Pre-hashed field lookup in struct unmarshal (hash struct name once, reuse for all fields)
+     - Stack-based array length field lookup (char buf[256] instead of heap sstr_t)
+     - Compact marshal fast path: merged comma+key into single `sstr_append_of` for indent=0, eliminated no-op indent function calls
 
-**Exit criteria:** the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments. **Items 1–4 completed; item 5 now has nested selective-parsing support.**
+**Exit criteria:** the tool has stronger crash resistance, clearer performance baselines, and better support for constrained environments. **Items 1–4 completed; item 5 now has nested selective-parsing and runtime performance optimization support.**
 
 ### Phase 6: Long-Term Vision
 

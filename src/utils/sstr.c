@@ -790,35 +790,36 @@ int sstr_json_escape_string_append(sstr_t out, sstr_t in) {
     size_t in_len = sstr_length(in);
     for (i = 0; i < in_len; ++i) {
         if (data[i] <= 31 || data[i] == '\"' || data[i] == '\\') {
-            // character needs to be escaped
-            sstr_append_of(out, "\\", 1);
+            // character needs to be escaped — single 2-byte append
             switch (data[i]) {
                 case '\\':
-                    sstr_append_of(out, "\\", 1);
+                    sstr_append_of(out, "\\\\", 2);
                     break;
                 case '\"':
-                    sstr_append_of(out, "\"", 1);
+                    sstr_append_of(out, "\\\"", 2);
                     break;
                 case '\b':
-                    sstr_append_of(out, "b", 1);
+                    sstr_append_of(out, "\\b", 2);
                     break;
                 case '\f':
-                    sstr_append_of(out, "f", 1);
+                    sstr_append_of(out, "\\f", 2);
                     break;
                 case '\n':
-                    sstr_append_of(out, "n", 1);
+                    sstr_append_of(out, "\\n", 2);
                     break;
                 case '\r':
-                    sstr_append_of(out, "r", 1);
+                    sstr_append_of(out, "\\r", 2);
                     break;
                 case '\t':
-                    sstr_append_of(out, "t", 1);
+                    sstr_append_of(out, "\\t", 2);
                     break;
                 default: {
                     // escape and print as unicode codepoint
-                    char tmp[7] = {0};
-                    snprintf(tmp, sizeof(tmp), "u%04x", *(data + i));
-                    sstr_append_cstr(out, tmp);
+                    char tmp[7];
+                    tmp[0] = '\\';
+                    tmp[1] = 'u';
+                    snprintf(tmp + 2, 5, "%04x", (unsigned)data[i]);
+                    sstr_append_of(out, tmp, 6);
                 }
             }
         } else {

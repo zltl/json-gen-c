@@ -50,8 +50,8 @@ json.gen.c sstr.c: structs.json-gen-c $(JSON_GEN_C)
 	@echo "Generating benchmark structures..."
 	$(JSON_GEN_C) -in structs.json-gen-c -out .
 
-# Compile generated files
-$(foreach src,$(GENERATED_SOURCES),$(eval $(call compile-c,$(src),$(patsubst %.c,$(BENCH_BUILD)/%.o,$(src)),-I.)))
+# Compile generated files (include project src/ for utils/error_codes.h)
+$(foreach src,$(GENERATED_SOURCES),$(eval $(call compile-c,$(src),$(patsubst %.c,$(BENCH_BUILD)/%.o,$(src)),-I. -I$(ROOT_DIR)/src)))
 
 # Compile benchmark main
 $(eval $(call compile-cxx,$(BENCH_SOURCE),$(BENCH_OBJECT),-I. $(BENCH_INCLUDE_FLAGS)))

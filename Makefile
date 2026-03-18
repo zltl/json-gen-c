@@ -124,7 +124,8 @@ benchmark-deps:
 
 benchmark-repro: benchmark-deps
 	@echo "Building benchmark suite with release-style flags..."
-	$(MAKE) benchmark BENCH_PREFIX="$(BENCH_PREFIX)" CFLAGS="$(BENCH_OPT_FLAGS)" CXXFLAGS="$(BENCH_OPT_FLAGS)"
+	$(MAKE) $(JSON_GEN_C)
+	$(MAKE) -C benchmark BENCH_PREFIX="$(BENCH_PREFIX)" CFLAGS="$(BENCH_OPT_FLAGS)" CXXFLAGS="$(BENCH_OPT_FLAGS)"
 	@echo "Running benchmark suite..."
 	$(MAKE) -C benchmark run BENCH_PREFIX="$(BENCH_PREFIX)" CFLAGS="$(BENCH_OPT_FLAGS)" CXXFLAGS="$(BENCH_OPT_FLAGS)"
 
