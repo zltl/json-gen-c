@@ -1,0 +1,119 @@
+// Advanced json-gen-c example: demonstrates all features
+//
+// Features covered:
+//   - Enums with default values
+//   - Optional and nullable fields
+//   - Field aliases (@json)
+//   - Maps (key-value dictionaries)
+//   - Dynamic and fixed-size arrays
+//   - Nested structs
+//   - Tagged unions (oneof)
+//   - Default values
+//   - Precise-width integers
+
+// --- Enums ---
+
+enum Priority {
+    LOW,
+    MEDIUM,
+    HIGH,
+    CRITICAL
+}
+
+enum Status {
+    PENDING,
+    ACTIVE,
+    COMPLETED,
+    ARCHIVED
+}
+
+// --- Basic structs ---
+
+struct Address {
+    sstr_t street;
+    sstr_t city;
+    sstr_t country;
+    optional sstr_t zip_code;
+}
+
+struct Tag {
+    sstr_t key;
+    sstr_t value;
+}
+
+// --- Struct with optional, nullable, aliases, defaults ---
+
+struct Task {
+    @json "task_id"
+    int id;
+
+    sstr_t title;
+
+    optional sstr_t description;
+
+    @json "pri"
+    Priority priority = MEDIUM;
+
+    Status status = PENDING;
+
+    nullable sstr_t assignee;
+
+    @json "labels"
+    sstr_t tags[];
+
+    int32_t estimated_hours = 8;
+}
+
+// --- Struct with maps ---
+
+struct Dashboard {
+    sstr_t name;
+    map<sstr_t, int> task_counts;
+    map<sstr_t, sstr_t> settings;
+}
+
+// --- Oneof (tagged union) ---
+
+struct EmailNotification {
+    sstr_t to;
+    sstr_t subject;
+}
+
+struct SlackNotification {
+    sstr_t channel;
+    sstr_t message;
+}
+
+struct WebhookNotification {
+    sstr_t url;
+    sstr_t payload;
+    int timeout_ms = 5000;
+}
+
+oneof Notification {
+    @tag "method"
+    EmailNotification email;
+    SlackNotification slack;
+    WebhookNotification webhook;
+}
+
+// --- Top-level struct combining everything ---
+
+struct Project {
+    @json "project_name"
+    sstr_t name;
+
+    uint32_t version;
+
+    optional sstr_t description;
+
+    Address headquarters;
+
+    Task tasks[];
+
+    Tag metadata[3];
+
+    Notification notifications[];
+
+    Dashboard dashboard;
+}
