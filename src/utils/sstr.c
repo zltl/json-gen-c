@@ -178,10 +178,44 @@ void sstr_append_zero(sstr_t s, size_t length) {
 }
 
 void sstr_append_of(sstr_t s, const void* data, size_t length) {
-    size_t oldlen = sstr_length(s);
-    sstr_append_zero(s, length);
-    memcpy(STR_PTR(s) + oldlen, data, length);
-    STR_PTR(s)[sstr_length(s)] = '\0';
+    STR* ss = (STR*)s;
+    size_t oldlen = ss->length;
+    size_t newlen = oldlen + length;
+
+    assert(ss->type != SSTR_TYPE_REF);
+
+    if (ss->type == SSTR_TYPE_SHORT) {
+        if (newlen <= SHORT_STR_CAPACITY) {
+            memcpy(ss->un.short_str + oldlen, data, length);
+            ss->length = newlen;
+            ss->un.short_str[newlen] = '\0';
+            return;
+        }
+        /* Promote SHORT → LONG */
+        char* ldata =
+            (char*)JGENC_MALLOC(newlen + CAP_ADD_DELTA + 1);
+        memcpy(ldata, ss->un.short_str, oldlen);
+        memcpy(ldata + oldlen, data, length);
+        ldata[newlen] = '\0';
+        ss->un.long_str.data = ldata;
+        ss->un.long_str.capacity = newlen + CAP_ADD_DELTA;
+        ss->length = newlen;
+        ss->type = SSTR_TYPE_LONG;
+        return;
+    }
+    /* LONG type */
+    if (ss->un.long_str.capacity - oldlen > length) {
+        memcpy(ss->un.long_str.data + oldlen, data, length);
+        ss->length = newlen;
+        ss->un.long_str.data[newlen] = '\0';
+        return;
+    }
+    ss->un.long_str.data = (char*)JGENC_REALLOC(
+        ss->un.long_str.data, newlen + CAP_ADD_DELTA + 1);
+    ss->un.long_str.capacity = newlen + CAP_ADD_DELTA + 1;
+    memcpy(ss->un.long_str.data + oldlen, data, length);
+    ss->length = newlen;
+    ss->un.long_str.data[newlen] = '\0';
 }
 
 void sstr_append(sstr_t dst, sstr_t src) {
@@ -785,12 +819,30 @@ int sstr_json_escape_string_append(sstr_t out, sstr_t in) {
     if (in == NULL) {
         return 0;
     }
-    size_t i = 0;
     unsigned char* data = (unsigned char*)sstr_cstr(in);
     size_t in_len = sstr_length(in);
-    for (i = 0; i < in_len; ++i) {
+
+    /* Fast path: scan for chars needing escape. If none, single bulk append. */
+    size_t first_esc = in_len;
+    for (size_t k = 0; k < in_len; ++k) {
+        if (data[k] <= 31 || data[k] == '\"' || data[k] == '\\') {
+            first_esc = k;
+            break;
+        }
+    }
+    if (first_esc == in_len) {
+        /* No escaping needed — single append for the whole string */
+        sstr_append_of(out, data, in_len);
+        return 0;
+    }
+
+    /* Append the clean prefix before the first escape char */
+    if (first_esc > 0) {
+        sstr_append_of(out, data, first_esc);
+    }
+
+    for (size_t i = first_esc; i < in_len; ++i) {
         if (data[i] <= 31 || data[i] == '\"' || data[i] == '\\') {
-            // character needs to be escaped — single 2-byte append
             switch (data[i]) {
                 case '\\':
                     sstr_append_of(out, "\\\\", 2);
@@ -814,7 +866,6 @@ int sstr_json_escape_string_append(sstr_t out, sstr_t in) {
                     sstr_append_of(out, "\\t", 2);
                     break;
                 default: {
-                    // escape and print as unicode codepoint
                     char tmp[7];
                     tmp[0] = '\\';
                     tmp[1] = 'u';
@@ -838,10 +889,7 @@ int sstr_json_escape_string_append(sstr_t out, sstr_t in) {
 
 void sstr_append_of_if(sstr_t s, const void* data, size_t length, bool cond) {
     if (cond) {
-        size_t oldlen = sstr_length(s);
-        sstr_append_zero(s, length);
-        memcpy(STR_PTR(s) + oldlen, data, length);
-        STR_PTR(s)[sstr_length(s)] = '\0';
+        sstr_append_of(s, data, length);
     }
 }
 
@@ -849,9 +897,9 @@ void sstr_append_indent(sstr_t s, size_t indent) {
     if (indent == 0) {
         return;
     }
+    /* Reuse sstr_append_zero for capacity, then overwrite with spaces.
+     * sstr_append_zero only zeroes — the memset to spaces is unavoidable. */
     size_t cur_len = sstr_length(s);
     sstr_append_zero(s, indent);
-    for (size_t i = 0; i < indent; i++) {
-        STR_PTR(s)[cur_len + i] = ' ';
-    }
+    memset(STR_PTR(s) + cur_len, ' ', indent);
 }

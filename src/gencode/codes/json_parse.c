@@ -742,22 +742,39 @@ static int json_next_token_(sstr_t content, struct json_pos* pos, sstr_t txt) {
         pos->offset = i;
         return tk;
     }
-    // parse true, false, null
+    // parse true, false, null — detect by first char + fixed length
+    long keyword_start = i;
+    if (ch == 't' && i + 4 <= len && memcmp(data + i, "true", 4) == 0 &&
+        (i + 4 >= len || !isalpha((unsigned char)data[i + 4]))) {
+        i += 4;
+        pos->col += 4;
+        pos->offset = i;
+        sstr_append_of_fast_(txt, "true", 4);
+        return JSON_TOKEN_TRUE;
+    }
+    if (ch == 'f' && i + 5 <= len && memcmp(data + i, "false", 5) == 0 &&
+        (i + 5 >= len || !isalpha((unsigned char)data[i + 5]))) {
+        i += 5;
+        pos->col += 5;
+        pos->offset = i;
+        sstr_append_of_fast_(txt, "false", 5);
+        return JSON_TOKEN_FALSE;
+    }
+    if (ch == 'n' && i + 4 <= len && memcmp(data + i, "null", 4) == 0 &&
+        (i + 4 >= len || !isalpha((unsigned char)data[i + 4]))) {
+        i += 4;
+        pos->col += 4;
+        pos->offset = i;
+        sstr_append_of_fast_(txt, "null", 4);
+        return JSON_TOKEN_NULL;
+    }
+    // Unknown identifier — scan and report error
     while (i < len && isalpha(data[i])) {
         i++;
         pos->col++;
     }
-    sstr_append_of_fast_(txt, data + start_pos, i - start_pos);
+    sstr_append_of_fast_(txt, data + keyword_start, i - keyword_start);
     pos->offset = i;
-    if (sstr_compare_c(txt, "true") == 0) {
-        return JSON_TOKEN_TRUE;
-    }
-    if (sstr_compare_c(txt, "false") == 0) {
-        return JSON_TOKEN_FALSE;
-    }
-    if (sstr_compare_c(txt, "null") == 0) {
-        return JSON_TOKEN_NULL;
-    }
 
     sstr_t e = PERROR(pos, "unexpected identify %s", SSTR_CSTR_(txt));
     sstr_append(txt, e);

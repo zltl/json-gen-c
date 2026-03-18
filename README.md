@@ -17,7 +17,7 @@ json-gen-c
 
 ![JSON Benchmark: Scalar Struct (6 fields)](doc/benchmark_chart.png)
 
-json-gen-c is **faster than cJSON** on all benchmarks — 10% faster marshal, 26% faster unmarshal — while providing type-safe code generation, selective parsing, and multi-format support (JSON + MessagePack + CBOR). See [benchmark/RESULTS.md](benchmark/RESULTS.md) for full results and reproduction steps.
+json-gen-c is **faster than cJSON** on all benchmarks — up to 47% faster marshal, 25% faster unmarshal — while providing type-safe code generation, selective parsing, and multi-format support (JSON + MessagePack + CBOR). See [benchmark/RESULTS.md](benchmark/RESULTS.md) for full results and reproduction steps.
 
 ## Contents
 
