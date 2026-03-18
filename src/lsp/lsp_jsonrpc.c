@@ -5,6 +5,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "lsp/lsp_jsonrpc.h"
+#include "utils/compat.h"
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -275,7 +276,7 @@ static int parse_object(struct json_parser_ctx *c, struct lsp_json_value *out)
             sstr_free(key_s);
             goto fail;
         }
-        keys[count] = strdup(sstr_cstr(key_s));
+        keys[count] = compat_strdup(sstr_cstr(key_s));
         sstr_free(key_s);
 
         skip_ws(c);

@@ -10,6 +10,7 @@
 #include "lsp/lsp_server.h"
 #include "lsp/lsp_jsonrpc.h"
 #include "struct/struct_parse.h"
+#include "utils/compat.h"
 #include "utils/diag.h"
 #include "utils/sstr.h"
 
@@ -51,8 +52,17 @@ static void lsp_state_cleanup(struct lsp_state *state)
 static char *uri_to_path(const char *uri)
 {
     if (strncmp(uri, "file://", 7) == 0)
-        return strdup(uri + 7);
-    return strdup(uri);
+        return compat_strdup(uri + 7);
+    return compat_strdup(uri);
+}
+
+static const char *compat_null_device(void)
+{
+#ifdef _WIN32
+    return "NUL";
+#else
+    return "/dev/null";
+#endif
 }
 
 /* ---- Diagnostic publishing ---- */
@@ -124,7 +134,7 @@ static void validate_document(FILE *out, struct lsp_state *state)
     }
 
     char *filepath = uri_to_path(state->doc.uri);
-    parser->name = strdup(filepath ? filepath : "<buffer>");
+    parser->name = compat_strdup(filepath ? filepath : "<buffer>");
     parser->diag = diag_engine_new(
         parser->name,
         sstr_cstr(state->doc.content),
@@ -142,7 +152,7 @@ static void validate_document(FILE *out, struct lsp_state *state)
 
     /* Run semantic validation (suppress its stderr printing). */
     FILE *saved_stderr = stderr;
-    stderr = fopen("/dev/null", "w");
+    stderr = fopen(compat_null_device(), "w");
     if (stderr) {
         struct_parser_validate(parser);
         fclose(stderr);
@@ -298,7 +308,7 @@ static void handle_message(FILE *out, struct lsp_state *state,
             const char *text = lsp_json_string(lsp_json_get(td, "text"));
             if (uri && text) {
                 free(state->doc.uri);
-                state->doc.uri = strdup(uri);
+                state->doc.uri = compat_strdup(uri);
                 if (state->doc.content)
                     sstr_free(state->doc.content);
                 state->doc.content = sstr(text);

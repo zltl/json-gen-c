@@ -105,6 +105,7 @@ sudo cmake --install .
 mkdir build && cd build
 cmake ..
 cmake --build . --config Release
+ctest -C Release --output-on-failure
 ```
 
 **Windows (CMake + MinGW)**:
@@ -113,6 +114,7 @@ cmake --build . --config Release
 mkdir build && cd build
 cmake .. -G "MinGW Makefiles"
 cmake --build .
+ctest --output-on-failure
 ```
 
 > Note: On Windows, CMake automatically uses a built-in `xxd` replacement (`cmake/xxd.cmake`). No external tools beyond a C compiler and CMake are needed.

@@ -63,6 +63,8 @@ jobs:
       run: cmake -B build -DCMAKE_BUILD_TYPE=Release
     - name: Build
       run: cmake --build build --config Release
+    - name: Run tests
+      run: ctest --test-dir build -C Release --output-on-failure
     - name: Verify binary runs
       run: build\Release\json-gen-c.exe --version
     - name: Test code generation
@@ -80,6 +82,8 @@ jobs:
       run: cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
     - name: Build
       run: cmake --build build
+    - name: Run tests
+      run: ctest --test-dir build --output-on-failure
     - name: Verify binary runs
       run: build\json-gen-c.exe --version
     - name: Test code generation

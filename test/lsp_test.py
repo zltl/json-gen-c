@@ -18,14 +18,22 @@ SERVER_PATH = None
 
 def find_server():
     """Locate the json-gen-c binary."""
+    env_server = os.environ.get('JSON_GEN_C_LSP_TEST_SERVER')
+    if env_server:
+        return os.path.abspath(env_server)
+
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    exe_suffix = '.exe' if os.name == 'nt' else ''
     candidates = [
-        os.path.join(os.path.dirname(__file__), '..', 'build', 'bin', 'json-gen-c'),
-        os.path.join(os.path.dirname(__file__), '..', 'build', 'json-gen-c'),
+        os.path.join(root_dir, 'build', 'bin', f'json-gen-c{exe_suffix}'),
+        os.path.join(root_dir, 'build', f'json-gen-c{exe_suffix}'),
+        os.path.join(root_dir, 'build', 'Release', f'json-gen-c{exe_suffix}'),
+        os.path.join(root_dir, 'build', 'Debug', f'json-gen-c{exe_suffix}'),
     ]
     for c in candidates:
         if os.path.isfile(c) and os.access(c, os.X_OK):
             return os.path.abspath(c)
-    return 'json-gen-c'  # hope it's in PATH
+    return f'json-gen-c{exe_suffix}'  # hope it's in PATH
 
 
 class LSPClient:

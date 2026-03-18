@@ -11,6 +11,8 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 option(JSON_GEN_C_DEBUG "Enable debug output" OFF)
 option(JSON_GEN_C_SANITIZE "Enable AddressSanitizer" OFF)
 
+include(CTest)
+
 #==============================================================================
 # Find xxd or provide a fallback for Windows
 #==============================================================================
@@ -262,8 +264,12 @@ if(JSON_GEN_C_DEBUG)
     target_compile_definitions(json-gen-c PRIVATE JSON_DEBUG)
 endif()
 if(JSON_GEN_C_SANITIZE)
-    target_compile_options(json-gen-c PRIVATE -fsanitize=address)
-    target_link_options(json-gen-c PRIVATE -fsanitize=address)
+    if(MSVC)
+        target_compile_options(json-gen-c PRIVATE /fsanitize=address)
+    else()
+        target_compile_options(json-gen-c PRIVATE -fsanitize=address)
+        target_link_options(json-gen-c PRIVATE -fsanitize=address)
+    endif()
 endif()
 
 # Compiler warnings
@@ -274,6 +280,24 @@ foreach(tgt json_gen_c_utils json_gen_c_struct json_gen_c_gencode json-gen-c)
         target_compile_options(${tgt} PRIVATE -Wall -Wextra -Werror -Wno-unused-result)
     endif()
 endforeach()
+
+if(BUILD_TESTING)
+    add_test(
+        NAME json-gen-c-version
+        COMMAND json-gen-c --version
+    )
+
+    find_package(Python3 COMPONENTS Interpreter)
+    if(Python3_Interpreter_FOUND)
+        add_test(
+            NAME json-gen-c-lsp
+            COMMAND ${Python3_EXECUTABLE} "${CMAKE_CURRENT_SOURCE_DIR}/test/lsp_test.py"
+        )
+        set_tests_properties(json-gen-c-lsp PROPERTIES
+            ENVIRONMENT "JSON_GEN_C_LSP_TEST_SERVER=$<TARGET_FILE:json-gen-c>"
+        )
+    endif()
+endif()
 
 #==============================================================================
 # Installation

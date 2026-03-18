@@ -35,6 +35,18 @@ cmake ..
 cmake --build . -j$(nproc)
 ```
 
+### Testing
+
+```bash
+ctest --output-on-failure
+```
+
+On multi-config generators such as Visual Studio, use:
+
+```bash
+ctest -C Release --output-on-failure
+```
+
 ### Installing
 
 ```bash
