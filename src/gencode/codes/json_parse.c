@@ -363,7 +363,7 @@ static int utf16_literal_to_utf8(sstr_t content, struct json_pos* pos,
         return JSON_ERROR;
     }
     i++;
-    unsigned int first_code = parse_hex4((const unsigned char*)&data[i + 1]);
+    unsigned int first_code = parse_hex4((const unsigned char*)&data[i]);
     unsigned int codepoint = 0;
     i += 4;
     pos->col += 5;

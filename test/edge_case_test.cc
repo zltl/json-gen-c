@@ -343,3 +343,427 @@ TEST(EdgeCaseRoundTrip, ZeroValues) {
     TestStruct_clear(&obj2);
     sstr_free(json);
 }
+
+// ==========================================================================
+// Error behavior tests
+// ==========================================================================
+
+TEST(EdgeCaseError, RegularUnmarshalKeepsDataOnError) {
+    struct AliasBasic obj;
+    AliasBasic_init(&obj);
+    obj.username = sstr("preserved");
+    obj.created = 12345;
+    obj.id = 99;
+
+    sstr_t json = sstr("{\"user_name\":INVALID}");
+    int result = json_unmarshal_AliasBasic(json, &obj);
+    EXPECT_LT(result, 0);
+
+    sstr_free(json);
+    AliasBasic_clear(&obj);
+}
+
+TEST(EdgeCaseError, NullableFieldHandling) {
+    // nullable + null in JSON: field stays at its init value
+    // The runtime peeks for JSON null and skips the field if found.
+    struct AliasOptional obj;
+    AliasOptional_init(&obj);
+    // After init, has_age is false
+    EXPECT_FALSE(obj.has_age);
+
+    // Parse JSON with null for nullable field
+    sstr_t json = sstr("{\"age_years\":null}");
+    int result = json_unmarshal_AliasOptional(json, &obj);
+    ASSERT_EQ(result, 0);
+    // has_age stays false (from init) because null was skipped
+    EXPECT_FALSE(obj.has_age);
+
+    sstr_free(json);
+    AliasOptional_clear(&obj);
+}
+
+TEST(EdgeCaseError, NullableFieldWithValue) {
+    struct AliasOptional obj;
+    AliasOptional_init(&obj);
+
+    sstr_t json = sstr("{\"age_years\":42}");
+    int result = json_unmarshal_AliasOptional(json, &obj);
+    ASSERT_EQ(result, 0);
+    EXPECT_TRUE(obj.has_age);
+    EXPECT_EQ(obj.age, 42);
+
+    sstr_free(json);
+    AliasOptional_clear(&obj);
+}
+
+// ==========================================================================
+// Unicode escape sequence tests (\uXXXX)
+// ==========================================================================
+
+TEST(UnicodeEscape, BasicBMP) {
+    // \u0041 = 'A'
+    struct TestStruct obj;
+    TestStruct_init(&obj);
+    sstr_t json = sstr("{\"int_val\":0,\"long_val\":0,\"float_val\":0,\"double_val\":0,\"bool_val\":false,\"sstr_val\":\"\\u0041\\u0042\\u0043\"}");
+    ASSERT_EQ(json_unmarshal_TestStruct(json, &obj), 0);
+    EXPECT_EQ(sstr_compare_c(obj.sstr_val, "ABC"), 0);
+    sstr_free(json);
+    TestStruct_clear(&obj);
+}
+
+TEST(UnicodeEscape, NullChar) {
+    // \u0000 — just ensure no crash
+    struct TestStruct obj;
+    TestStruct_init(&obj);
+    sstr_t json = sstr("{\"int_val\":0,\"long_val\":0,\"float_val\":0,\"double_val\":0,\"bool_val\":false,\"sstr_val\":\"A\\u0000B\"}");
+    int rc = json_unmarshal_TestStruct(json, &obj);
+    (void)rc;
+    sstr_free(json);
+    TestStruct_clear(&obj);
+}
+
+TEST(UnicodeEscape, ChineseCharacters) {
+    // \u4e2d\u6587 = "中文"
+    struct TestStruct obj;
+    TestStruct_init(&obj);
+    sstr_t json = sstr("{\"int_val\":0,\"long_val\":0,\"float_val\":0,\"double_val\":0,\"bool_val\":false,\"sstr_val\":\"\\u4e2d\\u6587\"}");
+    ASSERT_EQ(json_unmarshal_TestStruct(json, &obj), 0);
+    EXPECT_EQ(sstr_compare_c(obj.sstr_val, "中文"), 0);
+    sstr_free(json);
+    TestStruct_clear(&obj);
+}
+
+TEST(UnicodeEscape, SurrogatePair) {
+    // \uD83D\uDE80 = U+1F680 = 🚀
+    struct TestStruct obj;
+    TestStruct_init(&obj);
+    sstr_t json = sstr("{\"int_val\":0,\"long_val\":0,\"float_val\":0,\"double_val\":0,\"bool_val\":false,\"sstr_val\":\"\\uD83D\\uDE80\"}");
+    ASSERT_EQ(json_unmarshal_TestStruct(json, &obj), 0);
+    EXPECT_EQ(sstr_compare_c(obj.sstr_val, "🚀"), 0);
+    sstr_free(json);
+    TestStruct_clear(&obj);
+}
+
+TEST(UnicodeEscape, MultipleSurrogatePairs) {
+    // 🌟 = \uD83C\uDF1F, 💫 = \uD83D\uDCAB
+    struct TestStruct obj;
+    TestStruct_init(&obj);
+    sstr_t json = sstr("{\"int_val\":0,\"long_val\":0,\"float_val\":0,\"double_val\":0,\"bool_val\":false,\"sstr_val\":\"\\uD83C\\uDF1F\\uD83D\\uDCAB\"}");
+    ASSERT_EQ(json_unmarshal_TestStruct(json, &obj), 0);
+    EXPECT_EQ(sstr_compare_c(obj.sstr_val, "🌟💫"), 0);
+    sstr_free(json);
+    TestStruct_clear(&obj);
+}
+
+TEST(UnicodeEscape, MixedEscapeAndLiteral) {
+    struct TestStruct obj;
+    TestStruct_init(&obj);
+    sstr_t json = sstr("{\"int_val\":0,\"long_val\":0,\"float_val\":0,\"double_val\":0,\"bool_val\":false,\"sstr_val\":\"Hello \\u0057orld 中文\"}");
+    ASSERT_EQ(json_unmarshal_TestStruct(json, &obj), 0);
+    EXPECT_EQ(sstr_compare_c(obj.sstr_val, "Hello World 中文"), 0);
+    sstr_free(json);
+    TestStruct_clear(&obj);
+}
+
+TEST(UnicodeEscape, InvalidLoneSurrogate) {
+    // \uD83D without low surrogate should fail
+    struct TestStruct obj;
+    TestStruct_init(&obj);
+    sstr_t json = sstr("{\"int_val\":0,\"long_val\":0,\"float_val\":0,\"double_val\":0,\"bool_val\":false,\"sstr_val\":\"\\uD83D\"}");
+    EXPECT_NE(json_unmarshal_TestStruct(json, &obj), 0);
+    sstr_free(json);
+    TestStruct_clear(&obj);
+}
+
+TEST(UnicodeEscape, EscapedControlChars) {
+    // \u000A = newline, \u0009 = tab
+    struct TestStruct obj;
+    TestStruct_init(&obj);
+    sstr_t json = sstr("{\"int_val\":0,\"long_val\":0,\"float_val\":0,\"double_val\":0,\"bool_val\":false,\"sstr_val\":\"line1\\u000Aline2\\u0009tab\"}");
+    ASSERT_EQ(json_unmarshal_TestStruct(json, &obj), 0);
+    EXPECT_EQ(sstr_compare_c(obj.sstr_val, "line1\nline2\ttab"), 0);
+    sstr_free(json);
+    TestStruct_clear(&obj);
+}
+
+TEST(UnicodeEscape, RoundTripThroughMarshal) {
+    struct TestStruct obj;
+    TestStruct_init(&obj);
+    sstr_t json = sstr("{\"int_val\":0,\"long_val\":0,\"float_val\":0,\"double_val\":0,\"bool_val\":false,\"sstr_val\":\"\\u4e2d\\uD83D\\uDE80\"}");
+    ASSERT_EQ(json_unmarshal_TestStruct(json, &obj), 0);
+    EXPECT_EQ(sstr_compare_c(obj.sstr_val, "中🚀"), 0);
+
+    sstr_t out = sstr_new();
+    ASSERT_EQ(json_marshal_TestStruct(&obj, out), 0);
+
+    struct TestStruct obj2;
+    TestStruct_init(&obj2);
+    ASSERT_EQ(json_unmarshal_TestStruct(out, &obj2), 0);
+    EXPECT_EQ(sstr_compare(obj.sstr_val, obj2.sstr_val), 0);
+
+    sstr_free(json);
+    sstr_free(out);
+    TestStruct_clear(&obj);
+    TestStruct_clear(&obj2);
+}
+
+// ==========================================================================
+// Marshal round-trip consistency tests
+// ==========================================================================
+
+TEST(RoundTrip, ScalarStruct) {
+    struct TestStruct obj;
+    TestStruct_init(&obj);
+    obj.int_val = -42;
+    obj.long_val = 9999999999LL;
+    obj.float_val = 3.14f;
+    obj.double_val = 2.718281828;
+    obj.bool_val = true;
+    obj.sstr_val = sstr("hello world");
+
+    sstr_t json1 = sstr_new();
+    ASSERT_EQ(json_marshal_TestStruct(&obj, json1), 0);
+
+    struct TestStruct obj2;
+    TestStruct_init(&obj2);
+    ASSERT_EQ(json_unmarshal_TestStruct(json1, &obj2), 0);
+
+    sstr_t json2 = sstr_new();
+    ASSERT_EQ(json_marshal_TestStruct(&obj2, json2), 0);
+
+    EXPECT_EQ(sstr_compare(json1, json2), 0)
+        << "Round trip mismatch:\n  json1=" << sstr_cstr(json1)
+        << "\n  json2=" << sstr_cstr(json2);
+
+    sstr_free(json1);
+    sstr_free(json2);
+    TestStruct_clear(&obj);
+    TestStruct_clear(&obj2);
+}
+
+TEST(RoundTrip, NestedStruct) {
+    struct NestedStruct obj;
+    NestedStruct_init(&obj);
+    obj.id = 100;
+    obj.name = sstr("parent");
+    obj.embedded.int_val = -1;
+    obj.embedded.long_val = 0;
+    obj.embedded.float_val = 0.5f;
+    obj.embedded.double_val = 1.0;
+    obj.embedded.bool_val = false;
+    obj.embedded.sstr_val = sstr("child");
+
+    sstr_t json1 = sstr_new();
+    ASSERT_EQ(json_marshal_NestedStruct(&obj, json1), 0);
+
+    struct NestedStruct obj2;
+    NestedStruct_init(&obj2);
+    ASSERT_EQ(json_unmarshal_NestedStruct(json1, &obj2), 0);
+
+    sstr_t json2 = sstr_new();
+    ASSERT_EQ(json_marshal_NestedStruct(&obj2, json2), 0);
+
+    EXPECT_EQ(sstr_compare(json1, json2), 0)
+        << "Nested round trip mismatch:\n  json1=" << sstr_cstr(json1)
+        << "\n  json2=" << sstr_cstr(json2);
+
+    sstr_free(json1);
+    sstr_free(json2);
+    NestedStruct_clear(&obj);
+    NestedStruct_clear(&obj2);
+}
+
+TEST(RoundTrip, OptionalFieldsPresent) {
+    struct AliasOptional obj;
+    AliasOptional_init(&obj);
+    obj.has_name = true;
+    obj.name = sstr("Alice");
+    obj.has_age = true;
+    obj.age = 30;
+
+    sstr_t json1 = sstr_new();
+    ASSERT_EQ(json_marshal_AliasOptional(&obj, json1), 0);
+
+    struct AliasOptional obj2;
+    AliasOptional_init(&obj2);
+    ASSERT_EQ(json_unmarshal_AliasOptional(json1, &obj2), 0);
+
+    sstr_t json2 = sstr_new();
+    ASSERT_EQ(json_marshal_AliasOptional(&obj2, json2), 0);
+
+    EXPECT_EQ(sstr_compare(json1, json2), 0);
+
+    sstr_free(json1);
+    sstr_free(json2);
+    AliasOptional_clear(&obj);
+    AliasOptional_clear(&obj2);
+}
+
+TEST(RoundTrip, OptionalFieldsAbsent) {
+    struct AliasOptional obj;
+    AliasOptional_init(&obj);
+
+    sstr_t json1 = sstr_new();
+    ASSERT_EQ(json_marshal_AliasOptional(&obj, json1), 0);
+
+    struct AliasOptional obj2;
+    AliasOptional_init(&obj2);
+    ASSERT_EQ(json_unmarshal_AliasOptional(json1, &obj2), 0);
+
+    sstr_t json2 = sstr_new();
+    ASSERT_EQ(json_marshal_AliasOptional(&obj2, json2), 0);
+
+    EXPECT_EQ(sstr_compare(json1, json2), 0);
+    EXPECT_FALSE(obj2.has_name);
+    EXPECT_FALSE(obj2.has_age);
+
+    sstr_free(json1);
+    sstr_free(json2);
+    AliasOptional_clear(&obj);
+    AliasOptional_clear(&obj2);
+}
+
+TEST(RoundTrip, StringsWithSpecialChars) {
+    struct TestStruct obj;
+    TestStruct_init(&obj);
+    obj.int_val = 0;
+    obj.long_val = 0;
+    obj.float_val = 0.0f;
+    obj.double_val = 0.0;
+    obj.bool_val = false;
+    obj.sstr_val = sstr("tab\there\nnewline\r\n\"quotes\" and \\backslash");
+
+    sstr_t json1 = sstr_new();
+    ASSERT_EQ(json_marshal_TestStruct(&obj, json1), 0);
+
+    struct TestStruct obj2;
+    TestStruct_init(&obj2);
+    ASSERT_EQ(json_unmarshal_TestStruct(json1, &obj2), 0);
+
+    sstr_t json2 = sstr_new();
+    ASSERT_EQ(json_marshal_TestStruct(&obj2, json2), 0);
+
+    EXPECT_EQ(sstr_compare(json1, json2), 0);
+    EXPECT_EQ(sstr_compare(obj.sstr_val, obj2.sstr_val), 0);
+
+    sstr_free(json1);
+    sstr_free(json2);
+    TestStruct_clear(&obj);
+    TestStruct_clear(&obj2);
+}
+
+TEST(RoundTrip, PrettyPrintConsistency) {
+    struct TestStruct obj;
+    TestStruct_init(&obj);
+    obj.int_val = 1;
+    obj.long_val = 2;
+    obj.float_val = 3.0f;
+    obj.double_val = 4.0;
+    obj.bool_val = true;
+    obj.sstr_val = sstr("test");
+
+    sstr_t json1 = sstr_new();
+    ASSERT_EQ(json_marshal_indent_TestStruct(&obj, 2, 0, json1), 0);
+
+    struct TestStruct obj2;
+    TestStruct_init(&obj2);
+    ASSERT_EQ(json_unmarshal_TestStruct(json1, &obj2), 0);
+
+    sstr_t json2 = sstr_new();
+    ASSERT_EQ(json_marshal_indent_TestStruct(&obj2, 2, 0, json2), 0);
+
+    EXPECT_EQ(sstr_compare(json1, json2), 0);
+
+    sstr_free(json1);
+    sstr_free(json2);
+    TestStruct_clear(&obj);
+    TestStruct_clear(&obj2);
+}
+
+// ==========================================================================
+// Integer overflow boundary tests (16/32-bit types)
+// ==========================================================================
+
+TEST(OverflowBoundary, Int16Overflow) {
+    struct PreciseInts obj;
+    PreciseInts_init(&obj);
+    sstr_t json = sstr("{\"i8\":0,\"i16\":32768,\"i32\":0,\"i64\":0,\"u8\":0,\"u16\":0,\"u32\":0,\"u64\":0}");
+    EXPECT_NE(json_unmarshal_PreciseInts(json, &obj), 0);
+    sstr_free(json);
+    PreciseInts_clear(&obj);
+}
+
+TEST(OverflowBoundary, Int16Underflow) {
+    struct PreciseInts obj;
+    PreciseInts_init(&obj);
+    sstr_t json = sstr("{\"i8\":0,\"i16\":-32769,\"i32\":0,\"i64\":0,\"u8\":0,\"u16\":0,\"u32\":0,\"u64\":0}");
+    EXPECT_NE(json_unmarshal_PreciseInts(json, &obj), 0);
+    sstr_free(json);
+    PreciseInts_clear(&obj);
+}
+
+TEST(OverflowBoundary, Uint16Overflow) {
+    struct PreciseInts obj;
+    PreciseInts_init(&obj);
+    sstr_t json = sstr("{\"i8\":0,\"i16\":0,\"i32\":0,\"i64\":0,\"u8\":0,\"u16\":65536,\"u32\":0,\"u64\":0}");
+    EXPECT_NE(json_unmarshal_PreciseInts(json, &obj), 0);
+    sstr_free(json);
+    PreciseInts_clear(&obj);
+}
+
+TEST(OverflowBoundary, Int32Overflow) {
+    struct PreciseInts obj;
+    PreciseInts_init(&obj);
+    sstr_t json = sstr("{\"i8\":0,\"i16\":0,\"i32\":2147483648,\"i64\":0,\"u8\":0,\"u16\":0,\"u32\":0,\"u64\":0}");
+    EXPECT_NE(json_unmarshal_PreciseInts(json, &obj), 0);
+    sstr_free(json);
+    PreciseInts_clear(&obj);
+}
+
+TEST(OverflowBoundary, Uint32Overflow) {
+    struct PreciseInts obj;
+    PreciseInts_init(&obj);
+    sstr_t json = sstr("{\"i8\":0,\"i16\":0,\"i32\":0,\"i64\":0,\"u8\":0,\"u16\":0,\"u32\":4294967296,\"u64\":0}");
+    EXPECT_NE(json_unmarshal_PreciseInts(json, &obj), 0);
+    sstr_free(json);
+    PreciseInts_clear(&obj);
+}
+
+TEST(OverflowBoundary, NegativeUnsigned) {
+    struct PreciseInts obj;
+    PreciseInts_init(&obj);
+    sstr_t json = sstr("{\"i8\":0,\"i16\":0,\"i32\":0,\"i64\":0,\"u8\":-1,\"u16\":0,\"u32\":0,\"u64\":0}");
+    EXPECT_NE(json_unmarshal_PreciseInts(json, &obj), 0);
+    sstr_free(json);
+    PreciseInts_clear(&obj);
+}
+
+TEST(OverflowBoundary, ExactBoundaryValues) {
+    struct PreciseInts obj;
+    PreciseInts_init(&obj);
+    sstr_t json = sstr("{\"i8\":127,\"i16\":32767,\"i32\":2147483647,\"i64\":9223372036854775807,\"u8\":255,\"u16\":65535,\"u32\":4294967295,\"u64\":18446744073709551615}");
+    ASSERT_EQ(json_unmarshal_PreciseInts(json, &obj), 0);
+    EXPECT_EQ(obj.i8, INT8_MAX);
+    EXPECT_EQ(obj.i16, INT16_MAX);
+    EXPECT_EQ(obj.i32, INT32_MAX);
+    EXPECT_EQ(obj.i64, INT64_MAX);
+    EXPECT_EQ(obj.u8, UINT8_MAX);
+    EXPECT_EQ(obj.u16, UINT16_MAX);
+    EXPECT_EQ(obj.u32, UINT32_MAX);
+    EXPECT_EQ(obj.u64, UINT64_MAX);
+    sstr_free(json);
+    PreciseInts_clear(&obj);
+}
+
+TEST(OverflowBoundary, ExactMinValues) {
+    struct PreciseInts obj;
+    PreciseInts_init(&obj);
+    sstr_t json = sstr("{\"i8\":-128,\"i16\":-32768,\"i32\":-2147483648,\"i64\":-9223372036854775808,\"u8\":0,\"u16\":0,\"u32\":0,\"u64\":0}");
+    ASSERT_EQ(json_unmarshal_PreciseInts(json, &obj), 0);
+    EXPECT_EQ(obj.i8, INT8_MIN);
+    EXPECT_EQ(obj.i16, INT16_MIN);
+    EXPECT_EQ(obj.i32, INT32_MIN);
+    EXPECT_EQ(obj.i64, INT64_MIN);
+    sstr_free(json);
+    PreciseInts_clear(&obj);
+}
