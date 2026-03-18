@@ -421,6 +421,7 @@ Phase 5: Performance and Reliability</h2>
 <li>Compact marshal fast path: merged comma+key into single <code>sstr_append_of</code> for indent=0, eliminated no-op indent function calls</li>
 </ul>
 </li>
+<li><b>Runtime inlining optimization (Phase 3):</b> gprof profiling revealed that 27% of unmarshal time was spent in non-inlined sstr accessor functions (<code>sstr_cstr</code> 8.9%, <code>sstr_append_zero</code> 8.5%, <code>sstr_append_of</code> 6.1%, <code>sstr_clear</code> 4.1%) because <a class="el" href="sstr_8c.html" title="Implementation of the sstr.h header file.">sstr.c</a> is a separate translation unit. Added inline fast-path helpers (<code>SSTR_CSTR_</code>, <code>sstr_clear_fast_</code>, <code>sstr_append_of_fast_</code>) directly in the embedded JSON runtime. Result: <b>additional 1.4x unmarshal speedup</b>, bringing json-gen-c <b>faster than cJSON on all benchmarks</b> (unmarshal_scalar: 518 ns vs 697 ns = 26% faster).</li>
 </ul>
 </li>
 </ol>
