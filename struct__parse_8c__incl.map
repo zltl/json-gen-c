@@ -18,7 +18,7 @@
 <area shape="poly" id="edge16_Node000001_Node000013" title=" " alt="" coords="482,28,597,71,595,76,480,33"/>
 <area shape="rect" id="Node000014" href="$compat_8h.html" title="Cross&#45;platform compatibility abstractions for Windows and POSIX." alt="" coords="700,79,815,104"/>
 <area shape="poly" id="edge18_Node000001_Node000014" title=" " alt="" coords="501,28,695,73,694,78,499,33"/>
-<area shape="rect" id="Node000017" href="$io_8h.html" title="file operation helper functions." alt="" coords="818,152,897,177"/>
+<area shape="rect" id="Node000017" href="$io_8h.html" title="File operation helper functions." alt="" coords="818,152,897,177"/>
 <area shape="poly" id="edge22_Node000001_Node000017" title=" " alt="" coords="540,20,620,27,704,37,778,53,807,64,828,77,840,90,849,106,858,138,852,139,844,108,836,93,825,81,805,69,777,59,703,43,619,32,539,26"/>
 <area shape="rect" id="Node000018" href="$error__codes_8h.html" title="Unified error code definitions for json&#45;gen&#45;c." alt="" coords="890,79,1033,104"/>
 <area shape="poly" id="edge25_Node000001_Node000018" title=" " alt="" coords="533,28,877,76,876,81,532,33"/>

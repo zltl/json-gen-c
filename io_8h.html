@@ -70,7 +70,7 @@ $(document).ready(function(){initNavTree('io_8h.html',''); initResizable(); });
 </div><!--header-->
 <div class="contents">
 
-<p>file operation helper functions.  
+<p>File operation helper functions.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="sstr_8h_source.html">utils/sstr.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
@@ -78,7 +78,7 @@ Include dependency graph for io.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="io_8h__incl.png" border="0" usemap="#asrc_2utils_2io_8h" alt=""/></div>
 <map name="asrc_2utils_2io_8h" id="asrc_2utils_2io_8h">
-<area shape="rect" title="file operation helper functions." alt="" coords="141,5,243,31"/>
+<area shape="rect" title="File operation helper functions." alt="" coords="141,5,243,31"/>
 <area shape="rect" href="sstr_8h.html" title="sstr_t are objects that represent sequences of characters." alt="" coords="147,79,237,104"/>
 <area shape="poly" title=" " alt="" coords="195,31,195,65,189,65,189,31"/>
 <area shape="rect" title=" " alt="" coords="5,152,80,177"/>
@@ -96,7 +96,7 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="io_8h__dep__incl.png" border="0" usemap="#asrc_2utils_2io_8hdep" alt=""/></div>
 <map name="asrc_2utils_2io_8hdep" id="asrc_2utils_2io_8hdep">
-<area shape="rect" title="file operation helper functions." alt="" coords="43,5,145,31"/>
+<area shape="rect" title="File operation helper functions." alt="" coords="43,5,145,31"/>
 <area shape="rect" href="struct__parse_8c.html" title="parse struct definition file." alt="" coords="5,79,183,104"/>
 <area shape="poly" title=" " alt="" coords="97,44,97,79,91,79,91,44"/>
 </map>
@@ -106,16 +106,109 @@ This graph shows which files directly or indirectly include this file:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a23e7848df8cadf9c13918c2ccd9f100e" id="r_a23e7848df8cadf9c13918c2ccd9f100e"><td class="memItemLeft" align="right" valign="top"><a id="a23e7848df8cadf9c13918c2ccd9f100e" name="a23e7848df8cadf9c13918c2ccd9f100e"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>read_file</b> (const char *filename, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> content)</td></tr>
+<tr class="memitem:a23e7848df8cadf9c13918c2ccd9f100e" id="r_a23e7848df8cadf9c13918c2ccd9f100e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="io_8h.html#a23e7848df8cadf9c13918c2ccd9f100e">read_file</a> (const char *filename, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> content)</td></tr>
+<tr class="memdesc:a23e7848df8cadf9c13918c2ccd9f100e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the entire contents of a file into a string.  <br /></td></tr>
 <tr class="separator:a23e7848df8cadf9c13918c2ccd9f100e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae0561670b9ef3e0bae879b06687c8807" id="r_ae0561670b9ef3e0bae879b06687c8807"><td class="memItemLeft" align="right" valign="top"><a id="ae0561670b9ef3e0bae879b06687c8807" name="ae0561670b9ef3e0bae879b06687c8807"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>write_file</b> (const char *filename, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> content)</td></tr>
+<tr class="memitem:ae0561670b9ef3e0bae879b06687c8807" id="r_ae0561670b9ef3e0bae879b06687c8807"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="io_8h.html#ae0561670b9ef3e0bae879b06687c8807">write_file</a> (const char *filename, <a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a> content)</td></tr>
+<tr class="memdesc:ae0561670b9ef3e0bae879b06687c8807"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a string to a file, replacing any existing contents.  <br /></td></tr>
 <tr class="separator:ae0561670b9ef3e0bae879b06687c8807"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>file operation helper functions. </p>
-</div></div><!-- contents -->
+<div class="textblock"><p>File operation helper functions. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a23e7848df8cadf9c13918c2ccd9f100e" name="a23e7848df8cadf9c13918c2ccd9f100e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23e7848df8cadf9c13918c2ccd9f100e">&#9670;&#160;</a></span>read_file()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int read_file </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td>
+          <td class="paramname"><em>content</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Read the entire contents of a file into a string. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>path to the file to read. </td></tr>
+    <tr><td class="paramname">content</td><td>output sstr_t that receives the file contents. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error (e.g. file not found). </dd></dl>
+
+</div>
+</div>
+<a id="ae0561670b9ef3e0bae879b06687c8807" name="ae0561670b9ef3e0bae879b06687c8807"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0561670b9ef3e0bae879b06687c8807">&#9670;&#160;</a></span>write_file()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int write_file </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="sstr_8h.html#a8d28a1ce0ac6dd8b8e50af6f78e735e7">sstr_t</a>&#160;</td>
+          <td class="paramname"><em>content</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Write a string to a file, replacing any existing contents. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>path to the file to write. </td></tr>
+    <tr><td class="paramname">content</td><td>sstr_t containing the data to write. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- HTML footer for doxygen 1.8.17-->
 <!-- start footer part -->

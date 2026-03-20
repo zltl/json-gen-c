@@ -9,7 +9,7 @@ var dir_313caf1132e152dd9b58bea13a4052ca =
     [ "getopt_compat.h", "getopt__compat_8h.html", null ],
     [ "hash.h", "hash_8h_source.html", null ],
     [ "hash_map.h", "hash__map_8h.html", "hash__map_8h" ],
-    [ "io.h", "io_8h.html", null ],
+    [ "io.h", "io_8h.html", "io_8h" ],
     [ "json_context.c", "json__context_8c.html", "json__context_8c" ],
     [ "json_context.h", "json__context_8h.html", "json__context_8h" ],
     [ "sstr.c", "sstr_8c.html", "sstr_8c" ],

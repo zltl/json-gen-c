@@ -187,14 +187,14 @@ Functions</h2></td></tr>
 <tr class="memitem:ac80cee8e5e8252e80714f61598e301ac" id="r_ac80cee8e5e8252e80714f61598e301ac"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#ac80cee8e5e8252e80714f61598e301ac">hash</a> (const char *data, size_t n)</td></tr>
 <tr class="memdesc:ac80cee8e5e8252e80714f61598e301ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">calculate the hash value of a key.  <br /></td></tr>
 <tr class="separator:ac80cee8e5e8252e80714f61598e301ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a623ce9722804122b8b76eb9d6c5e1d3c" id="r_a623ce9722804122b8b76eb9d6c5e1d3c"><td class="memItemLeft" align="right" valign="top"><a id="a623ce9722804122b8b76eb9d6c5e1d3c" name="a623ce9722804122b8b76eb9d6c5e1d3c"></a>
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_key_hash</b> (void *key)</td></tr>
+<tr class="memitem:a623ce9722804122b8b76eb9d6c5e1d3c" id="r_a623ce9722804122b8b76eb9d6c5e1d3c"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#a623ce9722804122b8b76eb9d6c5e1d3c">sstr_key_hash</a> (void *key)</td></tr>
+<tr class="memdesc:a623ce9722804122b8b76eb9d6c5e1d3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hash function for sstr_t keys, suitable for <a class="el" href="structhash__map.html">hash_map</a> key_hash callback.  <br /></td></tr>
 <tr class="separator:a623ce9722804122b8b76eb9d6c5e1d3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a579e36b0cb7518ade2859ed9daf20ec9" id="r_a579e36b0cb7518ade2859ed9daf20ec9"><td class="memItemLeft" align="right" valign="top"><a id="a579e36b0cb7518ade2859ed9daf20ec9" name="a579e36b0cb7518ade2859ed9daf20ec9"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_key_cmp</b> (void *a, void *b)</td></tr>
+<tr class="memitem:a579e36b0cb7518ade2859ed9daf20ec9" id="r_a579e36b0cb7518ade2859ed9daf20ec9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#a579e36b0cb7518ade2859ed9daf20ec9">sstr_key_cmp</a> (void *a, void *b)</td></tr>
+<tr class="memdesc:a579e36b0cb7518ade2859ed9daf20ec9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Comparison function for sstr_t keys, suitable for <a class="el" href="structhash__map.html">hash_map</a> key_cmp callback.  <br /></td></tr>
 <tr class="separator:a579e36b0cb7518ade2859ed9daf20ec9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6342c9f3666893d01251fc0613c90170" id="r_a6342c9f3666893d01251fc0613c90170"><td class="memItemLeft" align="right" valign="top"><a id="a6342c9f3666893d01251fc0613c90170" name="a6342c9f3666893d01251fc0613c90170"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_key_free</b> (void *key)</td></tr>
+<tr class="memitem:a6342c9f3666893d01251fc0613c90170" id="r_a6342c9f3666893d01251fc0613c90170"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash__map_8h.html#a6342c9f3666893d01251fc0613c90170">sstr_key_free</a> (void *key)</td></tr>
+<tr class="memdesc:a6342c9f3666893d01251fc0613c90170"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free function for sstr_t keys, suitable for <a class="el" href="structhash__map.html">hash_map</a> key_free callback.  <br /></td></tr>
 <tr class="separator:a6342c9f3666893d01251fc0613c90170"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -657,6 +657,121 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>sstr_key_free</b> (vo
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>struct hash_map* the new <a class="el" href="structhash__map.html">hash_map</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a579e36b0cb7518ade2859ed9daf20ec9" name="a579e36b0cb7518ade2859ed9daf20ec9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a579e36b0cb7518ade2859ed9daf20ec9">&#9670;&#160;</a></span>sstr_key_cmp()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int sstr_key_cmp </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Comparison function for sstr_t keys, suitable for <a class="el" href="structhash__map.html">hash_map</a> key_cmp callback. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">a</td><td>pointer to the first sstr_t key. </td></tr>
+    <tr><td class="paramname">b</td><td>pointer to the second sstr_t key. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if keys are equal, non-zero otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a6342c9f3666893d01251fc0613c90170" name="a6342c9f3666893d01251fc0613c90170"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6342c9f3666893d01251fc0613c90170">&#9670;&#160;</a></span>sstr_key_free()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void sstr_key_free </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Free function for sstr_t keys, suitable for <a class="el" href="structhash__map.html">hash_map</a> key_free callback. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">key</td><td>pointer to the sstr_t key to free. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a623ce9722804122b8b76eb9d6c5e1d3c" name="a623ce9722804122b8b76eb9d6c5e1d3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a623ce9722804122b8b76eb9d6c5e1d3c">&#9670;&#160;</a></span>sstr_key_hash()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int sstr_key_hash </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Hash function for sstr_t keys, suitable for <a class="el" href="structhash__map.html">hash_map</a> key_hash callback. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">key</td><td>pointer to an sstr_t key. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>unsigned int the hash value. </dd></dl>
 
 </div>
 </div>

@@ -22,7 +22,7 @@
 <area shape="poly" id="edge15_Node000001_Node000011" title=" " alt="" coords="877,42,739,154,736,150,874,38"/>
 <area shape="rect" id="Node000012" href="$hash__map_8h.html" title="A simple hash_map implementation." alt="" coords="555,79,711,104"/>
 <area shape="poly" id="edge23_Node000001_Node000012" title=" " alt="" coords="845,37,677,81,675,76,843,32"/>
-<area shape="rect" id="Node000014" href="$io_8h.html" title="file operation helper functions." alt="" coords="1319,152,1421,177"/>
+<area shape="rect" id="Node000014" href="$io_8h.html" title="File operation helper functions." alt="" coords="1319,152,1421,177"/>
 <area shape="poly" id="edge34_Node000001_Node000014" title=" " alt="" coords="971,21,1153,39,1240,55,1276,65,1302,76,1324,93,1342,113,1366,150,1362,153,1338,116,1320,97,1299,81,1274,70,1239,61,1152,45,970,26"/>
 <area shape="rect" id="Node000015" href="$sstr_8c.html" title="Implementation of the sstr.h header file." alt="" coords="1496,79,1607,104"/>
 <area shape="poly" id="edge36_Node000001_Node000015" title=" " alt="" coords="970,23,1196,44,1477,76,1496,79,1496,84,1476,81,1195,50,970,28"/>
