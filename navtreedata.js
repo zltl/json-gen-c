@@ -101,34 +101,6 @@ var NAVTREE =
       [ "5. Regenerate on Schema Changes", "md_docs_2GETTING__STARTED.html#autotoc_md63", null ],
       [ "6. Learn More", "md_docs_2GETTING__STARTED.html#autotoc_md64", null ]
     ] ],
-    [ "Project Improvement Plan", "md_docs_2IMPROVEMENTS.html", [
-      [ "Current Assessment", "md_docs_2IMPROVEMENTS.html#autotoc_md66", null ],
-      [ "Completed Foundational Work", "md_docs_2IMPROVEMENTS.html#autotoc_md67", [
-        [ "Implement Hash Map Resizing", "md_docs_2IMPROVEMENTS.html#autotoc_md68", null ],
-        [ "Optimize <tt>hash_2s</tt>", "md_docs_2IMPROVEMENTS.html#autotoc_md69", null ],
-        [ "Unify Hash Functions", "md_docs_2IMPROVEMENTS.html#autotoc_md70", null ],
-        [ "Use <tt>stdbool.h</tt>", "md_docs_2IMPROVEMENTS.html#autotoc_md71", null ],
-        [ "Improve Argument Parsing", "md_docs_2IMPROVEMENTS.html#autotoc_md72", null ],
-        [ "Improve Error Handling Consistency", "md_docs_2IMPROVEMENTS.html#autotoc_md73", null ],
-        [ "Fix Parser Off-by-One Bug", "md_docs_2IMPROVEMENTS.html#autotoc_md74", null ],
-        [ "Refactor Top-Level <tt>#include</tt> Parsing", "md_docs_2IMPROVEMENTS.html#autotoc_md75", null ],
-        [ "Harden File I/O", "md_docs_2IMPROVEMENTS.html#autotoc_md76", null ],
-        [ "Add Enum Type Support", "md_docs_2IMPROVEMENTS.html#autotoc_md77", null ],
-        [ "Add Fixed-Size Array Support", "md_docs_2IMPROVEMENTS.html#autotoc_md78", null ],
-        [ "Add Map/Dictionary Support", "md_docs_2IMPROVEMENTS.html#autotoc_md79", null ]
-      ] ],
-      [ "Roadmap", "md_docs_2IMPROVEMENTS.html#autotoc_md80", [
-        [ "Phase 1: Bug Fixes and Technical Debt Cleanup", "md_docs_2IMPROVEMENTS.html#autotoc_md81", null ],
-        [ "Phase 2: Type System Expansion", "md_docs_2IMPROVEMENTS.html#autotoc_md82", null ],
-        [ "Phase 3: Developer Experience", "md_docs_2IMPROVEMENTS.html#autotoc_md83", null ],
-        [ "Phase 4: Build Ecosystem and Cross-Platform Support", "md_docs_2IMPROVEMENTS.html#autotoc_md84", null ],
-        [ "Phase 5: Performance and Reliability", "md_docs_2IMPROVEMENTS.html#autotoc_md85", null ],
-        [ "Phase 6: Long-Term Vision", "md_docs_2IMPROVEMENTS.html#autotoc_md86", null ]
-      ] ],
-      [ "Key Files", "md_docs_2IMPROVEMENTS.html#autotoc_md87", null ],
-      [ "Project Direction Notes", "md_docs_2IMPROVEMENTS.html#autotoc_md88", null ],
-      [ "Open Design Questions", "md_docs_2IMPROVEMENTS.html#autotoc_md89", null ]
-    ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
@@ -154,7 +126,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"sstr_8h.html#a2d6e86f4ff2db447c525e82b88d3173e"
+"sstr_8h.html#ad8eb5ed3acc6d1f90c5097ab2f62672f"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
