@@ -23,8 +23,6 @@ jobs:
       run: make example
     - name: run example
       run: ./build/example/example
-    - name: run benchmark
-      run: ./build/benchmark/json_bench
     - name: build and run tests
       run: make test
     - name: run individual tests
