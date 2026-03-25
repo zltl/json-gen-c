@@ -18,6 +18,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#endif
+
 /* ---- Document store (single open document for simplicity) ---- */
 
 struct lsp_document {
@@ -388,6 +393,11 @@ int lsp_server_run(void)
 
     FILE *in = stdin;
     FILE *out = stdout;
+
+#ifdef _WIN32
+    _setmode(_fileno(in), _O_BINARY);
+    _setmode(_fileno(out), _O_BINARY);
+#endif
 
     while (!state.should_exit) {
         sstr_t msg_str = lsp_jsonrpc_read(in);
