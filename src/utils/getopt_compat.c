@@ -23,14 +23,6 @@ int optopt = '?';
 
 static int optpos = 0;  /* position within current argv element */
 
-static void permute(char *const argv[], int from, int to) {
-    char *tmp = argv[from];
-    int i;
-    for (i = from; i > to; i--)
-        ((char **)argv)[i] = argv[i - 1];
-    ((char **)argv)[to] = tmp;
-}
-
 /* Try to match a long option. Returns val on match, '?' on error, -1 on no match. */
 static int match_long(int argc, char *const argv[], const struct option *longopts,
                       int *longindex, const char *arg) {
