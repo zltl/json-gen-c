@@ -74,17 +74,31 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+    - name: Set up MSYS2 MinGW64
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: >-
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-ninja
+          mingw-w64-x86_64-python
     - name: Configure with CMake (MinGW)
-      run: cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+      run: cmake -S . -B build-mingw -G Ninja -DCMAKE_BUILD_TYPE=Release
+      shell: msys2 {0}
     - name: Build
-      run: cmake --build build
+      run: cmake --build build-mingw
+      shell: msys2 {0}
     - name: Run tests
-      run: ctest --test-dir build --output-on-failure
+      run: ctest --test-dir build-mingw --output-on-failure
+      shell: msys2 {0}
     - name: Verify binary runs
-      run: build\json-gen-c.exe --version
+      run: ./build-mingw/json-gen-c.exe --version
+      shell: msys2 {0}
     - name: Test code generation
       run: |
         mkdir testout
-        build\json-gen-c.exe -in test\test.json-gen-c -out testout
-      shell: cmd
+        ./build-mingw/json-gen-c.exe -in test/test.json-gen-c -out testout
+      shell: msys2 {0}
 
