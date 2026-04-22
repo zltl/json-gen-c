@@ -67,22 +67,22 @@ $(document).ready(function(){initNavTree('md_doc_2schema-evolution.html',''); in
   <div class="headertitle"><div class="title">Schema Evolution Guide</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md40"></a> This document describes how to safely evolve <code>.json-gen-c</code> schemas over time without breaking existing serialized data or downstream consumers.</p>
-<h1><a class="anchor" id="autotoc_md41"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md71"></a> This document describes how to safely evolve <code>.json-gen-c</code> schemas over time without breaking existing serialized data or downstream consumers.</p>
+<h1><a class="anchor" id="autotoc_md72"></a>
 Overview</h1>
 <p>As applications grow, their data schemas inevitably change: new fields are added, old fields become irrelevant, and types may need adjustment. Schema evolution is the practice of making these changes in a controlled way so that <b>old data can still be read by new code</b> (forward compatibility) and <b>new data can still be read by old code</b> (backward compatibility).</p>
-<h1><a class="anchor" id="autotoc_md42"></a>
+<h1><a class="anchor" id="autotoc_md73"></a>
 Forward Compatibility (Already Built-In)</h1>
 <p>json-gen-c's generated unmarshal functions <b>silently skip unknown JSON keys</b>. This means:</p>
 <ul>
 <li>If you add a new field to a schema and regenerate, old JSON data (which lacks that field) can still be parsed. The new field will retain its <code>_init()</code> default value.</li>
 <li>No special annotations are needed — this works automatically.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md43"></a>
+<h1><a class="anchor" id="autotoc_md74"></a>
 Backward Compatibility</h1>
 <p>When new code produces JSON with new fields, old code (generated from an earlier schema version) simply ignores the unknown keys. This is also automatic.</p>
 <p><b>Caveat:</b> if old code re-marshals the struct, the unknown fields will be lost (they were never stored). This is acceptable for most use cases but important to understand for data pipeline scenarios.</p>
-<h1><a class="anchor" id="autotoc_md44"></a>
+<h1><a class="anchor" id="autotoc_md75"></a>
 Safe Changes</h1>
 <p>These changes are <b>backward- and forward-compatible</b> — they will not break existing consumers:</p>
 <table class="markdownTable">
@@ -105,7 +105,7 @@ Safe Changes</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><b>Rename a field's JSON key with <code>@json</code></b>   </td><td class="markdownTableBodyNone">If the old JSON key remains via alias, this is safe.   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md45"></a>
+<h1><a class="anchor" id="autotoc_md76"></a>
 Breaking Changes</h1>
 <p>These changes <b>will break</b> existing consumers and should be avoided or carefully managed:</p>
 <table class="markdownTable">
@@ -126,16 +126,16 @@ Breaking Changes</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Change array from fixed to dynamic (or vice versa)</b>   </td><td class="markdownTableBodyNone">Generated struct layout changes.   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md46"></a>
+<h1><a class="anchor" id="autotoc_md77"></a>
 Migration Patterns</h1>
-<h2><a class="anchor" id="autotoc_md47"></a>
+<h2><a class="anchor" id="autotoc_md78"></a>
 Renaming a Field</h2>
 <p>Use <code>@json</code> to keep the old wire-format name while changing the C identifier:</p>
 <div class="fragment"><div class="line">struct User {</div>
 <div class="line">    @json &quot;name&quot; sstr_t display_name;  // was: sstr_t name</div>
 <div class="line">};</div>
 </div><!-- fragment --><p>Old JSON <code>{"name": "Alice"}</code> still unmarshals correctly into <code>display_name</code>.</p>
-<h2><a class="anchor" id="autotoc_md48"></a>
+<h2><a class="anchor" id="autotoc_md79"></a>
 Soft-Removing a Field</h2>
 <p>Mark it <code>@deprecated</code> instead of deleting it:</p>
 <div class="fragment"><div class="line">struct Config {</div>
@@ -143,7 +143,7 @@ Soft-Removing a Field</h2>
 <div class="line">    @deprecated int timeout_sec;  // use timeout_ms instead</div>
 <div class="line">};</div>
 </div><!-- fragment --><p>The field remains fully functional in marshal/unmarshal, but any C code accessing <code>obj-&gt;timeout_sec</code> will trigger a compiler deprecation warning.</p>
-<h2><a class="anchor" id="autotoc_md49"></a>
+<h2><a class="anchor" id="autotoc_md80"></a>
 Adding a Required Field to Existing Data</h2>
 <p>Make the new field <code>optional</code> so that old data (which lacks it) still parses:</p>
 <div class="fragment"><div class="line">struct Event {</div>
@@ -151,7 +151,7 @@ Adding a Required Field to Existing Data</h2>
 <div class="line">    optional sstr_t correlation_id;  // added in v2</div>
 <div class="line">};</div>
 </div><!-- fragment --><p>Check <code>obj-&gt;has_correlation_id</code> before using the field.</p>
-<h2><a class="anchor" id="autotoc_md50"></a>
+<h2><a class="anchor" id="autotoc_md81"></a>
 Widening a Numeric Type</h2>
 <p>Changing <code>int</code> to <code>long</code> or <code>float</code> to <code>double</code> changes the generated struct layout. Instead, add a new field and deprecate the old one:</p>
 <div class="fragment"><div class="line">struct Measurement {</div>
@@ -159,9 +159,9 @@ Widening a Numeric Type</h2>
 <div class="line">    optional long value_v2;      // new: 64-bit</div>
 <div class="line">};</div>
 </div><!-- fragment --><p>Application code can check <code>has_value_v2</code> and fall back to <code>value</code> for old data.</p>
-<h1><a class="anchor" id="autotoc_md51"></a>
+<h1><a class="anchor" id="autotoc_md82"></a>
 The &lt;tt&gt;@deprecated&lt;/tt&gt; Annotation</h1>
-<h2><a class="anchor" id="autotoc_md52"></a>
+<h2><a class="anchor" id="autotoc_md83"></a>
 Syntax</h2>
 <p><code>@deprecated</code> can be placed before a field declaration, enum value, or oneof variant:</p>
 <div class="fragment"><div class="line">struct Foo {</div>
@@ -180,7 +180,7 @@ Syntax</h2>
 <div class="line">    Circle c;</div>
 <div class="line">    @deprecated Square sq;</div>
 <div class="line">};</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md53"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md84"></a>
 Behavior</h2>
 <ul>
 <li><b>Marshal/unmarshal:</b> Deprecated fields, enum values, and oneof variants are <b>fully functional</b>. No runtime behavior changes.</li>
@@ -192,7 +192,7 @@ Behavior</h2>
 <li><b>Enum constants:</b> Deprecated enum values use <code>__attribute__((deprecated))</code> on GCC/Clang. MSVC does not support per-enumerator deprecation.</li>
 <li><b>Effect:</b> Any C code that directly accesses a deprecated struct member or enum constant will produce a compiler warning, alerting developers to migrate away from it.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md54"></a>
+<h2><a class="anchor" id="autotoc_md85"></a>
 Generated Code Example</h2>
 <p>For a schema with <code>@deprecated int old_count;</code>, the generated header contains:</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>Foo {</div>
@@ -200,7 +200,7 @@ Generated Code Example</h2>
 <div class="line">    JGENC_DEPRECATED(<span class="stringliteral">&quot;old_count is deprecated&quot;</span>) int old_count;</div>
 <div class="line">};</div>
 </div><!-- fragment --><p>The <code>JGENC_DEPRECATED</code> macro is defined in the generated header and can be overridden by defining it before including the generated header.</p>
-<h1><a class="anchor" id="autotoc_md55"></a>
+<h1><a class="anchor" id="autotoc_md86"></a>
 Best Practices</h1>
 <ol type="1">
 <li><b>Always add new fields as <code>optional</code></b> when backward compatibility matters. This ensures old data without the field still parses correctly.</li>
@@ -210,7 +210,7 @@ Best Practices</h1>
 <li><b>Document field lifecycle</b> in comments next to <code>@deprecated</code> annotations to help future maintainers understand when and why a field was deprecated.</li>
 <li><b>Use <code>--check-compat</code></b> to automatically detect breaking changes between schema versions before deploying.</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md56"></a>
+<h1><a class="anchor" id="autotoc_md87"></a>
 See Also</h1>
 <ul>
 <li><a class="el" href="index.html#md_README">README.md</a> — project overview and API reference</li>
