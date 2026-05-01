@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed.
+Implemented.
 
 ## Summary
 
@@ -87,6 +87,44 @@ Return values follow the existing generator convention:
 
 - `0` on success
 - `-1` on failure
+
+## Generated Usage
+
+```c
+struct MyStruct src;
+struct MyStruct dest;
+MyStruct_init(&src);
+MyStruct_init(&dest);
+
+/* populate src */
+
+if (MyStruct_copy(&dest, &src) != 0) {
+  /* allocation failure; dest is still safe to clear */
+}
+
+struct MyStruct moved;
+MyStruct_init(&moved);
+MyStruct_move(&moved, &src);
+
+MyStruct_clear(&src);
+MyStruct_clear(&dest);
+MyStruct_clear(&moved);
+```
+
+The same pattern is generated for oneof types:
+
+```c
+struct MyOneof value;
+struct MyOneof copy;
+MyOneof_init(&value);
+MyOneof_init(&copy);
+
+MyOneof_copy(&copy, &value);
+MyOneof_move(&value, &copy);
+
+MyOneof_clear(&value);
+MyOneof_clear(&copy);
+```
 
 ## Behavioral Contract
 

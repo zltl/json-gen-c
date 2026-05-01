@@ -8,7 +8,7 @@ include ../build.mk
 TEST_BUILD := $(BUILD_DIR)/test
 
 # Test source files
-TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc enum_test.cc fixed_array_test.cc map_test.cc optional_test.cc precise_int_test.cc diagnostic_test.cc alias_test.cc default_value_test.cc allocator_test.cc oneof_test.cc edge_case_test.cc selective_parse_test.cc compat_check_test.cc cpp_wrapper_test.cc
+TEST_SOURCES := simple_test.cc struct_test.cc enhanced_test.cc empty_array_bugfix_test.cc comprehensive_test.cc nested_struct_test.cc performance_test.cc hash_map_test.cc enum_test.cc fixed_array_test.cc map_test.cc optional_test.cc precise_int_test.cc diagnostic_test.cc alias_test.cc default_value_test.cc allocator_test.cc oneof_test.cc copy_move_test.cc edge_case_test.cc selective_parse_test.cc compat_check_test.cc cpp_wrapper_test.cc
 TEST_OBJECTS := $(patsubst %.cc,$(TEST_BUILD)/%.o,$(TEST_SOURCES))
 
 # Generated files
@@ -41,6 +41,7 @@ ALIAS_TEST := $(TEST_BUILD)/alias_test
 DEFAULT_VALUE_TEST := $(TEST_BUILD)/default_value_test
 ALLOCATOR_TEST := $(TEST_BUILD)/allocator_test
 ONEOF_TEST := $(TEST_BUILD)/oneof_test
+COPY_MOVE_TEST := $(TEST_BUILD)/copy_move_test
 EDGE_CASE_TEST := $(TEST_BUILD)/edge_case_test
 SELECTIVE_PARSE_TEST := $(TEST_BUILD)/selective_parse_test
 COMPAT_CHECK_TEST := $(TEST_BUILD)/compat_check_test
@@ -49,7 +50,7 @@ CBOR_TEST := $(TEST_BUILD)/cbor_test
 CPP_WRAPPER_TEST := $(TEST_BUILD)/cpp_wrapper_test
 
 # All test targets
-ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST) $(DIAGNOSTIC_TEST) $(ALIAS_TEST) $(DEFAULT_VALUE_TEST) $(ALLOCATOR_TEST) $(ONEOF_TEST) $(EDGE_CASE_TEST) $(SELECTIVE_PARSE_TEST) $(COMPAT_CHECK_TEST) $(MSGPACK_TEST) $(CBOR_TEST) $(CPP_WRAPPER_TEST)
+ALL_TESTS := $(UNIT_TEST) $(ENHANCED_TEST) $(EMPTY_ARRAY_TEST) $(COMPREHENSIVE_TEST) $(NESTED_STRUCT_TEST) $(PERFORMANCE_TEST) $(HASH_MAP_TEST) $(ENUM_TEST) $(FIXED_ARRAY_TEST) $(MAP_TEST) $(OPTIONAL_TEST) $(PRECISE_INT_TEST) $(DIAGNOSTIC_TEST) $(ALIAS_TEST) $(DEFAULT_VALUE_TEST) $(ALLOCATOR_TEST) $(ONEOF_TEST) $(COPY_MOVE_TEST) $(EDGE_CASE_TEST) $(SELECTIVE_PARSE_TEST) $(COMPAT_CHECK_TEST) $(MSGPACK_TEST) $(CBOR_TEST) $(CPP_WRAPPER_TEST)
 
 #==============================================================================
 # Build rules
@@ -183,6 +184,11 @@ $(ONEOF_TEST): $(TEST_BUILD)/oneof_test.o $(GENERATED_OBJECTS)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
 
+$(COPY_MOVE_TEST): $(TEST_BUILD)/copy_move_test.o $(GENERATED_OBJECTS)
+	@echo "Linking copy/move tests: $@"
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lgtest -lgtest_main -lpthread
+
 $(EDGE_CASE_TEST): $(TEST_BUILD)/edge_case_test.o $(GENERATED_OBJECTS)
 	@echo "Linking edge case tests: $@"
 	@mkdir -p $(dir $@)
@@ -253,6 +259,8 @@ run: $(ALL_TESTS)
 	$(ALLOCATOR_TEST)
 	@echo "=== Oneof Tests ==="
 	$(ONEOF_TEST)
+	@echo "=== Copy/Move Tests ==="
+	$(COPY_MOVE_TEST)
 	@echo "=== Edge Case Tests ==="
 	$(EDGE_CASE_TEST)
 	@echo "=== Selective Parse Tests ==="
@@ -355,6 +363,10 @@ run-diagnostic: $(DIAGNOSTIC_TEST)
 	@echo "Running diagnostic tests..."
 	$(DIAGNOSTIC_TEST)
 
+run-copy-move: $(COPY_MOVE_TEST)
+	@echo "Running copy/move tests..."
+	$(COPY_MOVE_TEST)
+
 #==============================================================================
 # Cleanup
 #==============================================================================
@@ -364,4 +376,4 @@ clean:
 	rm -rf $(GENERATED_SOURCES) *.h
 	rm -rf $(TEST_BUILD)
 
-.PHONY: run run-unit run-enhanced run-empty-array run-comprehensive run-nested run-performance run-diagnostic
+.PHONY: run run-unit run-enhanced run-empty-array run-comprehensive run-nested run-performance run-diagnostic run-copy-move

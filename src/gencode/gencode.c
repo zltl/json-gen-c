@@ -15,9 +15,10 @@
 #define JSON_KEY(f) ((f)->json_name ? (f)->json_name : (f)->name)
 
 // Get the C value type string for a map field's value.
-// For struct values, prepends "struct ".
+// For struct-like values, prepends "struct ".
 static void map_c_value_type(struct struct_field* field, sstr_t out) {
-    if (field->map_value_type == FIELD_TYPE_STRUCT) {
+    if (field->map_value_type == FIELD_TYPE_STRUCT ||
+        field->map_value_type == FIELD_TYPE_ONEOF) {
         sstr_append_cstr(out, "struct ");
         sstr_append(out, field->map_value_type_name);
     } else if (field->map_value_type == FIELD_TYPE_ENUM ||
@@ -180,6 +181,28 @@ static void gen_code_struct_header(struct struct_container* st, sstr_t header) {
         st->name);
     sstr_printf_append(header, "int %S_clear(struct %S* obj);\n", st->name,
                        st->name);
+
+    sstr_printf_append(
+        header,
+        "/**\n"
+        " * @brief Deep-copy a struct %S object.\n"
+        " * Clears dest before copying. On failure, dest is left clearable.\n"
+        " */\n",
+        st->name);
+    sstr_printf_append(header,
+                       "int %S_copy(struct %S* dest, const struct %S* src);\n",
+                       st->name, st->name, st->name);
+
+    sstr_printf_append(
+        header,
+        "/**\n"
+        " * @brief Move a struct %S object by transferring ownership.\n"
+        " * Clears dest, transfers src storage, then leaves src clearable.\n"
+        " */\n",
+        st->name);
+    sstr_printf_append(header,
+                       "int %S_move(struct %S* dest, struct %S* src);\n",
+                       st->name, st->name, st->name);
 
     // marshal/unmarshal functions
     sstr_printf_append(
@@ -1068,6 +1091,10 @@ static void gen_clear_map_entries(struct struct_field* field, const char* expr,
         sstr_printf_append(source,
             "            %S_clear(&%s.entries[_mi].value);\n",
             field->map_value_type_name, expr);
+    } else if (field->map_value_type == FIELD_TYPE_ONEOF) {
+        sstr_printf_append(source,
+            "            %S_clear(&%s.entries[_mi].value);\n",
+            field->map_value_type_name, expr);
     }
     sstr_printf_append(source,
         "        }\n"
@@ -1204,6 +1231,325 @@ static void gen_code_struct_clear(struct struct_container* st, sstr_t source) {
     sstr_append_cstr(source, "    return 0;\n}\n\n");
 }
 
+static int field_copy_can_fail(struct struct_field* field) {
+    if (field->type == FIELD_TYPE_MAP) {
+        return 1;
+    }
+    if (field->is_array && field->array_size == 0) {
+        return 1;
+    }
+    switch (field->type) {
+        case FIELD_TYPE_SSTR:
+        case FIELD_TYPE_STRUCT:
+        case FIELD_TYPE_ONEOF:
+            return 1;
+        default:
+            return 0;
+    }
+}
+
+static int struct_copy_can_fail(struct struct_container* st) {
+    struct struct_field* field = st->fields;
+    while (field) {
+        if (field_copy_can_fail(field)) {
+            return 1;
+        }
+        field = field->next;
+    }
+    return 0;
+}
+
+static void field_value_c_type(struct struct_field* field, sstr_t out) {
+    if (field->type == FIELD_TYPE_STRUCT || field->type == FIELD_TYPE_ONEOF) {
+        sstr_append_cstr(out, "struct ");
+        sstr_append(out, field->type_name);
+    } else if (field->type == FIELD_TYPE_ENUM) {
+        sstr_append_cstr(out, "int");
+    } else {
+        sstr_append(out, field->type_name);
+    }
+}
+
+static void emit_copy_sstr_value(sstr_t source, const char* indent,
+                                 const char* dest_expr,
+                                 const char* src_expr) {
+    sstr_printf_append(source,
+        "%s%s = NULL;\n"
+        "%sif (%s != NULL) {\n"
+        "%s    %s = sstr_dup(%s);\n"
+        "%s    if (%s == NULL) goto fail;\n"
+        "%s}\n",
+        indent, dest_expr,
+        indent, src_expr,
+        indent, dest_expr, src_expr,
+        indent, dest_expr,
+        indent);
+}
+
+static void emit_copy_value(sstr_t source, int value_type, sstr_t type_name,
+                            const char* indent, const char* dest_expr,
+                            const char* src_expr) {
+    switch (value_type) {
+        case FIELD_TYPE_SSTR:
+            emit_copy_sstr_value(source, indent, dest_expr, src_expr);
+            break;
+        case FIELD_TYPE_STRUCT:
+        case FIELD_TYPE_ONEOF:
+            sstr_printf_append(source,
+                "%sif (%S_copy(&%s, &%s) != 0) goto fail;\n",
+                indent, type_name, dest_expr, src_expr);
+            break;
+        default:
+            sstr_printf_append(source, "%s%s = %s;\n", indent, dest_expr,
+                               src_expr);
+            break;
+    }
+}
+
+static void emit_copy_map_container(struct struct_field* field,
+                                    const char* dest_expr,
+                                    const char* src_expr,
+                                    const char* indent,
+                                    sstr_t source) {
+    const char* sfx = map_suffix(field);
+    sstr_printf_append(source,
+        "%s%s.entries = NULL;\n"
+        "%s%s.len = 0;\n"
+        "%sif (%s.len > 0) {\n"
+        "%s    %s.entries = (struct json_map_entry_%s*)JGENC_MALLOC(sizeof(struct json_map_entry_%s) * (size_t)%s.len);\n"
+        "%s    if (%s.entries == NULL) goto fail;\n"
+        "%s    memset(%s.entries, 0, sizeof(struct json_map_entry_%s) * (size_t)%s.len);\n"
+        "%s    %s.len = %s.len;\n"
+        "%s    { int _mi;\n"
+        "%s    for (_mi = 0; _mi < %s.len; _mi++) {\n",
+        indent, dest_expr,
+        indent, dest_expr,
+        indent, src_expr,
+        indent, dest_expr, sfx, sfx, src_expr,
+        indent, dest_expr,
+        indent, dest_expr, sfx, src_expr,
+        indent, dest_expr, src_expr,
+        indent,
+        indent, src_expr);
+
+    char dest_key[256];
+    char src_key[256];
+    snprintf(dest_key, sizeof(dest_key), "%s.entries[_mi].key", dest_expr);
+    snprintf(src_key, sizeof(src_key), "%s.entries[_mi].key", src_expr);
+    emit_copy_sstr_value(source, "        ", dest_key, src_key);
+
+    char dest_value[256];
+    char src_value[256];
+    snprintf(dest_value, sizeof(dest_value), "%s.entries[_mi].value", dest_expr);
+    snprintf(src_value, sizeof(src_value), "%s.entries[_mi].value", src_expr);
+    emit_copy_value(source, field->map_value_type, field->map_value_type_name,
+                    "        ", dest_value, src_value);
+
+    sstr_printf_append(source,
+        "%s    } }\n"
+        "%s}\n",
+        indent, indent);
+}
+
+static void emit_copy_dynamic_array(struct struct_field* field, sstr_t source,
+                                    const char* indent) {
+    sstr_t ctype = sstr_new();
+    field_value_c_type(field, ctype);
+
+    if (field->type == FIELD_TYPE_MAP) {
+        const char* sfx = map_suffix(field);
+        sstr_printf_append(source,
+            "%s%s->%S = NULL;\n"
+            "%s%s->%S_len = 0;\n"
+            "%sif (src->%S_len > 0) {\n"
+            "%s    %s->%S = (struct json_map_%s*)JGENC_MALLOC(sizeof(struct json_map_%s) * (size_t)src->%S_len);\n"
+            "%s    if (%s->%S == NULL) goto fail;\n"
+            "%s    memset(%s->%S, 0, sizeof(struct json_map_%s) * (size_t)src->%S_len);\n"
+            "%s    %s->%S_len = src->%S_len;\n"
+            "%s    { int _mj;\n"
+            "%s    for (_mj = 0; _mj < src->%S_len; _mj++) {\n",
+            indent, "dest", field->name,
+            indent, "dest", field->name,
+            indent, field->name,
+            indent, "dest", field->name, sfx, sfx, field->name,
+            indent, "dest", field->name,
+            indent, "dest", field->name, sfx, field->name,
+            indent, "dest", field->name, field->name,
+            indent,
+            indent, field->name);
+
+        char dest_expr[256];
+        char src_expr[256];
+        snprintf(dest_expr, sizeof(dest_expr), "dest->%s[_mj]", sstr_cstr(field->name));
+        snprintf(src_expr, sizeof(src_expr), "src->%s[_mj]", sstr_cstr(field->name));
+        emit_copy_map_container(field, dest_expr, src_expr, "        ", source);
+        sstr_printf_append(source,
+            "%s    } }\n"
+            "%s}\n",
+            indent, indent);
+        sstr_free(ctype);
+        return;
+    }
+
+    sstr_printf_append(source,
+        "%sdest->%S = NULL;\n"
+        "%sdest->%S_len = 0;\n"
+        "%sif (src->%S_len > 0) {\n"
+        "%s    dest->%S = (%S*)JGENC_MALLOC(sizeof(%S) * (size_t)src->%S_len);\n"
+        "%s    if (dest->%S == NULL) goto fail;\n",
+        indent, field->name,
+        indent, field->name,
+        indent, field->name,
+        indent, field->name, ctype, ctype, field->name,
+        indent, field->name);
+
+    if (field->type == FIELD_TYPE_SSTR ||
+        field->type == FIELD_TYPE_STRUCT ||
+        field->type == FIELD_TYPE_ONEOF) {
+        sstr_printf_append(source,
+            "%s    memset(dest->%S, 0, sizeof(%S) * (size_t)src->%S_len);\n"
+            "%s    dest->%S_len = src->%S_len;\n"
+            "%s    { int _i;\n"
+            "%s    for (_i = 0; _i < src->%S_len; _i++) {\n",
+            indent, field->name, ctype, field->name,
+            indent, field->name, field->name,
+            indent,
+            indent, field->name);
+        char dest_expr[256];
+        char src_expr[256];
+        snprintf(dest_expr, sizeof(dest_expr), "dest->%s[_i]", sstr_cstr(field->name));
+        snprintf(src_expr, sizeof(src_expr), "src->%s[_i]", sstr_cstr(field->name));
+        emit_copy_value(source, field->type, field->type_name, "        ",
+                        dest_expr, src_expr);
+        sstr_printf_append(source,
+            "%s    } }\n",
+            indent);
+    } else {
+        sstr_printf_append(source,
+            "%s    memcpy(dest->%S, src->%S, sizeof(%S) * (size_t)src->%S_len);\n"
+            "%s    dest->%S_len = src->%S_len;\n",
+            indent, field->name, field->name, ctype, field->name,
+            indent, field->name, field->name);
+    }
+    sstr_printf_append(source, "%s}\n", indent);
+    sstr_free(ctype);
+}
+
+static void emit_copy_fixed_array(struct struct_field* field, sstr_t source,
+                                  const char* indent) {
+    if (field->type == FIELD_TYPE_SSTR ||
+        field->type == FIELD_TYPE_STRUCT ||
+        field->type == FIELD_TYPE_ONEOF) {
+        sstr_printf_append(source,
+            "%s{ int _i;\n"
+            "%sfor (_i = 0; _i < %d; _i++) {\n",
+            indent, indent, field->array_size);
+        char dest_expr[256];
+        char src_expr[256];
+        snprintf(dest_expr, sizeof(dest_expr), "dest->%s[_i]", sstr_cstr(field->name));
+        snprintf(src_expr, sizeof(src_expr), "src->%s[_i]", sstr_cstr(field->name));
+        emit_copy_value(source, field->type, field->type_name, "    ",
+                        dest_expr, src_expr);
+        sstr_printf_append(source,
+            "%s}\n"
+            "%s}\n",
+            indent, indent);
+    } else {
+        sstr_printf_append(source,
+            "%smemcpy(dest->%S, src->%S, sizeof(dest->%S));\n",
+            indent, field->name, field->name, field->name);
+    }
+}
+
+static void emit_copy_field_body(struct struct_field* field, sstr_t source,
+                                 const char* indent) {
+    if (field->type == FIELD_TYPE_MAP) {
+        if (field->is_array && field->array_size == 0) {
+            emit_copy_dynamic_array(field, source, indent);
+        } else {
+            char dest_expr[256];
+            char src_expr[256];
+            snprintf(dest_expr, sizeof(dest_expr), "dest->%s", sstr_cstr(field->name));
+            snprintf(src_expr, sizeof(src_expr), "src->%s", sstr_cstr(field->name));
+            emit_copy_map_container(field, dest_expr, src_expr, indent, source);
+        }
+        return;
+    }
+    if (field->is_array && field->array_size > 0) {
+        emit_copy_fixed_array(field, source, indent);
+        return;
+    }
+    if (field->is_array) {
+        emit_copy_dynamic_array(field, source, indent);
+        return;
+    }
+
+    char dest_expr[256];
+    char src_expr[256];
+    snprintf(dest_expr, sizeof(dest_expr), "dest->%s", sstr_cstr(field->name));
+    snprintf(src_expr, sizeof(src_expr), "src->%s", sstr_cstr(field->name));
+    emit_copy_value(source, field->type, field->type_name, indent, dest_expr,
+                    src_expr);
+}
+
+static void gen_code_struct_copy(struct struct_container* st, sstr_t source) {
+    int can_fail = struct_copy_can_fail(st);
+    sstr_printf_append(source,
+        "int %S_copy(struct %S* dest, const struct %S* src) {\n"
+        "    if (dest == NULL || src == NULL) {\n"
+        "        return -1;\n"
+        "    }\n"
+        "    if (dest == src) {\n"
+        "        return 0;\n"
+        "    }\n"
+        "    %S_clear(dest);\n",
+        st->name, st->name, st->name, st->name);
+
+    struct struct_field* field = st->fields;
+    while (field) {
+        if (field->is_optional || field->is_nullable) {
+            sstr_printf_append(source,
+                "    if (src->has_%S) {\n",
+                field->name);
+            emit_copy_field_body(field, source, "        ");
+            sstr_printf_append(source,
+                "        dest->has_%S = true;\n"
+                "    }\n",
+                field->name);
+        } else {
+            emit_copy_field_body(field, source, "    ");
+        }
+        field = field->next;
+    }
+
+    sstr_append_cstr(source, "    return 0;\n");
+    if (can_fail) {
+        sstr_printf_append(source,
+            "fail:\n"
+            "    %S_clear(dest);\n"
+            "    return -1;\n",
+            st->name);
+    }
+    sstr_append_cstr(source, "}\n\n");
+}
+
+static void gen_code_struct_move(struct struct_container* st, sstr_t source) {
+    sstr_printf_append(source,
+        "int %S_move(struct %S* dest, struct %S* src) {\n"
+        "    if (dest == NULL || src == NULL) {\n"
+        "        return -1;\n"
+        "    }\n"
+        "    if (dest == src) {\n"
+        "        return 0;\n"
+        "    }\n"
+        "    %S_clear(dest);\n"
+        "    memcpy(dest, src, sizeof(struct %S));\n"
+        "    memset(src, 0, sizeof(struct %S));\n"
+        "    return 0;\n"
+        "}\n\n",
+        st->name, st->name, st->name, st->name, st->name, st->name);
+}
+
 // =====================================================================
 // oneof (tagged union) code generation
 // =====================================================================
@@ -1249,6 +1595,12 @@ static void gen_oneof_header(struct oneof_container* oc, sstr_t header) {
     // Function declarations
     sstr_printf_append(header, "void %S_init(struct %S* obj);\n", oc->name, oc->name);
     sstr_printf_append(header, "void %S_clear(struct %S* obj);\n", oc->name, oc->name);
+    sstr_printf_append(header,
+        "int %S_copy(struct %S* dest, const struct %S* src);\n",
+        oc->name, oc->name, oc->name);
+    sstr_printf_append(header,
+        "int %S_move(struct %S* dest, struct %S* src);\n",
+        oc->name, oc->name, oc->name);
     sstr_printf_append(header,
         "int json_marshal_indent_%S(struct %S* obj, int indent, int curindent, sstr_t out);\n",
         oc->name, oc->name);
@@ -1323,6 +1675,59 @@ static void gen_oneof_clear(struct oneof_container* oc, sstr_t source) {
         "    memset(obj, 0, sizeof(struct %S));\n"
         "}\n\n",
         oc->name);
+}
+
+static void gen_oneof_copy(struct oneof_container* oc, sstr_t source) {
+    sstr_printf_append(source,
+        "int %S_copy(struct %S* dest, const struct %S* src) {\n"
+        "    if (dest == NULL || src == NULL) {\n"
+        "        return -1;\n"
+        "    }\n"
+        "    if (dest == src) {\n"
+        "        return 0;\n"
+        "    }\n"
+        "    %S_clear(dest);\n"
+        "    dest->tag = src->tag;\n"
+        "    switch (src->tag) {\n",
+        oc->name, oc->name, oc->name, oc->name);
+    struct oneof_variant* v = oc->variants;
+    while (v) {
+        sstr_printf_append(source,
+            "        case %S_%S:\n"
+            "            if (%S_copy(&dest->value.%S, &src->value.%S) != 0) goto fail;\n"
+            "            break;\n",
+            oc->name, v->name,
+            v->struct_type_name, v->name, v->name);
+        v = v->next;
+    }
+    sstr_append_cstr(source,
+        "        default:\n"
+        "            break;\n"
+        "    }\n"
+        "    return 0;\n"
+        "fail:\n");
+    sstr_printf_append(source,
+        "    %S_clear(dest);\n"
+        "    return -1;\n"
+        "}\n\n",
+        oc->name);
+}
+
+static void gen_oneof_move(struct oneof_container* oc, sstr_t source) {
+    sstr_printf_append(source,
+        "int %S_move(struct %S* dest, struct %S* src) {\n"
+        "    if (dest == NULL || src == NULL) {\n"
+        "        return -1;\n"
+        "    }\n"
+        "    if (dest == src) {\n"
+        "        return 0;\n"
+        "    }\n"
+        "    %S_clear(dest);\n"
+        "    memcpy(dest, src, sizeof(struct %S));\n"
+        "    memset(src, 0, sizeof(struct %S));\n"
+        "    return 0;\n"
+        "}\n\n",
+        oc->name, oc->name, oc->name, oc->name, oc->name, oc->name);
 }
 
 static void gen_oneof_marshal(struct oneof_container* oc, sstr_t source) {
@@ -1553,6 +1958,8 @@ static void gen_code_oneof(struct oneof_container* oc, sstr_t source, sstr_t hea
     // tag_strings already generated early by gen_oneof_statics
     gen_oneof_init(oc, source);
     gen_oneof_clear(oc, source);
+    gen_oneof_copy(oc, source);
+    gen_oneof_move(oc, source);
     gen_oneof_marshal(oc, source);
     gen_oneof_unmarshal(oc, source);
     gen_oneof_unmarshal_array(oc, source);
@@ -1570,6 +1977,10 @@ static void gen_code_struct(struct struct_container* st, sstr_t source,
     gen_code_struct_init(st, source);
     // XXX_clear()
     gen_code_struct_clear(st, source);
+    // XXX_copy()
+    gen_code_struct_copy(st, source);
+    // XXX_move()
+    gen_code_struct_move(st, source);
     // json_marshal_XXX()
     gen_code_struct_marshal_struct(st, source);
     // json_unmarshal_XXX()

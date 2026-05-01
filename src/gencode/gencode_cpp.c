@@ -472,90 +472,130 @@ static void gen_cpp_class(struct struct_container* sc, int format, sstr_t out) {
     sstr_append_cstr(out, name);
     sstr_append_cstr(out, "(");
     sstr_append_cstr(out, name);
-    sstr_append_cstr(out, "&& other) noexcept {\n"
-                          "        std::memcpy(&data_, &other.data_, sizeof(data_));\n"
-                          "        std::memset(&other.data_, 0, sizeof(other.data_));\n"
-                          "    }\n");
+    if (is_json) {
+        sstr_append_cstr(out, "&& other) noexcept {\n"
+                              "        ");
+        sstr_append_cstr(out, name);
+        sstr_append_cstr(out, "_init(&data_);\n"
+                              "        (void)");
+        sstr_append_cstr(out, name);
+        sstr_append_cstr(out, "_move(&data_, &other.data_);\n"
+                              "    }\n");
+    } else {
+        sstr_append_cstr(out, "&& other) noexcept {\n"
+                              "        std::memcpy(&data_, &other.data_, sizeof(data_));\n"
+                              "        std::memset(&other.data_, 0, sizeof(other.data_));\n"
+                              "    }\n");
+    }
 
     /* Move assignment */
     sstr_append_cstr(out, "    ");
     sstr_append_cstr(out, name);
     sstr_append_cstr(out, "& operator=(");
     sstr_append_cstr(out, name);
-    sstr_append_cstr(out, "&& other) noexcept {\n"
-                          "        if (this != &other) {\n"
-                          "            ");
-    sstr_append_cstr(out, name);
-    sstr_append_cstr(out, "_clear(&data_);\n"
-                          "            std::memcpy(&data_, &other.data_, sizeof(data_));\n"
-                          "            std::memset(&other.data_, 0, sizeof(other.data_));\n"
-                          "        }\n"
-                          "        return *this;\n"
-                          "    }\n\n");
+    if (is_json) {
+        sstr_append_cstr(out, "&& other) noexcept {\n"
+                              "        if (this != &other) {\n"
+                              "            (void)");
+        sstr_append_cstr(out, name);
+        sstr_append_cstr(out, "_move(&data_, &other.data_);\n"
+                              "        }\n"
+                              "        return *this;\n"
+                              "    }\n\n");
+    } else {
+        sstr_append_cstr(out, "&& other) noexcept {\n"
+                              "        if (this != &other) {\n"
+                              "            ");
+        sstr_append_cstr(out, name);
+        sstr_append_cstr(out, "_clear(&data_);\n"
+                              "            std::memcpy(&data_, &other.data_, sizeof(data_));\n"
+                              "            std::memset(&other.data_, 0, sizeof(other.data_));\n"
+                              "        }\n"
+                              "        return *this;\n"
+                              "    }\n\n");
+    }
 
-    /* Copy constructor via marshal round-trip */
+    /* Copy constructor */
     sstr_append_cstr(out, "    ");
     sstr_append_cstr(out, name);
     sstr_append_cstr(out, "(const ");
     sstr_append_cstr(out, name);
-    sstr_append_cstr(out, "& other) {\n"
-                          "        ");
-    sstr_append_cstr(out, name);
-    sstr_append_cstr(out, "_init(&data_);\n"
-                          "        sstr_t buf = sstr_new();\n"
-                          "        ");
-    sstr_append_cstr(out, marshal_pfix);
-    sstr_append_cstr(out, name);
     if (is_json) {
-        sstr_append_cstr(out, "(const_cast<struct ::");
+        sstr_append_cstr(out, "& other) {\n"
+                              "        ");
         sstr_append_cstr(out, name);
-        sstr_append_cstr(out, "*>(&other.data_), 0, 0, buf);\n");
+        sstr_append_cstr(out, "_init(&data_);\n"
+                              "        if (");
+        sstr_append_cstr(out, name);
+        sstr_append_cstr(out, "_copy(&data_, &other.data_) != 0) {\n"
+                              "            throw std::runtime_error(\"copy failed\");\n"
+                              "        }\n"
+                              "    }\n");
     } else {
+        sstr_append_cstr(out, "& other) {\n"
+                              "        ");
+        sstr_append_cstr(out, name);
+        sstr_append_cstr(out, "_init(&data_);\n"
+                              "        sstr_t buf = sstr_new();\n"
+                              "        ");
+        sstr_append_cstr(out, marshal_pfix);
+        sstr_append_cstr(out, name);
         sstr_append_cstr(out, "(const_cast<struct ::");
         sstr_append_cstr(out, name);
-        sstr_append_cstr(out, "*>(&other.data_), buf);\n");
+        if (format == 0) {
+            sstr_append_cstr(out, "*>(&other.data_), 0, 0, buf);\n");
+        } else {
+            sstr_append_cstr(out, "*>(&other.data_), buf);\n");
+        }
+        sstr_append_cstr(out, "        ");
+        sstr_append_cstr(out, unmarshal_pfix);
+        sstr_append_cstr(out, name);
+        sstr_append_cstr(out, "(buf, &data_);\n"
+                              "        sstr_free(buf);\n"
+                              "    }\n");
     }
-    sstr_append_cstr(out, "        ");
-    sstr_append_cstr(out, unmarshal_pfix);
-    sstr_append_cstr(out, name);
-    sstr_append_cstr(out, "(buf, &data_);\n"
-                          "        sstr_free(buf);\n"
-                          "    }\n");
 
     /* Copy assignment */
     sstr_append_cstr(out, "    ");
     sstr_append_cstr(out, name);
     sstr_append_cstr(out, "& operator=(const ");
     sstr_append_cstr(out, name);
-    sstr_append_cstr(out, "& other) {\n"
-                          "        if (this != &other) {\n"
-                          "            ");
-    sstr_append_cstr(out, name);
-    sstr_append_cstr(out, "_clear(&data_);\n"
-                          "            ");
-    sstr_append_cstr(out, name);
-    sstr_append_cstr(out, "_init(&data_);\n"
-                          "            sstr_t buf = sstr_new();\n"
-                          "            ");
-    sstr_append_cstr(out, marshal_pfix);
-    sstr_append_cstr(out, name);
     if (is_json) {
-        sstr_append_cstr(out, "(const_cast<struct ::");
+        sstr_append_cstr(out, "& other) {\n"
+                              "        if (this != &other) {\n"
+                              "            if (");
         sstr_append_cstr(out, name);
-        sstr_append_cstr(out, "*>(&other.data_), 0, 0, buf);\n");
+        sstr_append_cstr(out, "_copy(&data_, &other.data_) != 0) {\n"
+                              "                throw std::runtime_error(\"copy failed\");\n"
+                              "            }\n"
+                              "        }\n"
+                              "        return *this;\n"
+                              "    }\n\n");
     } else {
+        sstr_append_cstr(out, "& other) {\n"
+                              "        if (this != &other) {\n"
+                              "            ");
+        sstr_append_cstr(out, name);
+        sstr_append_cstr(out, "_clear(&data_);\n"
+                              "            ");
+        sstr_append_cstr(out, name);
+        sstr_append_cstr(out, "_init(&data_);\n"
+                              "            sstr_t buf = sstr_new();\n"
+                              "            ");
+        sstr_append_cstr(out, marshal_pfix);
+        sstr_append_cstr(out, name);
         sstr_append_cstr(out, "(const_cast<struct ::");
         sstr_append_cstr(out, name);
         sstr_append_cstr(out, "*>(&other.data_), buf);\n");
+        sstr_append_cstr(out, "            ");
+        sstr_append_cstr(out, unmarshal_pfix);
+        sstr_append_cstr(out, name);
+        sstr_append_cstr(out, "(buf, &data_);\n"
+                              "            sstr_free(buf);\n"
+                              "        }\n"
+                              "        return *this;\n"
+                              "    }\n\n");
     }
-    sstr_append_cstr(out, "            ");
-    sstr_append_cstr(out, unmarshal_pfix);
-    sstr_append_cstr(out, name);
-    sstr_append_cstr(out, "(buf, &data_);\n"
-                          "            sstr_free(buf);\n"
-                          "        }\n"
-                          "        return *this;\n"
-                          "    }\n\n");
 
     /* ---- Field accessors ---- */
     sstr_append_cstr(out, "    // Field accessors\n");

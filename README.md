@@ -237,7 +237,7 @@ json-gen-c --cpp-wrapper -in struct.json-gen-c -out .
 This generates `json_gen_c.gen.hpp` — a C++17 header with RAII wrapper classes
 inside `namespace jgc`. Each class wraps a generated C struct with:
 
-- Default constructor (`_init`), destructor (`_clear`), move and copy semantics
+- Default constructor (`_init`), destructor (`_clear`), move and copy semantics backed by the generated C copy/move helpers for JSON output
 - Typed get/set accessors (strings as `std::string`, enums as their C enum type)
 - `marshal()`, `unmarshal()`, and `unmarshal_into()` member functions
 - Equality operators and `c_struct()` for C interop
@@ -376,6 +376,43 @@ for (i = 0; i < len; ++i) {
 }
 free(a);
 ```
+
+#### To Copy or Move Generated Objects
+
+Every generated struct and oneof type also has deep-copy and ownership-transfer
+helpers:
+
+```C
+struct A src;
+struct A dest;
+A_init(&src);
+A_init(&dest);
+
+// populate src ...
+
+if (A_copy(&dest, &src) != 0) {
+    // allocation failure; dest is still safe to clear
+}
+
+struct A moved;
+A_init(&moved);
+A_move(&moved, &src);
+
+// moved now owns src's former storage; src is safe to clear or repopulate
+A_clear(&src);
+A_clear(&dest);
+A_clear(&moved);
+```
+
+`<type>_copy(dest, src)` clears `dest` before performing a full deep copy.
+Strings, arrays, maps, nested structs, oneof payloads, and optional/nullable
+presence flags are duplicated so the result does not share owned storage with
+`src`. If allocation fails, it returns `-1` and leaves `dest` in a clearable
+state; the previous `dest` value is not preserved.
+
+`<type>_move(dest, src)` clears `dest`, transfers ownership from `src`, then
+leaves `src` in a clearable moved-from state without reapplying schema defaults.
+Self-copy and self-move return `0` without changing the object.
 
 #### To Selectively Deserialize Top-Level Fields
 
@@ -541,6 +578,16 @@ int <struct_name>_init(struct <struct_name> *obj);
 // always return 0
 int <struct_name>_clear(struct <struct_name> *obj);
 
+// deep-copy a full struct object
+// return 0 if success, -1 if allocation fails
+int <struct_name>_copy(struct <struct_name> *dest,
+                       const struct <struct_name> *src);
+
+// move a full struct object by transferring owned storage
+// return 0 if success, -1 for invalid arguments
+int <struct_name>_move(struct <struct_name> *dest,
+                       struct <struct_name> *src);
+
 // marshal a struct to json string.
 // return 0 if success.
 int json_marshal_<struct_name>(struct <struct_name>*obj, sstr_t out);
@@ -556,6 +603,12 @@ int json_unmarshal_<struct_name>(sstr_t in, struct <struct_name>*obj);
 // unmarshal a json string to array of struct
 // return 0 if success.
 int json_unmarshal_array_<struct_name>(sstr_t in, struct <struct_name>**obj, int *len);
+
+// oneof types generate the same in-memory helpers
+int <oneof_name>_copy(struct <oneof_name> *dest,
+                      const struct <oneof_name> *src);
+int <oneof_name>_move(struct <oneof_name> *dest,
+                      struct <oneof_name> *src);
 
 // generated top-level field indices
 enum <struct_name>_field_index {

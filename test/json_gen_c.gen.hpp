@@ -18,33 +18,27 @@ public:
     ~Triangle() { Triangle_clear(&data_); }
 
     Triangle(Triangle&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        Triangle_init(&data_);
+        (void)Triangle_move(&data_, &other.data_);
     }
     Triangle& operator=(Triangle&& other) noexcept {
         if (this != &other) {
-            Triangle_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)Triangle_move(&data_, &other.data_);
         }
         return *this;
     }
 
     Triangle(const Triangle& other) {
         Triangle_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_Triangle(const_cast<struct ::Triangle*>(&other.data_), 0, 0, buf);
-        json_unmarshal_Triangle(buf, &data_);
-        sstr_free(buf);
+        if (Triangle_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     Triangle& operator=(const Triangle& other) {
         if (this != &other) {
-            Triangle_clear(&data_);
-            Triangle_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_Triangle(const_cast<struct ::Triangle*>(&other.data_), 0, 0, buf);
-            json_unmarshal_Triangle(buf, &data_);
-            sstr_free(buf);
+            if (Triangle_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -113,33 +107,27 @@ public:
     ~AliasBasic() { AliasBasic_clear(&data_); }
 
     AliasBasic(AliasBasic&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        AliasBasic_init(&data_);
+        (void)AliasBasic_move(&data_, &other.data_);
     }
     AliasBasic& operator=(AliasBasic&& other) noexcept {
         if (this != &other) {
-            AliasBasic_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)AliasBasic_move(&data_, &other.data_);
         }
         return *this;
     }
 
     AliasBasic(const AliasBasic& other) {
         AliasBasic_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_AliasBasic(const_cast<struct ::AliasBasic*>(&other.data_), 0, 0, buf);
-        json_unmarshal_AliasBasic(buf, &data_);
-        sstr_free(buf);
+        if (AliasBasic_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     AliasBasic& operator=(const AliasBasic& other) {
         if (this != &other) {
-            AliasBasic_clear(&data_);
-            AliasBasic_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_AliasBasic(const_cast<struct ::AliasBasic*>(&other.data_), 0, 0, buf);
-            json_unmarshal_AliasBasic(buf, &data_);
-            sstr_free(buf);
+            if (AliasBasic_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -208,33 +196,27 @@ public:
     ~PreciseInts() { PreciseInts_clear(&data_); }
 
     PreciseInts(PreciseInts&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        PreciseInts_init(&data_);
+        (void)PreciseInts_move(&data_, &other.data_);
     }
     PreciseInts& operator=(PreciseInts&& other) noexcept {
         if (this != &other) {
-            PreciseInts_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)PreciseInts_move(&data_, &other.data_);
         }
         return *this;
     }
 
     PreciseInts(const PreciseInts& other) {
         PreciseInts_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_PreciseInts(const_cast<struct ::PreciseInts*>(&other.data_), 0, 0, buf);
-        json_unmarshal_PreciseInts(buf, &data_);
-        sstr_free(buf);
+        if (PreciseInts_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     PreciseInts& operator=(const PreciseInts& other) {
         if (this != &other) {
-            PreciseInts_clear(&data_);
-            PreciseInts_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_PreciseInts(const_cast<struct ::PreciseInts*>(&other.data_), 0, 0, buf);
-            json_unmarshal_PreciseInts(buf, &data_);
-            sstr_free(buf);
+            if (PreciseInts_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -301,33 +283,27 @@ public:
     ~EdgeCaseStruct() { EdgeCaseStruct_clear(&data_); }
 
     EdgeCaseStruct(EdgeCaseStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        EdgeCaseStruct_init(&data_);
+        (void)EdgeCaseStruct_move(&data_, &other.data_);
     }
     EdgeCaseStruct& operator=(EdgeCaseStruct&& other) noexcept {
         if (this != &other) {
-            EdgeCaseStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)EdgeCaseStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     EdgeCaseStruct(const EdgeCaseStruct& other) {
         EdgeCaseStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_EdgeCaseStruct(const_cast<struct ::EdgeCaseStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_EdgeCaseStruct(buf, &data_);
-        sstr_free(buf);
+        if (EdgeCaseStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     EdgeCaseStruct& operator=(const EdgeCaseStruct& other) {
         if (this != &other) {
-            EdgeCaseStruct_clear(&data_);
-            EdgeCaseStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_EdgeCaseStruct(const_cast<struct ::EdgeCaseStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_EdgeCaseStruct(buf, &data_);
-            sstr_free(buf);
+            if (EdgeCaseStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -416,33 +392,27 @@ public:
     ~TestStruct() { TestStruct_clear(&data_); }
 
     TestStruct(TestStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        TestStruct_init(&data_);
+        (void)TestStruct_move(&data_, &other.data_);
     }
     TestStruct& operator=(TestStruct&& other) noexcept {
         if (this != &other) {
-            TestStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)TestStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     TestStruct(const TestStruct& other) {
         TestStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_TestStruct(const_cast<struct ::TestStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_TestStruct(buf, &data_);
-        sstr_free(buf);
+        if (TestStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     TestStruct& operator=(const TestStruct& other) {
         if (this != &other) {
-            TestStruct_clear(&data_);
-            TestStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_TestStruct(const_cast<struct ::TestStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_TestStruct(buf, &data_);
-            sstr_free(buf);
+            if (TestStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -517,33 +487,27 @@ public:
     ~OptionalOnlyStruct() { OptionalOnlyStruct_clear(&data_); }
 
     OptionalOnlyStruct(OptionalOnlyStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        OptionalOnlyStruct_init(&data_);
+        (void)OptionalOnlyStruct_move(&data_, &other.data_);
     }
     OptionalOnlyStruct& operator=(OptionalOnlyStruct&& other) noexcept {
         if (this != &other) {
-            OptionalOnlyStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)OptionalOnlyStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     OptionalOnlyStruct(const OptionalOnlyStruct& other) {
         OptionalOnlyStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_OptionalOnlyStruct(const_cast<struct ::OptionalOnlyStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_OptionalOnlyStruct(buf, &data_);
-        sstr_free(buf);
+        if (OptionalOnlyStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     OptionalOnlyStruct& operator=(const OptionalOnlyStruct& other) {
         if (this != &other) {
-            OptionalOnlyStruct_clear(&data_);
-            OptionalOnlyStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_OptionalOnlyStruct(const_cast<struct ::OptionalOnlyStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_OptionalOnlyStruct(buf, &data_);
-            sstr_free(buf);
+            if (OptionalOnlyStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -632,33 +596,27 @@ public:
     ~MapIntStruct() { MapIntStruct_clear(&data_); }
 
     MapIntStruct(MapIntStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        MapIntStruct_init(&data_);
+        (void)MapIntStruct_move(&data_, &other.data_);
     }
     MapIntStruct& operator=(MapIntStruct&& other) noexcept {
         if (this != &other) {
-            MapIntStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)MapIntStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     MapIntStruct(const MapIntStruct& other) {
         MapIntStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_MapIntStruct(const_cast<struct ::MapIntStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_MapIntStruct(buf, &data_);
-        sstr_free(buf);
+        if (MapIntStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     MapIntStruct& operator=(const MapIntStruct& other) {
         if (this != &other) {
-            MapIntStruct_clear(&data_);
-            MapIntStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_MapIntStruct(const_cast<struct ::MapIntStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_MapIntStruct(buf, &data_);
-            sstr_free(buf);
+            if (MapIntStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -711,33 +669,27 @@ public:
     ~Circle() { Circle_clear(&data_); }
 
     Circle(Circle&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        Circle_init(&data_);
+        (void)Circle_move(&data_, &other.data_);
     }
     Circle& operator=(Circle&& other) noexcept {
         if (this != &other) {
-            Circle_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)Circle_move(&data_, &other.data_);
         }
         return *this;
     }
 
     Circle(const Circle& other) {
         Circle_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_Circle(const_cast<struct ::Circle*>(&other.data_), 0, 0, buf);
-        json_unmarshal_Circle(buf, &data_);
-        sstr_free(buf);
+        if (Circle_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     Circle& operator=(const Circle& other) {
         if (this != &other) {
-            Circle_clear(&data_);
-            Circle_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_Circle(const_cast<struct ::Circle*>(&other.data_), 0, 0, buf);
-            json_unmarshal_Circle(buf, &data_);
-            sstr_free(buf);
+            if (Circle_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -790,33 +742,27 @@ public:
     ~DefaultPrecise() { DefaultPrecise_clear(&data_); }
 
     DefaultPrecise(DefaultPrecise&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        DefaultPrecise_init(&data_);
+        (void)DefaultPrecise_move(&data_, &other.data_);
     }
     DefaultPrecise& operator=(DefaultPrecise&& other) noexcept {
         if (this != &other) {
-            DefaultPrecise_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)DefaultPrecise_move(&data_, &other.data_);
         }
         return *this;
     }
 
     DefaultPrecise(const DefaultPrecise& other) {
         DefaultPrecise_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_DefaultPrecise(const_cast<struct ::DefaultPrecise*>(&other.data_), 0, 0, buf);
-        json_unmarshal_DefaultPrecise(buf, &data_);
-        sstr_free(buf);
+        if (DefaultPrecise_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     DefaultPrecise& operator=(const DefaultPrecise& other) {
         if (this != &other) {
-            DefaultPrecise_clear(&data_);
-            DefaultPrecise_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_DefaultPrecise(const_cast<struct ::DefaultPrecise*>(&other.data_), 0, 0, buf);
-            json_unmarshal_DefaultPrecise(buf, &data_);
-            sstr_free(buf);
+            if (DefaultPrecise_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -879,33 +825,27 @@ public:
     ~DefaultMixed() { DefaultMixed_clear(&data_); }
 
     DefaultMixed(DefaultMixed&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        DefaultMixed_init(&data_);
+        (void)DefaultMixed_move(&data_, &other.data_);
     }
     DefaultMixed& operator=(DefaultMixed&& other) noexcept {
         if (this != &other) {
-            DefaultMixed_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)DefaultMixed_move(&data_, &other.data_);
         }
         return *this;
     }
 
     DefaultMixed(const DefaultMixed& other) {
         DefaultMixed_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_DefaultMixed(const_cast<struct ::DefaultMixed*>(&other.data_), 0, 0, buf);
-        json_unmarshal_DefaultMixed(buf, &data_);
-        sstr_free(buf);
+        if (DefaultMixed_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     DefaultMixed& operator=(const DefaultMixed& other) {
         if (this != &other) {
-            DefaultMixed_clear(&data_);
-            DefaultMixed_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_DefaultMixed(const_cast<struct ::DefaultMixed*>(&other.data_), 0, 0, buf);
-            json_unmarshal_DefaultMixed(buf, &data_);
-            sstr_free(buf);
+            if (DefaultMixed_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -974,33 +914,27 @@ public:
     ~DefaultBasic() { DefaultBasic_clear(&data_); }
 
     DefaultBasic(DefaultBasic&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        DefaultBasic_init(&data_);
+        (void)DefaultBasic_move(&data_, &other.data_);
     }
     DefaultBasic& operator=(DefaultBasic&& other) noexcept {
         if (this != &other) {
-            DefaultBasic_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)DefaultBasic_move(&data_, &other.data_);
         }
         return *this;
     }
 
     DefaultBasic(const DefaultBasic& other) {
         DefaultBasic_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_DefaultBasic(const_cast<struct ::DefaultBasic*>(&other.data_), 0, 0, buf);
-        json_unmarshal_DefaultBasic(buf, &data_);
-        sstr_free(buf);
+        if (DefaultBasic_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     DefaultBasic& operator=(const DefaultBasic& other) {
         if (this != &other) {
-            DefaultBasic_clear(&data_);
-            DefaultBasic_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_DefaultBasic(const_cast<struct ::DefaultBasic*>(&other.data_), 0, 0, buf);
-            json_unmarshal_DefaultBasic(buf, &data_);
-            sstr_free(buf);
+            if (DefaultBasic_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -1077,33 +1011,27 @@ public:
     ~AliasOptional() { AliasOptional_clear(&data_); }
 
     AliasOptional(AliasOptional&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        AliasOptional_init(&data_);
+        (void)AliasOptional_move(&data_, &other.data_);
     }
     AliasOptional& operator=(AliasOptional&& other) noexcept {
         if (this != &other) {
-            AliasOptional_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)AliasOptional_move(&data_, &other.data_);
         }
         return *this;
     }
 
     AliasOptional(const AliasOptional& other) {
         AliasOptional_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_AliasOptional(const_cast<struct ::AliasOptional*>(&other.data_), 0, 0, buf);
-        json_unmarshal_AliasOptional(buf, &data_);
-        sstr_free(buf);
+        if (AliasOptional_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     AliasOptional& operator=(const AliasOptional& other) {
         if (this != &other) {
-            AliasOptional_clear(&data_);
-            AliasOptional_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_AliasOptional(const_cast<struct ::AliasOptional*>(&other.data_), 0, 0, buf);
-            json_unmarshal_AliasOptional(buf, &data_);
-            sstr_free(buf);
+            if (AliasOptional_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -1173,33 +1101,27 @@ public:
     ~AliasMixed() { AliasMixed_clear(&data_); }
 
     AliasMixed(AliasMixed&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        AliasMixed_init(&data_);
+        (void)AliasMixed_move(&data_, &other.data_);
     }
     AliasMixed& operator=(AliasMixed&& other) noexcept {
         if (this != &other) {
-            AliasMixed_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)AliasMixed_move(&data_, &other.data_);
         }
         return *this;
     }
 
     AliasMixed(const AliasMixed& other) {
         AliasMixed_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_AliasMixed(const_cast<struct ::AliasMixed*>(&other.data_), 0, 0, buf);
-        json_unmarshal_AliasMixed(buf, &data_);
-        sstr_free(buf);
+        if (AliasMixed_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     AliasMixed& operator=(const AliasMixed& other) {
         if (this != &other) {
-            AliasMixed_clear(&data_);
-            AliasMixed_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_AliasMixed(const_cast<struct ::AliasMixed*>(&other.data_), 0, 0, buf);
-            json_unmarshal_AliasMixed(buf, &data_);
-            sstr_free(buf);
+            if (AliasMixed_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -1280,33 +1202,27 @@ public:
     ~NullableOnlyStruct() { NullableOnlyStruct_clear(&data_); }
 
     NullableOnlyStruct(NullableOnlyStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        NullableOnlyStruct_init(&data_);
+        (void)NullableOnlyStruct_move(&data_, &other.data_);
     }
     NullableOnlyStruct& operator=(NullableOnlyStruct&& other) noexcept {
         if (this != &other) {
-            NullableOnlyStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)NullableOnlyStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     NullableOnlyStruct(const NullableOnlyStruct& other) {
         NullableOnlyStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_NullableOnlyStruct(const_cast<struct ::NullableOnlyStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_NullableOnlyStruct(buf, &data_);
-        sstr_free(buf);
+        if (NullableOnlyStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     NullableOnlyStruct& operator=(const NullableOnlyStruct& other) {
         if (this != &other) {
-            NullableOnlyStruct_clear(&data_);
-            NullableOnlyStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_NullableOnlyStruct(const_cast<struct ::NullableOnlyStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_NullableOnlyStruct(buf, &data_);
-            sstr_free(buf);
+            if (NullableOnlyStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -1380,33 +1296,27 @@ public:
     ~NestedStruct() { NestedStruct_clear(&data_); }
 
     NestedStruct(NestedStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        NestedStruct_init(&data_);
+        (void)NestedStruct_move(&data_, &other.data_);
     }
     NestedStruct& operator=(NestedStruct&& other) noexcept {
         if (this != &other) {
-            NestedStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)NestedStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     NestedStruct(const NestedStruct& other) {
         NestedStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_NestedStruct(const_cast<struct ::NestedStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_NestedStruct(buf, &data_);
-        sstr_free(buf);
+        if (NestedStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     NestedStruct& operator=(const NestedStruct& other) {
         if (this != &other) {
-            NestedStruct_clear(&data_);
-            NestedStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_NestedStruct(const_cast<struct ::NestedStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_NestedStruct(buf, &data_);
-            sstr_free(buf);
+            if (NestedStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -1475,33 +1385,27 @@ public:
     ~PreciseIntArrays() { PreciseIntArrays_clear(&data_); }
 
     PreciseIntArrays(PreciseIntArrays&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        PreciseIntArrays_init(&data_);
+        (void)PreciseIntArrays_move(&data_, &other.data_);
     }
     PreciseIntArrays& operator=(PreciseIntArrays&& other) noexcept {
         if (this != &other) {
-            PreciseIntArrays_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)PreciseIntArrays_move(&data_, &other.data_);
         }
         return *this;
     }
 
     PreciseIntArrays(const PreciseIntArrays& other) {
         PreciseIntArrays_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_PreciseIntArrays(const_cast<struct ::PreciseIntArrays*>(&other.data_), 0, 0, buf);
-        json_unmarshal_PreciseIntArrays(buf, &data_);
-        sstr_free(buf);
+        if (PreciseIntArrays_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     PreciseIntArrays& operator=(const PreciseIntArrays& other) {
         if (this != &other) {
-            PreciseIntArrays_clear(&data_);
-            PreciseIntArrays_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_PreciseIntArrays(const_cast<struct ::PreciseIntArrays*>(&other.data_), 0, 0, buf);
-            json_unmarshal_PreciseIntArrays(buf, &data_);
-            sstr_free(buf);
+            if (PreciseIntArrays_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -1560,33 +1464,27 @@ public:
     ~AliasArray() { AliasArray_clear(&data_); }
 
     AliasArray(AliasArray&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        AliasArray_init(&data_);
+        (void)AliasArray_move(&data_, &other.data_);
     }
     AliasArray& operator=(AliasArray&& other) noexcept {
         if (this != &other) {
-            AliasArray_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)AliasArray_move(&data_, &other.data_);
         }
         return *this;
     }
 
     AliasArray(const AliasArray& other) {
         AliasArray_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_AliasArray(const_cast<struct ::AliasArray*>(&other.data_), 0, 0, buf);
-        json_unmarshal_AliasArray(buf, &data_);
-        sstr_free(buf);
+        if (AliasArray_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     AliasArray& operator=(const AliasArray& other) {
         if (this != &other) {
-            AliasArray_clear(&data_);
-            AliasArray_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_AliasArray(const_cast<struct ::AliasArray*>(&other.data_), 0, 0, buf);
-            json_unmarshal_AliasArray(buf, &data_);
-            sstr_free(buf);
+            if (AliasArray_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -1641,33 +1539,27 @@ public:
     ~Rectangle() { Rectangle_clear(&data_); }
 
     Rectangle(Rectangle&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        Rectangle_init(&data_);
+        (void)Rectangle_move(&data_, &other.data_);
     }
     Rectangle& operator=(Rectangle&& other) noexcept {
         if (this != &other) {
-            Rectangle_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)Rectangle_move(&data_, &other.data_);
         }
         return *this;
     }
 
     Rectangle(const Rectangle& other) {
         Rectangle_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_Rectangle(const_cast<struct ::Rectangle*>(&other.data_), 0, 0, buf);
-        json_unmarshal_Rectangle(buf, &data_);
-        sstr_free(buf);
+        if (Rectangle_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     Rectangle& operator=(const Rectangle& other) {
         if (this != &other) {
-            Rectangle_clear(&data_);
-            Rectangle_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_Rectangle(const_cast<struct ::Rectangle*>(&other.data_), 0, 0, buf);
-            json_unmarshal_Rectangle(buf, &data_);
-            sstr_free(buf);
+            if (Rectangle_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -1722,33 +1614,27 @@ public:
     ~OptionalFieldsStruct() { OptionalFieldsStruct_clear(&data_); }
 
     OptionalFieldsStruct(OptionalFieldsStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        OptionalFieldsStruct_init(&data_);
+        (void)OptionalFieldsStruct_move(&data_, &other.data_);
     }
     OptionalFieldsStruct& operator=(OptionalFieldsStruct&& other) noexcept {
         if (this != &other) {
-            OptionalFieldsStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)OptionalFieldsStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     OptionalFieldsStruct(const OptionalFieldsStruct& other) {
         OptionalFieldsStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_OptionalFieldsStruct(const_cast<struct ::OptionalFieldsStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_OptionalFieldsStruct(buf, &data_);
-        sstr_free(buf);
+        if (OptionalFieldsStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     OptionalFieldsStruct& operator=(const OptionalFieldsStruct& other) {
         if (this != &other) {
-            OptionalFieldsStruct_clear(&data_);
-            OptionalFieldsStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_OptionalFieldsStruct(const_cast<struct ::OptionalFieldsStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_OptionalFieldsStruct(buf, &data_);
-            sstr_free(buf);
+            if (OptionalFieldsStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -1819,33 +1705,27 @@ public:
     ~PreciseIntMap() { PreciseIntMap_clear(&data_); }
 
     PreciseIntMap(PreciseIntMap&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        PreciseIntMap_init(&data_);
+        (void)PreciseIntMap_move(&data_, &other.data_);
     }
     PreciseIntMap& operator=(PreciseIntMap&& other) noexcept {
         if (this != &other) {
-            PreciseIntMap_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)PreciseIntMap_move(&data_, &other.data_);
         }
         return *this;
     }
 
     PreciseIntMap(const PreciseIntMap& other) {
         PreciseIntMap_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_PreciseIntMap(const_cast<struct ::PreciseIntMap*>(&other.data_), 0, 0, buf);
-        json_unmarshal_PreciseIntMap(buf, &data_);
-        sstr_free(buf);
+        if (PreciseIntMap_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     PreciseIntMap& operator=(const PreciseIntMap& other) {
         if (this != &other) {
-            PreciseIntMap_clear(&data_);
-            PreciseIntMap_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_PreciseIntMap(const_cast<struct ::PreciseIntMap*>(&other.data_), 0, 0, buf);
-            json_unmarshal_PreciseIntMap(buf, &data_);
-            sstr_free(buf);
+            if (PreciseIntMap_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -1900,33 +1780,27 @@ public:
     ~DefaultEnum() { DefaultEnum_clear(&data_); }
 
     DefaultEnum(DefaultEnum&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        DefaultEnum_init(&data_);
+        (void)DefaultEnum_move(&data_, &other.data_);
     }
     DefaultEnum& operator=(DefaultEnum&& other) noexcept {
         if (this != &other) {
-            DefaultEnum_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)DefaultEnum_move(&data_, &other.data_);
         }
         return *this;
     }
 
     DefaultEnum(const DefaultEnum& other) {
         DefaultEnum_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_DefaultEnum(const_cast<struct ::DefaultEnum*>(&other.data_), 0, 0, buf);
-        json_unmarshal_DefaultEnum(buf, &data_);
-        sstr_free(buf);
+        if (DefaultEnum_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     DefaultEnum& operator=(const DefaultEnum& other) {
         if (this != &other) {
-            DefaultEnum_clear(&data_);
-            DefaultEnum_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_DefaultEnum(const_cast<struct ::DefaultEnum*>(&other.data_), 0, 0, buf);
-            json_unmarshal_DefaultEnum(buf, &data_);
-            sstr_free(buf);
+            if (DefaultEnum_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -1981,33 +1855,27 @@ public:
     ~DefaultNegative() { DefaultNegative_clear(&data_); }
 
     DefaultNegative(DefaultNegative&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        DefaultNegative_init(&data_);
+        (void)DefaultNegative_move(&data_, &other.data_);
     }
     DefaultNegative& operator=(DefaultNegative&& other) noexcept {
         if (this != &other) {
-            DefaultNegative_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)DefaultNegative_move(&data_, &other.data_);
         }
         return *this;
     }
 
     DefaultNegative(const DefaultNegative& other) {
         DefaultNegative_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_DefaultNegative(const_cast<struct ::DefaultNegative*>(&other.data_), 0, 0, buf);
-        json_unmarshal_DefaultNegative(buf, &data_);
-        sstr_free(buf);
+        if (DefaultNegative_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     DefaultNegative& operator=(const DefaultNegative& other) {
         if (this != &other) {
-            DefaultNegative_clear(&data_);
-            DefaultNegative_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_DefaultNegative(const_cast<struct ::DefaultNegative*>(&other.data_), 0, 0, buf);
-            json_unmarshal_DefaultNegative(buf, &data_);
-            sstr_free(buf);
+            if (DefaultNegative_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -2066,33 +1934,27 @@ public:
     ~Person() { Person_clear(&data_); }
 
     Person(Person&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        Person_init(&data_);
+        (void)Person_move(&data_, &other.data_);
     }
     Person& operator=(Person&& other) noexcept {
         if (this != &other) {
-            Person_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)Person_move(&data_, &other.data_);
         }
         return *this;
     }
 
     Person(const Person& other) {
         Person_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_Person(const_cast<struct ::Person*>(&other.data_), 0, 0, buf);
-        json_unmarshal_Person(buf, &data_);
-        sstr_free(buf);
+        if (Person_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     Person& operator=(const Person& other) {
         if (this != &other) {
-            Person_clear(&data_);
-            Person_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_Person(const_cast<struct ::Person*>(&other.data_), 0, 0, buf);
-            json_unmarshal_Person(buf, &data_);
-            sstr_free(buf);
+            if (Person_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -2171,33 +2033,27 @@ public:
     ~MapArrayStruct() { MapArrayStruct_clear(&data_); }
 
     MapArrayStruct(MapArrayStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        MapArrayStruct_init(&data_);
+        (void)MapArrayStruct_move(&data_, &other.data_);
     }
     MapArrayStruct& operator=(MapArrayStruct&& other) noexcept {
         if (this != &other) {
-            MapArrayStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)MapArrayStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     MapArrayStruct(const MapArrayStruct& other) {
         MapArrayStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_MapArrayStruct(const_cast<struct ::MapArrayStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_MapArrayStruct(buf, &data_);
-        sstr_free(buf);
+        if (MapArrayStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     MapArrayStruct& operator=(const MapArrayStruct& other) {
         if (this != &other) {
-            MapArrayStruct_clear(&data_);
-            MapArrayStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_MapArrayStruct(const_cast<struct ::MapArrayStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_MapArrayStruct(buf, &data_);
-            sstr_free(buf);
+            if (MapArrayStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -2250,33 +2106,27 @@ public:
     ~EnumTestStruct() { EnumTestStruct_clear(&data_); }
 
     EnumTestStruct(EnumTestStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        EnumTestStruct_init(&data_);
+        (void)EnumTestStruct_move(&data_, &other.data_);
     }
     EnumTestStruct& operator=(EnumTestStruct&& other) noexcept {
         if (this != &other) {
-            EnumTestStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)EnumTestStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     EnumTestStruct(const EnumTestStruct& other) {
         EnumTestStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_EnumTestStruct(const_cast<struct ::EnumTestStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_EnumTestStruct(buf, &data_);
-        sstr_free(buf);
+        if (EnumTestStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     EnumTestStruct& operator=(const EnumTestStruct& other) {
         if (this != &other) {
-            EnumTestStruct_clear(&data_);
-            EnumTestStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_EnumTestStruct(const_cast<struct ::EnumTestStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_EnumTestStruct(buf, &data_);
-            sstr_free(buf);
+            if (EnumTestStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -2335,33 +2185,27 @@ public:
     ~House() { House_clear(&data_); }
 
     House(House&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        House_init(&data_);
+        (void)House_move(&data_, &other.data_);
     }
     House& operator=(House&& other) noexcept {
         if (this != &other) {
-            House_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)House_move(&data_, &other.data_);
         }
         return *this;
     }
 
     House(const House& other) {
         House_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_House(const_cast<struct ::House*>(&other.data_), 0, 0, buf);
-        json_unmarshal_House(buf, &data_);
-        sstr_free(buf);
+        if (House_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     House& operator=(const House& other) {
         if (this != &other) {
-            House_clear(&data_);
-            House_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_House(const_cast<struct ::House*>(&other.data_), 0, 0, buf);
-            json_unmarshal_House(buf, &data_);
-            sstr_free(buf);
+            if (House_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -2440,33 +2284,27 @@ public:
     ~OptionalNullableStruct() { OptionalNullableStruct_clear(&data_); }
 
     OptionalNullableStruct(OptionalNullableStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        OptionalNullableStruct_init(&data_);
+        (void)OptionalNullableStruct_move(&data_, &other.data_);
     }
     OptionalNullableStruct& operator=(OptionalNullableStruct&& other) noexcept {
         if (this != &other) {
-            OptionalNullableStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)OptionalNullableStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     OptionalNullableStruct(const OptionalNullableStruct& other) {
         OptionalNullableStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_OptionalNullableStruct(const_cast<struct ::OptionalNullableStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_OptionalNullableStruct(buf, &data_);
-        sstr_free(buf);
+        if (OptionalNullableStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     OptionalNullableStruct& operator=(const OptionalNullableStruct& other) {
         if (this != &other) {
-            OptionalNullableStruct_clear(&data_);
-            OptionalNullableStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_OptionalNullableStruct(const_cast<struct ::OptionalNullableStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_OptionalNullableStruct(buf, &data_);
-            sstr_free(buf);
+            if (OptionalNullableStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -2539,33 +2377,27 @@ public:
     ~DefaultOptional() { DefaultOptional_clear(&data_); }
 
     DefaultOptional(DefaultOptional&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        DefaultOptional_init(&data_);
+        (void)DefaultOptional_move(&data_, &other.data_);
     }
     DefaultOptional& operator=(DefaultOptional&& other) noexcept {
         if (this != &other) {
-            DefaultOptional_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)DefaultOptional_move(&data_, &other.data_);
         }
         return *this;
     }
 
     DefaultOptional(const DefaultOptional& other) {
         DefaultOptional_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_DefaultOptional(const_cast<struct ::DefaultOptional*>(&other.data_), 0, 0, buf);
-        json_unmarshal_DefaultOptional(buf, &data_);
-        sstr_free(buf);
+        if (DefaultOptional_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     DefaultOptional& operator=(const DefaultOptional& other) {
         if (this != &other) {
-            DefaultOptional_clear(&data_);
-            DefaultOptional_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_DefaultOptional(const_cast<struct ::DefaultOptional*>(&other.data_), 0, 0, buf);
-            json_unmarshal_DefaultOptional(buf, &data_);
-            sstr_free(buf);
+            if (DefaultOptional_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -2636,33 +2468,27 @@ public:
     ~ComplexStruct() { ComplexStruct_clear(&data_); }
 
     ComplexStruct(ComplexStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        ComplexStruct_init(&data_);
+        (void)ComplexStruct_move(&data_, &other.data_);
     }
     ComplexStruct& operator=(ComplexStruct&& other) noexcept {
         if (this != &other) {
-            ComplexStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)ComplexStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     ComplexStruct(const ComplexStruct& other) {
         ComplexStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_ComplexStruct(const_cast<struct ::ComplexStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_ComplexStruct(buf, &data_);
-        sstr_free(buf);
+        if (ComplexStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     ComplexStruct& operator=(const ComplexStruct& other) {
         if (this != &other) {
-            ComplexStruct_clear(&data_);
-            ComplexStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_ComplexStruct(const_cast<struct ::ComplexStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_ComplexStruct(buf, &data_);
-            sstr_free(buf);
+            if (ComplexStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -2751,33 +2577,27 @@ public:
     ~MapAllTypesStruct() { MapAllTypesStruct_clear(&data_); }
 
     MapAllTypesStruct(MapAllTypesStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        MapAllTypesStruct_init(&data_);
+        (void)MapAllTypesStruct_move(&data_, &other.data_);
     }
     MapAllTypesStruct& operator=(MapAllTypesStruct&& other) noexcept {
         if (this != &other) {
-            MapAllTypesStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)MapAllTypesStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     MapAllTypesStruct(const MapAllTypesStruct& other) {
         MapAllTypesStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_MapAllTypesStruct(const_cast<struct ::MapAllTypesStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_MapAllTypesStruct(buf, &data_);
-        sstr_free(buf);
+        if (MapAllTypesStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     MapAllTypesStruct& operator=(const MapAllTypesStruct& other) {
         if (this != &other) {
-            MapAllTypesStruct_clear(&data_);
-            MapAllTypesStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_MapAllTypesStruct(const_cast<struct ::MapAllTypesStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_MapAllTypesStruct(buf, &data_);
-            sstr_free(buf);
+            if (MapAllTypesStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -2844,33 +2664,27 @@ public:
     ~FixedArrayStruct() { FixedArrayStruct_clear(&data_); }
 
     FixedArrayStruct(FixedArrayStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        FixedArrayStruct_init(&data_);
+        (void)FixedArrayStruct_move(&data_, &other.data_);
     }
     FixedArrayStruct& operator=(FixedArrayStruct&& other) noexcept {
         if (this != &other) {
-            FixedArrayStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)FixedArrayStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     FixedArrayStruct(const FixedArrayStruct& other) {
         FixedArrayStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_FixedArrayStruct(const_cast<struct ::FixedArrayStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_FixedArrayStruct(buf, &data_);
-        sstr_free(buf);
+        if (FixedArrayStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     FixedArrayStruct& operator=(const FixedArrayStruct& other) {
         if (this != &other) {
-            FixedArrayStruct_clear(&data_);
-            FixedArrayStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_FixedArrayStruct(const_cast<struct ::FixedArrayStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_FixedArrayStruct(buf, &data_);
-            sstr_free(buf);
+            if (FixedArrayStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -2937,33 +2751,27 @@ public:
     ~Drawing() { Drawing_clear(&data_); }
 
     Drawing(Drawing&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        Drawing_init(&data_);
+        (void)Drawing_move(&data_, &other.data_);
     }
     Drawing& operator=(Drawing&& other) noexcept {
         if (this != &other) {
-            Drawing_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)Drawing_move(&data_, &other.data_);
         }
         return *this;
     }
 
     Drawing(const Drawing& other) {
         Drawing_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_Drawing(const_cast<struct ::Drawing*>(&other.data_), 0, 0, buf);
-        json_unmarshal_Drawing(buf, &data_);
-        sstr_free(buf);
+        if (Drawing_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     Drawing& operator=(const Drawing& other) {
         if (this != &other) {
-            Drawing_clear(&data_);
-            Drawing_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_Drawing(const_cast<struct ::Drawing*>(&other.data_), 0, 0, buf);
-            json_unmarshal_Drawing(buf, &data_);
-            sstr_free(buf);
+            if (Drawing_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -3032,33 +2840,27 @@ public:
     ~AliasNested() { AliasNested_clear(&data_); }
 
     AliasNested(AliasNested&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        AliasNested_init(&data_);
+        (void)AliasNested_move(&data_, &other.data_);
     }
     AliasNested& operator=(AliasNested&& other) noexcept {
         if (this != &other) {
-            AliasNested_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)AliasNested_move(&data_, &other.data_);
         }
         return *this;
     }
 
     AliasNested(const AliasNested& other) {
         AliasNested_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_AliasNested(const_cast<struct ::AliasNested*>(&other.data_), 0, 0, buf);
-        json_unmarshal_AliasNested(buf, &data_);
-        sstr_free(buf);
+        if (AliasNested_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     AliasNested& operator=(const AliasNested& other) {
         if (this != &other) {
-            AliasNested_clear(&data_);
-            AliasNested_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_AliasNested(const_cast<struct ::AliasNested*>(&other.data_), 0, 0, buf);
-            json_unmarshal_AliasNested(buf, &data_);
-            sstr_free(buf);
+            if (AliasNested_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -3113,33 +2915,27 @@ public:
     ~Data() { Data_clear(&data_); }
 
     Data(Data&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        Data_init(&data_);
+        (void)Data_move(&data_, &other.data_);
     }
     Data& operator=(Data&& other) noexcept {
         if (this != &other) {
-            Data_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)Data_move(&data_, &other.data_);
         }
         return *this;
     }
 
     Data(const Data& other) {
         Data_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_Data(const_cast<struct ::Data*>(&other.data_), 0, 0, buf);
-        json_unmarshal_Data(buf, &data_);
-        sstr_free(buf);
+        if (Data_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     Data& operator=(const Data& other) {
         if (this != &other) {
-            Data_clear(&data_);
-            Data_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_Data(const_cast<struct ::Data*>(&other.data_), 0, 0, buf);
-            json_unmarshal_Data(buf, &data_);
-            sstr_free(buf);
+            if (Data_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
@@ -3194,33 +2990,27 @@ public:
     ~NullableNestedStruct() { NullableNestedStruct_clear(&data_); }
 
     NullableNestedStruct(NullableNestedStruct&& other) noexcept {
-        std::memcpy(&data_, &other.data_, sizeof(data_));
-        std::memset(&other.data_, 0, sizeof(other.data_));
+        NullableNestedStruct_init(&data_);
+        (void)NullableNestedStruct_move(&data_, &other.data_);
     }
     NullableNestedStruct& operator=(NullableNestedStruct&& other) noexcept {
         if (this != &other) {
-            NullableNestedStruct_clear(&data_);
-            std::memcpy(&data_, &other.data_, sizeof(data_));
-            std::memset(&other.data_, 0, sizeof(other.data_));
+            (void)NullableNestedStruct_move(&data_, &other.data_);
         }
         return *this;
     }
 
     NullableNestedStruct(const NullableNestedStruct& other) {
         NullableNestedStruct_init(&data_);
-        sstr_t buf = sstr_new();
-        json_marshal_indent_NullableNestedStruct(const_cast<struct ::NullableNestedStruct*>(&other.data_), 0, 0, buf);
-        json_unmarshal_NullableNestedStruct(buf, &data_);
-        sstr_free(buf);
+        if (NullableNestedStruct_copy(&data_, &other.data_) != 0) {
+            throw std::runtime_error("copy failed");
+        }
     }
     NullableNestedStruct& operator=(const NullableNestedStruct& other) {
         if (this != &other) {
-            NullableNestedStruct_clear(&data_);
-            NullableNestedStruct_init(&data_);
-            sstr_t buf = sstr_new();
-            json_marshal_indent_NullableNestedStruct(const_cast<struct ::NullableNestedStruct*>(&other.data_), 0, 0, buf);
-            json_unmarshal_NullableNestedStruct(buf, &data_);
-            sstr_free(buf);
+            if (NullableNestedStruct_copy(&data_, &other.data_) != 0) {
+                throw std::runtime_error("copy failed");
+            }
         }
         return *this;
     }
